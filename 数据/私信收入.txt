@@ -1,0 +1,35 @@
+select score.*, ISNULL(coin.coin,0) as coin, score.score - coin.coin as diff
+from 
+(
+select uid_from, uid_to, sum(amount) as score 
+from dbo.score_msg 
+where dtm >= '2024-12-12 00:00:00' and dtm <= '2024-12-12 23:59:59'
+group by uid_from, uid_to
+) as score
+left join 
+(
+select uid_from, uid_to, sum(amount) as coin
+from dbo.coin_msg 
+where dtm >= '2024-12-12 00:00:00' and dtm <= '2024-12-12 23:59:59'
+group by uid_from, uid_to
+) as coin on (score.uid_from = coin.uid_to and score.uid_to = coin.uid_from)
+where score.score > coin.coin
+order by diff desc
+
+
+
+--私信收入异常明细
+select dtm, uid_from, uid_to, amount, '收入' as msg_type,
+       u.photo, u.sex,u.nick
+from dbo.score_msg m
+left join dbo.[user] u on(m.uid_from = u.uid)
+where uid_from='wx_9P6LAZK6WEHGL338' and uid_to = 'wx_BHH8UT288UT073GQ' and (dtm >= '2024-12-12 00:00:00' and dtm <= '2024-12-12 23:59:59')
+
+union all 
+
+select dtm, uid_from, uid_to, amount, '支出' as msg_type,
+       u.photo, u.sex,u.nick
+from dbo.coin_msg m
+left join dbo.[user] u on(m.uid_from = u.uid)
+where uid_from='wx_BHH8UT288UT073GQ' and uid_to = 'wx_9P6LAZK6WEHGL338' and (dtm >= '2024-12-12 00:00:00' and dtm <= '2024-12-12 23:59:59')
+order by dtm asc

@@ -1,0 +1,43 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <style>
+        
+    </style>
+
+    <script type="text/javascript">
+        window.onload = function () {
+            init();
+        } 
+    </script>
+
+    <script>
+
+        function init() {
+            var obj_json = {a:1,b:"234"};
+
+            var str_json = JSON.stringify(obj_json);
+            console.log(str_json);
+        }
+
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">Json、字符串、code</a></li>
+        </ul>
+    </div>
+
+    <form id="form1">
+       
+    </form>
+</body>
+</html>

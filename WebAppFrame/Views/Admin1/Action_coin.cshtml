@@ -1,0 +1,177 @@
+﻿
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/demo.css" rel="stylesheet" type="text/css" />
+    <script src="~/Scripts/laydate/laydate.js"></script>
+    <style>
+        .btn {
+            margin-top: 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 18px;
+            line-height: 18px;
+            bottom: 0;
+            border: 1px solid RGB(62,175,224);
+            border-radius: 5px;
+            width: 200px;
+            cursor: pointer;
+        }
+
+        .ok {
+            background-color: RGB(62,175,224);
+        }
+
+        .main {
+            margin-top: 35px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #form1 {
+            text-align: center;
+        }
+        select {
+            width: 200px;
+            height: 28px;
+            line-height: 28px;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        input {
+            width: 200px;
+            height: 28px;
+            line-height: 28px;
+            border-radius: 5px;
+            outline: none;
+            border: 1px solid #767676;
+            padding: 5px 8px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="main">
+        <form id="form1">
+            <div>
+                <span>操作:&nbsp;&nbsp;</span>
+                <select id="type">
+                    <option value="增加">增加</option>
+                    <option value="减少">减少</option>
+                </select>
+            </div>
+            <br />
+            <div>
+                <span>详情:&nbsp;&nbsp;</span>
+                <select id="type_dtl">
+                    <option value="平台操作-增加">平台操作-增加</option>
+                    <option value="平台操作-减少">平台操作-减少</option>
+                </select>
+            </div>
+            <br />
+            <div>
+                <span>时间:&nbsp;&nbsp;</span>
+                <input type="text" placeholder="请选择日期"  id="time">
+            </div>
+            <br />
+            <div>
+                <span>数量:&nbsp;&nbsp;</span>
+                <input type="text" id="amount" style="width:200px; height:28px; line-height:28px;" />
+            </div>
+            <br />
+            <div>
+                <span>备注:&nbsp;&nbsp;</span>
+                <select id="sel_com">
+                    <option value="">-</option>
+                    <option value="礼物投诉返还金币">礼物投诉返还金币</option>
+                    <option value="寻人区查看微信返还金币">寻人区查看微信返还金币</option>
+
+                </select>
+
+            </div>
+            <div>
+                <span>备注:&nbsp;&nbsp;</span>
+                <input type="text" id="comment" style="width:200px; height:28px; line-height:28px;" />
+            </div>
+          
+            <div>
+                <span>操作:&nbsp;&nbsp;</span>
+                <input type="button" id="btn_ok" class="btn ok" value="修改" />
+            </div>
+            
+        </form>
+    </div>
+</body>
+</html>
+
+<script src="~/Scripts/jquery-1.8.2.min.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+
+        laydate.render({
+            elem: '#time' //指定元素
+        });
+
+        $("#btn_ok").bind("click", function () {
+            var uid = "@ViewData["uid"]";
+            var type = $("#type").val();
+            var amount = $("#amount").val();
+            var type_dtl = $("#type_dtl").val();
+            var comment = $("#comment").val().trim();
+            
+            var dtm = $("#time").val();
+            var state = "成功";
+
+            if (comment == "") {
+                alert("请填写备注");
+                return false;
+            }
+
+            var jsondata = {
+                "type": type,
+                "amount": amount,
+                "type_dtl": type_dtl,
+                "state": state,
+                "dtm": dtm,
+                "comment": comment
+            };
+            jsondata= JSON.stringify(jsondata);
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/Action_Coin_Data/",
+                data: { "uid": uid, "send": jsondata },
+                success: function (data) {
+                    var data = JSON.parse(data);
+                    if (data.state == "1") {
+                        alert("操作成功");
+                    } else {
+                        alert("操作失败");
+                    }
+                    CloseWindow("ok");
+                }
+            });
+
+        });
+
+        $("#type").change(function () {
+            var type = $("#type").val();
+            var type_dtl = "平台操作-" + type;
+            $("#type_dtl").val(type_dtl);
+        });
+
+        $("#sel_com").change(function () {
+            var txt = $("#sel_com").val();
+            $("#comment").val(txt);
+        });
+
+    });
+
+
+    function CloseWindow(action) {
+        if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+        else window.close();
+    }
+</script>

@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <script src="~/Scripts/jquery-1.8.2.min.js?id=123"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <script src="~/Scripts/public.js"></script>
+
+    <style>
+        .txt {
+            margin: 5px;
+            width: 200px;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        var id = '@ViewData["id"]';
+        var user_type = '@ViewData["user_type"]';
+
+        $(function () {
+            var data = '@Html.Raw(ViewData["data"])';
+            data = data.replace(/[\r\n]/g, "");
+            if (data) {
+                data = JSON.parse(data);
+                for (var key in data) {
+                    $("#" + key).val(data[key]);
+                }
+            }
+
+            if (user_type === '普通用户') {
+                $("#type_admin").hide();
+                $("#type_user").show();
+            }
+            if (user_type === '平台管理员') {
+                $("#type_user").hide();
+                $("#type_admin").show();
+            }
+
+            // 批量加载下拉框数据
+            var categories = ["sys_user_type_admin", "sys_user_type_user", "sys_user_is_use"];
+            loadBatchDropdownOptions(categories, function(data) {
+                // 更新下拉框选项
+                updateDropdown("type1", data["sys_user_type_admin"], false);
+                updateDropdown("type2", data["sys_user_type_user"], false);
+                updateDropdown("is_use", data["sys_user_is_use"], false);
+            });
+
+            $("#btnOK").bind("click", function () {
+                doSave();
+            });
+
+            if (id != "") {
+                $("#key").attr("disabled", "disabled");
+            }
+        })
+
+        function doSave() {
+            var name = $("#name").val();
+            var user_name = $("#user_name").val();
+            var user_pwd = $("#user_pwd").val();
+            var type = $("#type1").val();
+            var is_use = $("#is_use").val();
+            var comment = $("#comment").val();
+
+            if (user_type === '普通用户') {
+                type = $("#type2").val();
+            }
+
+            var send = {
+                "id": '@ViewData["id"]',
+                "comment": name,
+                "user_name": user_name,
+                "user_pwd": user_pwd,
+                "type": type,
+                "is_use": is_use,
+                "comment": comment
+            };
+
+            var strSend = JSON.stringify(send);
+            //后台
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/SaveSysUserInfo",
+                data: { "send": strSend },
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        alert(data.msg);
+                        CloseWindow("ok");
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function CloseWindow(action) {
+            if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+            else window.close();
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+        <div style="padding: 15px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+            <table>
+                <tr>
+                    <td class="lb">姓名</td>
+                    <td class="ctxt">
+                        <input class="txt" type="text" id="name" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">账号</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="text" id="user_name" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">密码</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="text" id="user_pwd" />
+                    </td>
+                </tr>
+
+                <tr id="type_admin" style="display:none;">
+                    <td class="lb">类别</td>
+                    <td class="ctxt ">
+                        <select class="txt" id="type1">
+                            <option value="">请选择</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr id="type_user" style="display:none;">
+                    <td class="lb">类别</td>
+                    <td class="ctxt ">
+                        <select class="txt" id="type2">
+                            <option value="">请选择</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">是否可用</td>
+                    <td class="ctxt">
+                        <select class="txt" id="is_use">
+                            <option value="">请选择</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">备注信息</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="text" id="comment" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb"></td>
+                    <td class="ctxt ">
+                        <input class="sys-btn" type="button" id="btnOK" value="保存" />
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+    </form>
+</body>
+</html>
+
+
+

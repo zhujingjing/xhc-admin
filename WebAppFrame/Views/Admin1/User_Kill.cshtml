@@ -1,0 +1,241 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+
+    <style>
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .gray {
+            color: #808080;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 120px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 16px;
+            text-align: center;
+            margin-left: 8px;
+        }
+
+        .blue {
+            color: blue;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .bold {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        var grid, grid2;
+
+        var left_count = 0;
+        var left_vip_count = 0;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#datagrid1,#datagrid2").height(parentHeight - 35);
+
+            mini.parse();
+
+            grid = mini.get("datagrid1");
+            grid2 = mini.get("datagrid2");
+
+            grid.load();
+            grid2.load();
+
+            drawCell();
+
+            init();
+        })
+
+        function init() {
+
+        }
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                if (column.name == "state") {
+                    var state = record.state;
+
+                    var cls = 'blue';
+                    if (state == "封杀") {
+                        cls = 'red';
+                    }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + state + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                
+                if (column.name == "dtm") {
+                    var dtm = record.dtm;
+                    dtm = dtm.replace(" ", "<br/>");
+                    e.cellHtml = '<span class="red" style="font-size:18px; color:#f00;">' + dtm + '</span>';
+                }
+
+                if (column.name == "dtm_line") {
+                    var dtm_line = record.dtm_line;
+                    dtm_line = dtm_line.replace(" ", "<br/>");
+                    e.cellHtml = '<span class="red" style="font-size:18px; color:#00f;">' + dtm_line + '</span>';
+                }
+
+                
+            });
+
+            grid2.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+             
+                if (column.name == "state") {
+                    var state = record.state;
+
+                    var cls = 'blue';
+                    if (state == "封杀") {
+                        cls = 'red';
+                    }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + state + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                if (column.name == "wx_sex") {
+                    var wx_sex = record.wx_sex;
+                    var txt = '未知';
+                    var cls = 'gray';
+                    if (wx_sex == "2") {
+                        txt = '女';
+                        cls = 'blue';
+                    }
+                    else if (wx_sex == "1") {
+                        txt = '男';
+                        cls = 'red';
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + txt + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                if (column.name == "dtm") {
+                    var dtm = record.dtm;
+                    dtm = dtm.replace(" ", "<br/>");
+                    e.cellHtml = '<span class="red" style="font-size:18px; color:#f00;">' + dtm + '</span>';
+                }
+
+                if (column.name == "dtm_line") {
+                    var dtm_line = record.dtm_line;
+                    dtm_line = dtm_line.replace(" ", "<br/>");
+                    e.cellHtml = '<span class="red" style="font-size:18px; color:#00f;">' + dtm_line + '</span>';
+                }
+
+                if (column.name == "scan_count") {
+                    var scan_count = record.scan_count;
+                    if (scan_count == 1) {
+                        scan_count = "是";
+                        e.cellHtml = '<span class="red" style="font-size:18px; color:#00f;">' + scan_count + '</span>';
+                    } else if (scan_count == 0) {
+                        scan_count = "否";
+                        e.cellHtml = '<span class="red" style="font-size:18px; color:red;">' + scan_count + '</span>';
+                    } else {
+                        scan_count = "";
+                        e.cellHtml = '<span class="red" style="font-size:18px; color:#00f;">' + scan_count + '</span>';
+                    }
+
+                }
+            });
+        }
+
+        
+
+    </script>
+
+</head>
+<body>
+    <form id="form1">
+
+        <table>
+            <tr>
+                <td style="width:50%;height:600px;">
+
+                    <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px;"
+                         url="/Admin1/GetKillUserList/@ViewData["id"]" idfield="id" allowresize="true"
+                         sizelist="[20,50,100,1000]" pagesize="1000">
+                        <div property="columns">
+
+                            <div field="xh" width="30" headeralign="center" align="center" allowsort="false">序号</div>
+
+                            <div field="dtm" name="dtm" width="100" renderer="onGenderRenderer" align="right" headeralign="center">封号时间</div>
+                            <div field="kill_hour" width="80" renderer="onGenderRenderer" align="right" headeralign="center">封号时长</div>
+                            <div field="dtm_line" name="dtm_line" width="100" renderer="onGenderRenderer" align="right" headeralign="center">解封时间</div>
+                            <div field="state" name="state" width="80" headeralign="center" align="center" allowsort="false">状态</div>
+                            <div field="comment" width="90" headeralign="center" align="left" allowsort="false">备注</div>
+                            <div field="reason" width="120" headeralign="center" align="left" allowsort="false">封号原因</div>
+                        </div>
+                    </div>
+                </td>
+              
+                <td style="width:50%;height:600px;">
+                    <div id="datagrid2" class="mini-datagrid"
+                         url="/Admin1/GetWarnUserList/@ViewData["id"]" idfield="id" allowresize="true"
+                         sizelist="[20,50,100,1000]" pagesize="1000">
+                        <div property="columns">
+
+                            <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+                            <div field="dtm" name="dtm" width="100" renderer="onGenderRenderer" align="right" headeralign="center">警告时间</div>
+                            <div field="warn_sec" width="80" renderer="onGenderRenderer" align="right" headeralign="center">警告时长</div>
+                            <div field="state" name="state" width="80" headeralign="center" align="center" allowsort="false">状态</div>
+
+                            <div field="reason" width="120" headeralign="center" align="left" allowsort="false">警告原因</div>
+                            <div field="warn_type" width="90" headeralign="center" align="left" allowsort="false">警告类型</div>
+                            <div field="scan_count" name="scan_count" width="40" headeralign="center" align="center" allowsort="false">是否查看</div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+    </form>
+</body>
+</html>
+
+

@@ -1,0 +1,230 @@
+时间:2026/3/14 20:01:48-内容:时间:2026/3/14 20:01:48   计算毫秒数:25 , 计算周期数:259211; 计算内容:select ur.id, ur.uid, u.photo, u.nick, u.sex, u.remark, 
+                                   convert(char(10), ur.record_date, 120) as record_date, 
+                                   ur.summary, ur.details, ur.evaluation, ur.processing_result, ur.violation, ur.remark as record_remark, 
+                                   ur.operator_name, ur.source,
+                                   convert(char(20), ur.create_time, 120) as create_time, 
+                                   convert(char(20), ur.update_time, 120) as update_time
+                            from dbo.user_record ur
+                            left join dbo.[user] u on ur.uid = u.uid
+                            where 1=1 and ur.record_date >= '2026-03-11' and ur.record_date <= '2026-03-14' 
+                            order by ur.record_date desc, ur.create_time desc
+                            offset 0 rows fetch next 200 rows only
+时间:2026/3/14 20:01:48-内容:时间:2026/3/14 20:01:48   计算毫秒数:24 , 计算周期数:248875; 计算内容:select count(*) from dbo.user_record ur left join dbo.[user] u on ur.uid = u.uid where 1=1 and ur.record_date >= '2026-03-11' and ur.record_date <= '2026-03-14'
+时间:2026/3/14 20:02:22-内容:时间:2026/3/14 20:02:22   计算毫秒数:26 , 计算周期数:263236; 计算内容:select ur.id, ur.uid, u.photo, u.nick, u.sex, u.remark, 
+                                   convert(char(10), ur.record_date, 120) as record_date, 
+                                   ur.summary, ur.details, ur.evaluation, ur.processing_result, ur.violation, ur.remark as record_remark, 
+                                   ur.operator_name, ur.source,
+                                   convert(char(20), ur.create_time, 120) as create_time, 
+                                   convert(char(20), ur.update_time, 120) as update_time
+                            from dbo.user_record ur
+                            left join dbo.[user] u on ur.uid = u.uid
+                            where 1=1 and ur.record_date >= '2026-03-11' and ur.record_date <= '2026-03-14' 
+                            order by ur.record_date desc, ur.create_time desc
+                            offset 0 rows fetch next 200 rows only
+时间:2026/3/14 20:02:22-内容:时间:2026/3/14 20:02:22   计算毫秒数:27 , 计算周期数:271745; 计算内容:select count(*) from dbo.user_record ur left join dbo.[user] u on ur.uid = u.uid where 1=1 and ur.record_date >= '2026-03-11' and ur.record_date <= '2026-03-14'
+时间:2026/3/14 20:02:36-内容:时间:2026/3/14 20:02:36   计算毫秒数:44 , 计算周期数:441075; 计算内容:select [key] as [key], value as value from dbo.dropdown_config where category = 'chat_check_add_brife' and status = 1 order by sort_order asc
+时间:2026/3/14 20:02:36-内容:时间:2026/3/14 20:02:36   计算毫秒数:35 , 计算周期数:352288; 计算内容:select [key] as [key], value as value from dbo.dropdown_config where category = 'chat_check_list_source' and status = 1 order by sort_order asc
+时间:2026/3/14 20:02:36-内容:时间:2026/3/14 20:02:36   计算毫秒数:52 , 计算周期数:520080; 计算内容: with 
+                               a as
+                                    (select cc.id, 
+                                   convert(char(20), cc.dtm_chat, 120) as dtm_chat, 
+                                   cc.uid_from, 
+                                   cc.uid_to, 
+                                   cc.coin_used, 
+                                   cc.score_earned, 
+                                   cc.send_count, 
+                                   cc.receive_count, 
+                                   cc.chat_depth, 
+                                   cc.evaluation, 
+                                   cc.brief, 
+                                   cc.details, 
+                                   cc.source, 
+                                   convert(char(20), cc.create_time, 120) as create_time, 
+                                   convert(char(20), cc.update_time, 120) as update_time, 
+                                   cc.operator_name,
+                                   u1.nick as from_nick,
+                                   u1.photo as from_photo,
+                                   u1.sex as from_sex,
+                                   u1.remark as from_remark,
+                                   u2.nick as to_nick,
+                                   u2.photo as to_photo,
+                                   u2.sex as to_sex,
+                                   u2.remark as to_remark
+                            from dbo.chat_check cc
+                            left join dbo.[user] u1 on cc.uid_from = u1.uid
+                            left join dbo.[user] u2 on cc.uid_to = u2.uid
+                            where 1=1 and cc.create_time >= '2026-03-11 20:02:36' and cc.create_time <= '2026-03-14 20:02:36'),
+                               b as
+                               (select *, 
+                                     ROW_NUMBER() over(order by create_time desc) as xh
+                               from a )
+                               select * from b where b.xh > 0 and b.xh <= 100
+时间:2026/3/14 20:02:36-内容:时间:2026/3/14 20:02:36   计算毫秒数:30 , 计算周期数:306335; 计算内容: with a as (select cc.id, 
+                                   convert(char(20), cc.dtm_chat, 120) as dtm_chat, 
+                                   cc.uid_from, 
+                                   cc.uid_to, 
+                                   cc.coin_used, 
+                                   cc.score_earned, 
+                                   cc.send_count, 
+                                   cc.receive_count, 
+                                   cc.chat_depth, 
+                                   cc.evaluation, 
+                                   cc.brief, 
+                                   cc.details, 
+                                   cc.source, 
+                                   convert(char(20), cc.create_time, 120) as create_time, 
+                                   convert(char(20), cc.update_time, 120) as update_time, 
+                                   cc.operator_name,
+                                   u1.nick as from_nick,
+                                   u1.photo as from_photo,
+                                   u1.sex as from_sex,
+                                   u1.remark as from_remark,
+                                   u2.nick as to_nick,
+                                   u2.photo as to_photo,
+                                   u2.sex as to_sex,
+                                   u2.remark as to_remark
+                            from dbo.chat_check cc
+                            left join dbo.[user] u1 on cc.uid_from = u1.uid
+                            left join dbo.[user] u2 on cc.uid_to = u2.uid
+                            where 1=1 and cc.create_time >= '2026-03-11 20:02:36' and cc.create_time <= '2026-03-14 20:02:36') select COUNT(*) from a
+时间:2026/3/14 20:03:49-内容:时间:2026/3/14 20:03:49   计算毫秒数:36 , 计算周期数:365797; 计算内容: with 
+                               a as
+                                    (select cc.id, 
+                                   convert(char(20), cc.dtm_chat, 120) as dtm_chat, 
+                                   cc.uid_from, 
+                                   cc.uid_to, 
+                                   cc.coin_used, 
+                                   cc.score_earned, 
+                                   cc.send_count, 
+                                   cc.receive_count, 
+                                   cc.chat_depth, 
+                                   cc.evaluation, 
+                                   cc.brief, 
+                                   cc.details, 
+                                   cc.source, 
+                                   convert(char(20), cc.create_time, 120) as create_time, 
+                                   convert(char(20), cc.update_time, 120) as update_time, 
+                                   cc.operator_name,
+                                   u1.nick as from_nick,
+                                   u1.photo as from_photo,
+                                   u1.sex as from_sex,
+                                   u1.remark as from_remark,
+                                   u2.nick as to_nick,
+                                   u2.photo as to_photo,
+                                   u2.sex as to_sex,
+                                   u2.remark as to_remark
+                            from dbo.chat_check cc
+                            left join dbo.[user] u1 on cc.uid_from = u1.uid
+                            left join dbo.[user] u2 on cc.uid_to = u2.uid
+                            where 1=1 and cc.create_time >= '2026-03-11 20:03:41' and cc.create_time <= '2026-03-14 20:03:41'),
+                               b as
+                               (select *, 
+                                     ROW_NUMBER() over(order by create_time desc) as xh
+                               from a )
+                               select * from b where b.xh > 0 and b.xh <= 100
+时间:2026/3/14 20:03:49-内容:时间:2026/3/14 20:03:49   计算毫秒数:27 , 计算周期数:273876; 计算内容: with a as (select cc.id, 
+                                   convert(char(20), cc.dtm_chat, 120) as dtm_chat, 
+                                   cc.uid_from, 
+                                   cc.uid_to, 
+                                   cc.coin_used, 
+                                   cc.score_earned, 
+                                   cc.send_count, 
+                                   cc.receive_count, 
+                                   cc.chat_depth, 
+                                   cc.evaluation, 
+                                   cc.brief, 
+                                   cc.details, 
+                                   cc.source, 
+                                   convert(char(20), cc.create_time, 120) as create_time, 
+                                   convert(char(20), cc.update_time, 120) as update_time, 
+                                   cc.operator_name,
+                                   u1.nick as from_nick,
+                                   u1.photo as from_photo,
+                                   u1.sex as from_sex,
+                                   u1.remark as from_remark,
+                                   u2.nick as to_nick,
+                                   u2.photo as to_photo,
+                                   u2.sex as to_sex,
+                                   u2.remark as to_remark
+                            from dbo.chat_check cc
+                            left join dbo.[user] u1 on cc.uid_from = u1.uid
+                            left join dbo.[user] u2 on cc.uid_to = u2.uid
+                            where 1=1 and cc.create_time >= '2026-03-11 20:03:41' and cc.create_time <= '2026-03-14 20:03:41') select COUNT(*) from a
+时间:2026/3/14 20:04:01-内容:时间:2026/3/14 20:04:01   计算毫秒数:39 , 计算周期数:395922; 计算内容: with 
+                               a as
+                                    (select cc.id, 
+                                   convert(char(20), cc.dtm_chat, 120) as dtm_chat, 
+                                   cc.uid_from, 
+                                   cc.uid_to, 
+                                   cc.coin_used, 
+                                   cc.score_earned, 
+                                   cc.send_count, 
+                                   cc.receive_count, 
+                                   cc.chat_depth, 
+                                   cc.evaluation, 
+                                   cc.brief, 
+                                   cc.details, 
+                                   cc.source, 
+                                   convert(char(20), cc.create_time, 120) as create_time, 
+                                   convert(char(20), cc.update_time, 120) as update_time, 
+                                   cc.operator_name,
+                                   u1.nick as from_nick,
+                                   u1.photo as from_photo,
+                                   u1.sex as from_sex,
+                                   u1.remark as from_remark,
+                                   u2.nick as to_nick,
+                                   u2.photo as to_photo,
+                                   u2.sex as to_sex,
+                                   u2.remark as to_remark
+                            from dbo.chat_check cc
+                            left join dbo.[user] u1 on cc.uid_from = u1.uid
+                            left join dbo.[user] u2 on cc.uid_to = u2.uid
+                            where 1=1 and cc.create_time >= '2026-03-11 20:03:41' and cc.create_time <= '2026-03-14 20:03:41' and source = '提现'),
+                               b as
+                               (select *, 
+                                     ROW_NUMBER() over(order by create_time desc) as xh
+                               from a )
+                               select * from b where b.xh > 0 and b.xh <= 100
+时间:2026/3/14 20:04:01-内容:时间:2026/3/14 20:04:01   计算毫秒数:28 , 计算周期数:288734; 计算内容: with a as (select cc.id, 
+                                   convert(char(20), cc.dtm_chat, 120) as dtm_chat, 
+                                   cc.uid_from, 
+                                   cc.uid_to, 
+                                   cc.coin_used, 
+                                   cc.score_earned, 
+                                   cc.send_count, 
+                                   cc.receive_count, 
+                                   cc.chat_depth, 
+                                   cc.evaluation, 
+                                   cc.brief, 
+                                   cc.details, 
+                                   cc.source, 
+                                   convert(char(20), cc.create_time, 120) as create_time, 
+                                   convert(char(20), cc.update_time, 120) as update_time, 
+                                   cc.operator_name,
+                                   u1.nick as from_nick,
+                                   u1.photo as from_photo,
+                                   u1.sex as from_sex,
+                                   u1.remark as from_remark,
+                                   u2.nick as to_nick,
+                                   u2.photo as to_photo,
+                                   u2.sex as to_sex,
+                                   u2.remark as to_remark
+                            from dbo.chat_check cc
+                            left join dbo.[user] u1 on cc.uid_from = u1.uid
+                            left join dbo.[user] u2 on cc.uid_to = u2.uid
+                            where 1=1 and cc.create_time >= '2026-03-11 20:03:41' and cc.create_time <= '2026-03-14 20:03:41' and source = '提现') select COUNT(*) from a
+时间:2026/3/14 20:04:13-内容:时间:2026/3/14 20:04:13   计算毫秒数:66 , 计算周期数:660491; 计算内容:select *, RIGHT(CONVERT(char(20), dtm, 120), 10) as sj from xhc_daily.dbo.msg_2026_03_01
+                                    where dtm >= '2026-03-01 00:00:00' 
+                                        and dtm <= '2026-03-01 23:59:59'
+                                        and (([uid_from] = 'wx_NQV469FSXXE337VP' and [uid_to] = 'wx_6XT6AB0500DUYPU9') or ([uid_from] = 'wx_6XT6AB0500DUYPU9' and [uid_to] = 'wx_NQV469FSXXE337VP'))
+                                        order by dtm asc 
+时间:2026/3/14 20:04:13-内容:时间:2026/3/14 20:04:13   计算毫秒数:24 , 计算周期数:247180; 计算内容:select photo, nick from dbo.[user] where uid = 'wx_NQV469FSXXE337VP'
+时间:2026/3/14 20:04:13-内容:时间:2026/3/14 20:04:13   计算毫秒数:29 , 计算周期数:290215; 计算内容:select photo, nick from dbo.[user] where uid = 'wx_6XT6AB0500DUYPU9'
+时间:2026/3/14 20:04:13-内容:时间:2026/3/14 20:04:13   计算毫秒数:26 , 计算周期数:260722; 计算内容:select value from  dbo.sys_dic where [key] = 'msg_dtl'
+时间:2026/3/14 20:04:42-内容:时间:2026/3/14 20:04:42   计算毫秒数:26 , 计算周期数:260836; 计算内容:select COUNT(*) from dbo.user_update where check_state = '待审核' and dtm_apply >= dateadd(day, -3, getdate()) 
+时间:2026/3/14 20:04:43-内容:时间:2026/3/14 20:04:43   计算毫秒数:27 , 计算周期数:275884; 计算内容:select COUNT(*) from dbo.score_tx where state = '待审核' and apply_date >= dateadd(day, -3, getdate())  
+时间:2026/3/14 20:04:43-内容:时间:2026/3/14 20:04:43   计算毫秒数:29 , 计算周期数:296926; 计算内容:select COUNT(*) from dbo.seek_people where create_time > DATEADD(day, -1, getdate()) and  comment is null 
+时间:2026/3/14 20:04:43-内容:时间:2026/3/14 20:04:43   计算毫秒数:26 , 计算周期数:269156; 计算内容:select COUNT(*) from dbo.tousu_gift where state = '待审核' and dtm >= dateadd(day, -3, getdate()) 
+时间:2026/3/14 20:04:43-内容:时间:2026/3/14 20:04:43   计算毫秒数:28 , 计算周期数:287168; 计算内容:select COUNT(*) from dbo.tousu where check_state = '待审核' and create_time >= dateadd(day, -3, getdate()) 
+时间:2026/3/14 20:04:43-内容:时间:2026/3/14 20:04:43   计算毫秒数:36 , 计算周期数:369853; 计算内容:select COUNT(*) from dbo.complain where (check_state = '待审核' or check_state is null) and dtm >= dateadd(hour, -1, getdate()) 
+时间:2026/3/14 20:04:43-内容:时间:2026/3/14 20:04:43   计算毫秒数:28 , 计算周期数:287785; 计算内容:select COUNT(*) from dbo.album where check_state = 0 and create_time >= dateadd(day, -3, getdate()) 

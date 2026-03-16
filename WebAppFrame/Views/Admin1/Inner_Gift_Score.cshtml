@@ -1,0 +1,281 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=10"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            font-size: 22px;
+            font-weight: bold;
+            color: red;
+            height: 38px;
+            line-height: 38px;
+        }
+
+        .blue {
+            font-size: 18px;
+            font-weight: bold;
+            color: blue;
+            height: 38px;
+            line-height: 38px;
+        }
+
+        .yellow {
+            font-size: 18px;
+            font-weight: bold;
+            color: yellow;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 100px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-left: 3px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            mini.parse();
+            grid = mini.get("datagrid1");
+            //grid.load();
+
+            search();
+
+            drawCell();
+
+            init();
+            bindEvent();
+        })
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:user_dtl(\'' + record.uid + '\')">---</a>';
+                }
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<img src="' + photo + '" class="photo-img" />';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+            });
+        }
+
+        function onDrawSummaryCell(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+            //客户端汇总计算
+            if (e.field == "count_好友"
+                || e.field == "count_棒棒糖"
+                || e.field == "count_鲜花"
+                || e.field == "count_黄瓜"
+                || e.field == "count_啪啪啪"
+                || e.field == "count_幸运星"
+                || e.field == "count_巧克力"
+                || e.field == "count_气球"
+                || e.field == "count_口红"
+
+                ) {
+                e.cellStyle = "text-align:center";
+                e.cellHtml = '<span class="blue">' + e.cellHtml + '个</span>';
+            }
+
+            if (e.field == "count_香水"
+                || e.field == "count_包包"
+                || e.field == "count_钻戒"
+                || e.field == "count_水晶鞋"
+                || e.field == "count_皇冠"
+                || e.field == "count_法拉利"
+                || e.field == "count_飞机"
+                || e.field == "count_火箭"
+                ) {
+                e.cellStyle = "text-align:center";
+                e.cellHtml = '<span class="red">' + e.cellHtml + '个</span>';
+            }
+        }
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 120);
+        }
+
+        function bindEvent() {
+        }
+
+        function search() {
+            var name = $("#name").val();
+            var dtm_start = mini.get("dtm_start").getText();
+            var dtm_end = mini.get("dtm_end").getText();
+
+            grid.load({
+                "dtm_start": dtm_start,
+                "dtm_end": dtm_end,
+                "name": name
+            });
+
+            sum_score(dtm_start, dtm_end, name);
+        }
+
+        function sum_score(dtm_start, dtm_end, user_name) {
+            //后台
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/GetChartScore2",
+                data: { "dtm_start": dtm_start, "dtm_end":dtm_end, "user_name": user_name },
+                success: function (data) {
+                    $("#gift_socre").html(data);
+                }
+            });
+        }
+
+        function search1() {
+            //昨天的时间
+            var day1 = new Date();
+            day1.setTime(day1.getTime()-24*60*60*1000);
+            var s1 = day1.getFullYear() + "-" + (day1.getMonth() + 1) + "-" + day1.getDate();
+
+            mini.get("dtm_start").setText(s1 + " 19:00:00");
+            mini.get("dtm_end").setText(s1 + " 23:59:59");
+
+            //search();
+        }
+
+        function search2() {
+            //昨天的时间
+            var day1 = new Date();
+            day1.setTime(day1.getTime());
+            var s1 = day1.getFullYear() + "-" + (day1.getMonth() + 1) + "-" + day1.getDate();
+
+            mini.get("dtm_start").setText(s1 + " 19:00:00");
+            mini.get("dtm_end").setText(s1 + " 23:59:59");
+
+            //search();
+        }
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">礼物得分</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+
+            开始时间: <input id="dtm_start" format="yyyy-MM-dd HH:mm:ss" class="mini-datepicker" style="width:170px;" value="@ViewData["start"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            截止时间: <input id="dtm_end" format="yyyy-MM-dd HH:mm:ss" class="mini-datepicker" style="width:170px;" value="@ViewData["end"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_search1" type="button" class="sys-btn" value="昨天" onclick="search1()" />&nbsp;&nbsp;
+            <input id="btn_search2" type="button" class="sys-btn" value="今天" onclick="search2()" />&nbsp;&nbsp;
+            统计对象
+            <select id="name" style="height:24px;">
+                <option value="" selected="selected">全部</option>
+                @{
+
+                    List<string> list = ViewBag.listMan;
+                    string tie_man = string.Empty;
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        tie_man = list[i];
+                        <option value="@tie_man">@tie_man</option>
+                    }
+                }
+
+            </select>&nbsp;&nbsp;&nbsp;
+
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />
+            &nbsp;&nbsp;&nbsp;
+            <span class="">礼物得分:<span class="red" id="gift_socre">0</span></span>
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Admin1/GetGiftSum_Inner_2" idfield="id" allowresize="true" multiselect="true"
+             showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell"
+             sizelist="[20,50,100,200]" pagesize="200">
+            <div property="columns">
+                <div field="xh" width="20" headeralign="center" align="center" allowsort="false">序号</div>
+
+                <div name="photo" width="40" renderer="onGenderRenderer" align="center" headeralign="center">头像</div>
+                <div field="nick" width="40" headeralign="center" align="center" allowsort="false">昵称</div>
+                <div field="count_收徒" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">收徒</div>
+                <div field="count_好友" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">好友.5</div>
+                <div field="count_棒棒糖" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">棒糖.2</div>
+                <div field="count_鲜花" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">鲜花.5</div>
+                <div field="count_黄瓜" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">黄瓜1</div>
+                <div field="count_啪啪啪" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">啪啪啪2</div>
+                <div field="count_幸运星" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">幸运星3</div>
+
+                <div field="count_巧克力" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">巧克力5</div>
+                <div field="count_气球" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">气球6</div>
+                <div field="count_口红" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">口红8</div>
+
+                <div field="count_香水" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">香水10</div>
+                <div field="count_包包" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">包包20</div>
+                <div field="count_钻戒" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">钻戒30</div>
+                <div field="count_水晶鞋" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">水晶鞋50</div>
+                <div field="count_皇冠" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">皇冠60</div>
+                <div field="count_法拉利" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">法拉利80</div>
+                <div field="count_飞机" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">飞机100</div>
+                <div field="count_火箭" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">火箭180</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

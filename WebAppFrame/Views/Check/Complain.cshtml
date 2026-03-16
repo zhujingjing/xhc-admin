@@ -1,0 +1,326 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=8"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            font-size: 18px;
+          
+            color: #f00;
+        }
+
+        .blue {
+            font-size: 14px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .yellow {
+            font-size: 18px;
+            font-weight: bold;
+            color: yellow;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            mini.parse();
+            grid = mini.get("datagrid1");
+            //grid.load();
+            search();
+            drawCell();
+
+            init();
+            bindEvent();
+        })
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:left";
+                    e.cellHtml = '<a style="font-size:18px;color:blue;" href="javascript:ChartAB(\'' + record.dtm + '\',\'' + record.uid_from + '\',\'' + record.uid_to + '\')">' + "详情" + '</a>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                    e.cellHtml += '<a style="font-size:16px;color:blue;" href="javascript:Check(\'' + record.id + '\')">审核</a>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                    e.cellHtml += '<a style="font-size:16px;color:blue;" href="javascript:Warn(\'' + record.uid_to + '\',\'' + record.id + '\')">' + "警告" + '</a>';
+                    e.cellHtml += '&nbsp;&nbsp;&nbsp;';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                    e.cellHtml += '<a style="font-size:16px;color:blue;" href="javascript:FengHao(\'' + record.uid_to + '\',\'' + record.id + '\')">' + "封号" + '</a>';
+                    
+                }
+
+                if (column.name == "dir") {
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '--->';
+                }
+
+                if (column.name == "to_photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.to_photo;
+                    var nick = record.to_nick;
+                    var sex = record.to_sex;
+                    var diff = record.to_diff;
+                    var color = "";
+                    if (sex == "男生") {
+                        color = "blue";
+                    } else {
+                        color = "red";
+                    }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid_to + '\')"><img src="' + photo + '" class="photo-img" />';
+                    e.cellHtml += "<br/>";
+                    e.cellHtml += "<span style='color:" + color + "'>" + nick + "(" + sex + ")---" + diff + "天</span></a>";
+                }
+                if (column.name == "diff_m") {
+                    var diff_m = record.diff_m;
+                    var diff_mc = record.diff_mc;
+                    if (diff_mc == null) {
+                        diff_mc = "";
+                    } else {
+                        diff_mc = diff_mc+"分钟"
+                    }
+                    e.cellHtml = "<span style='color:red'>" + diff_m + "分钟</span>---<span style='color:blue'>" + diff_mc + "</span>";
+                }
+
+                if (column.name == "from_photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.from_photo;
+                    var nick = record.from_nick;
+                    var sex = record.from_sex;
+                    var diff = record.from_diff;
+                    var color = "";
+                    if (sex == "男生") {
+                        color = "blue";
+                    } else {
+                        color = "red";
+                    }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid_from + '\')"><img src="' + photo + '" class="photo-img" />';
+                    e.cellHtml += "<br/>";
+                    e.cellHtml += "<span style='color:" + color + "'>" + nick + "(" + sex + ")---" + diff + "天</span></a>";
+                }
+                
+
+                
+                if (column.name == "dtm") {
+                    var dtm = record.dtm;
+                    if (dtm == null) { dtm = ''; }
+                    dtm = dtm.replace(' ', '<br/>');
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="red">' + dtm + '</span>';
+                }
+                if (column.name == "check_state") {
+                    var state = record.check_state;
+                    var txt = '待审核';
+                    var cls = 'gray';
+                    if (state == "成功") {
+                        txt = '通过';
+                        cls = 'blue';
+                    }
+                    else if (state == "失败") {
+                        txt = '失败';
+                        cls = 'red';
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + txt + '</span>';
+
+                }
+                if (column.name == "check_cycle") {
+                    var dtm = record.dtm;
+                    var dtm_check = record.dtm_check;
+                    var diff_time = "";
+                    if (dtm_check == null) {
+                        diff_time = "";
+                    } else {
+                        dtm = new Date(dtm).getTime();
+                        dtm_check = new Date(dtm_check).getTime();
+                        diff_time = dtm_check - dtm;
+                        var audit_cycle_days = Math.floor(diff_time / (1000 * 60));
+                        if (audit_cycle_days < 1) {
+                            var second = diff_time / 1000;
+                            e.cellStyle = "text-align:center";
+                            e.cellHtml = '<span class="blue">' + second + '秒</span>';
+                        }
+                        if (audit_cycle_days >= 1 && audit_cycle_days < 60) {
+                            e.cellStyle = "text-align:center";
+                            e.cellHtml = '<span style="font-size: 14px;color:blue;">' + audit_cycle_days + '分钟</span>';
+                        }
+                        if (audit_cycle_days >= 60 && audit_cycle_days < 60 * 24) {
+                            audit_cycle_days = Math.floor(diff_time / (1000 * 60 * 60));
+                            e.cellStyle = "text-align:center";
+                            e.cellHtml = '<span style="color:red;font-size:14px;">' + audit_cycle_days + '小时</span>';
+                        }
+                        if (audit_cycle_days >= 60 * 24) {
+                            audit_cycle_days = Math.floor(diff_time / (1000 * 60 * 60 * 24));
+                            e.cellStyle = "text-align:center";
+                            e.cellHtml = '<span style="color:red;font-size:14px;font-weight: bold;">' + audit_cycle_days + '天</span>';
+                        }
+                    }
+                    
+                }
+
+            });
+        }
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#datagrid1").height(parentHeight - 80);
+        }
+
+        function bindEvent() {
+        }
+
+
+        function search() {
+            var c_type = $("#c_type").val();
+            var dtm_start = mini.get("dtm_start").getText();
+            var dtm_end = mini.get("dtm_end").getText();
+
+            grid.load({
+                "start": dtm_start,
+                "end": dtm_end,
+                "c_type": c_type
+            });
+        }
+
+        function FengHao(uid, id) {
+            var url = "/Admin1/FengHao_Rst/" + id + "?uid=" + uid;
+            mini.open({
+                url: url,
+                showMaxButton: false,
+                title: "封号",
+                width: 800,
+                height: 330,
+                ondestroy: function (action) {
+                    grid.reload();
+                }
+            });
+        }
+
+        function Warn(uid, id) {
+            var url = "/Admin1/Warn_Rst/" + id + "?uid=" + uid;
+            mini.open({
+                url: url,
+                showMaxButton: false,
+                title: "警告",
+                width: 800,
+                height: 330,
+                ondestroy: function (action) {
+                    grid.reload();
+                }
+            });
+        }
+        
+
+        function Check(id) {
+            mini.open({
+                url: "/Check/CheckComplain/" + id,
+                showMaxButton: false,
+                title: "审核",
+                width: 600,
+                height: 330,
+                ondestroy: function (action) {
+                    grid.reload();
+                }
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+            起始时间: <input id="dtm_start" format="yyyy-MM-dd HH:mm:ss" class="mini-datepicker" style="width:180px;" value="@ViewData["start"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            截止时间: <input id="dtm_end" format="yyyy-MM-dd HH:mm:ss" class="mini-datepicker" style="width:180px;" value="@ViewData["end"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            类别:
+            <select id="c_type" style="height:24px;">
+                <option value="" >全部</option>
+                <option value="拉黑" >拉黑</option>
+                <option value="投诉" selected="selected">投诉</option>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Check/GetComplainData" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[20,50,100]" pagesize="50">
+            <div property="columns">
+                <div field="xh" width="20" headeralign="center" align="center" allowsort="false">序号</div>
+
+                <div name="dtm" width="60" headeralign="center" align="center" allowsort="false">投诉日期</div>
+                <div field="c_type" width="50" headeralign="center" align="center" allowsort="false">投诉类别</div>
+                <div field="c_type_dtl" width="50" headeralign="center" align="center" allowsort="false">投诉内容</div>
+
+                <div name="from_photo" width="90" renderer="onGenderRenderer" align="center" headeralign="center">投诉者</div>
+                <div name="dir" width="40" headeralign="center" align="left" allowsort="false">---></div>
+                <div name="to_photo" width="90" renderer="onGenderRenderer" align="center" headeralign="center">被投诉者</div>
+
+                <div name="diff_m" width="80" headeralign="center" align="center" allowsort="false">时间差</div>
+
+                <div field="check_cycle" name="check_cycle" width="50" headeralign="center" align="center" allowsort="false">审核周期</div>
+                <div field="check_state" name="check_state" width="50" headeralign="center" align="center" allowsort="false">审核状态</div>
+
+                <div name="dtl" width="150" headeralign="center" align="center" allowsort="false">操作</div>
+
+
+                <div field="rst_check" width="150" headeralign="center" align="center" allowsort="false">审核结果</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

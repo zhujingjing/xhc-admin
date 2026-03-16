@@ -1,0 +1,184 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .blue {
+            display: inline-block;
+            color: blue;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .red {
+            display: inline-block;
+            color: red;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 180px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .tag-a {
+            color: blue;
+            font-size: 16px;
+        }
+
+        a:visited {
+            color: red;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#divContainer").height(parentHeight - 20);
+            init();
+        })
+
+        function init() {
+            var data = '@Html.Raw(ViewData["data"])';
+            var data_yest = '@Html.Raw(ViewData["data_yest"])';
+            //var data = '[{"dtm":"2024-09-25 00","chat_count":89,"chat_score":16335},{"dtm":"2024-09-25 01","chat_count":59,"chat_score":9785},{"dtm":"2024-09-25 02","chat_count":63,"chat_score":9840},{"dtm":"2024-09-25 03","chat_count":22,"chat_score":3040},{"dtm":"2024-09-25 04","chat_count":10,"chat_score":1255},{"dtm":"2024-09-25 05","chat_count":5,"chat_score":530},{"dtm":"2024-09-25 06","chat_count":8,"chat_score":860},{"dtm":"2024-09-25 07","chat_count":3,"chat_score":320},{"dtm":"2024-09-25 08","chat_count":25,"chat_score":2900},{"dtm":"2024-09-25 09","chat_count":47,"chat_score":8160},{"dtm":"2024-09-25 10","chat_count":45,"chat_score":9365},{"dtm":"2024-09-25 11","chat_count":39,"chat_score":6260},{"dtm":"2024-09-25 12","chat_count":30,"chat_score":4615},{"dtm":"2024-09-25 13","chat_count":34,"chat_score":6700},{"dtm":"2024-09-25 14","chat_count":40,"chat_score":6925},{"dtm":"2024-09-25 15","chat_count":37,"chat_score":6910}]';
+            //var data_yest = '[{"dtm":"2024-09-24 00","chat_count":102,"chat_score":15040},{"dtm":"2024-09-24 01","chat_count":51,"chat_score":6975},{"dtm":"2024-09-24 02","chat_count":42,"chat_score":6584},{"dtm":"2024-09-24 03","chat_count":9,"chat_score":1515},{"dtm":"2024-09-24 04","chat_count":7,"chat_score":850},{"dtm":"2024-09-24 05","chat_count":4,"chat_score":400},{"dtm":"2024-09-24 06","chat_count":7,"chat_score":850},{"dtm":"2024-09-24 07","chat_count":9,"chat_score":1150},{"dtm":"2024-09-24 08","chat_count":19,"chat_score":3205},{"dtm":"2024-09-24 09","chat_count":26,"chat_score":4145},{"dtm":"2024-09-24 10","chat_count":39,"chat_score":6230},{"dtm":"2024-09-24 11","chat_count":27,"chat_score":3315},{"dtm":"2024-09-24 12","chat_count":39,"chat_score":6640},{"dtm":"2024-09-24 13","chat_count":56,"chat_score":8325},{"dtm":"2024-09-24 14","chat_count":37,"chat_score":4845},{"dtm":"2024-09-24 15","chat_count":66,"chat_score":12585},{"dtm":"2024-09-24 16","chat_count":39,"chat_score":6085},{"dtm":"2024-09-24 17","chat_count":46,"chat_score":6949},{"dtm":"2024-09-24 18","chat_count":21,"chat_score":3210},{"dtm":"2024-09-24 19","chat_count":15,"chat_score":2395},{"dtm":"2024-09-24 20","chat_count":19,"chat_score":3050},{"dtm":"2024-09-24 21","chat_count":30,"chat_score":3920},{"dtm":"2024-09-24 22","chat_count":54,"chat_score":8879},{"dtm":"2024-09-24 23","chat_count":64,"chat_score":8845}]';
+            data = JSON.parse(data);
+            data_yest = JSON.parse(data_yest);
+
+            var data_new = [];
+            var total_today = 0;
+            var total_yesterday = 0;
+
+            for (var i = 0; i < data_yest.length; i++) {
+                var item = {};
+                item.dtm = data_yest[i].dtm;
+
+                if (i < data.length) {
+                    total_today += data[i].chat_score;
+                } else {
+                    total_today = 0;
+                }
+
+                total_yesterday += data_yest[i].chat_score;
+
+                item.today = total_today;
+                item.yesterday = total_yesterday;
+
+                data_new.push(item);
+            }
+            console.log(data_new);
+            //线图
+            showLine546(data_new);
+        }
+
+
+    </script>
+    <script>
+        function showLine546(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            //图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8;
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF";
+            graph.valueField = "today";
+            graph.title = "今日积分";
+            graph.balloonText = "[[category]]今日当前积分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "yesterday"; //纵轴显示内容
+                graph.title = "昨日积分";
+                graph.balloonText = "[[category]]昨日当前积分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+
+</head>
+<body>
+    <div id="divContainer" style="width: 99%; border: solid 1px #dcdcdc">
+
+    </div>
+</body>
+</html>
+
+

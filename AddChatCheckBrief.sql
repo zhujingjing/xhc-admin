@@ -1,0 +1,1 @@
+ALTER TABLE chat_check ADD brief NVARCHAR(50) NULL;

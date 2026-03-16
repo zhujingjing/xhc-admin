@@ -1,0 +1,182 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .blue {
+            font-size: 14px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .yellow {
+            font-size: 18px;
+            font-weight: bold;
+            color: yellow;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        $(function () {
+            var parentHeight = $(window.parent).height();
+            $("#datagrid1").height(parentHeight - 100);
+
+            mini.parse();
+            grid = mini.get("datagrid1");
+            grid.load();
+           
+            drawCell();
+        })
+
+
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:coin2Scoin_all(\'' + record.uid + '\')">全貌</a>';
+                }
+
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<img src="' + photo + '" class="photo-img" />';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                if (column.name == "pay_mny") {
+                    var mny = record.pay_mny;
+                    if (mny == null) { mny = '0'; }
+
+                    e.cellStyle = "text-align:right";
+                    e.cellHtml = '<span class="red">￥' + mny + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                if (column.name == "dtm_pay") {
+                    var dtm = record.dtm_pay;
+                    if (dtm == null) { dtm = ''; }
+                    else { dtm = dtm.replace(' ', '<br/>'); }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="blue">' + dtm + '</span>';
+                }
+                if (column.name == "dtm_create") {
+                    var dtm = record.dtm_create;
+                    if (dtm == null) { dtm = ''; }
+                    dtm = dtm.replace(' ', '<br/>');
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + dtm + '</span>';
+                }
+                if (column.name == "first_time") {
+                    var dtm = record.first_time;
+                    if (dtm == null) { dtm = ''; }
+                    dtm = dtm.replace(' ', '<br/>');
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + dtm + '</span>';
+                }
+
+            });
+        }
+
+        function onDrawSummaryCell(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+            //客户端汇总计算
+            if (e.field == "pay_mny") {
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:12px 0; font-size:18px;color:red; font-weight: bold;">￥' + e.cellHtml + '</span>';
+            }
+           
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Admin1/GetOrderData/@ViewData["id"]" idfield="id" allowresize="true" multiselect="true"
+              showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell"
+             sizelist="[50,100,500]" pagesize="500">
+            <div property="columns">
+                <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+                <div field="uid" width="50" renderer="onGenderRenderer" align="left" headeralign="center">uid</div>
+                <div field="order_no" width="100" renderer="onGenderRenderer" align="left" headeralign="center">订单编号</div>
+                <div name="photo" width="60" renderer="onGenderRenderer" align="center" headeralign="center">头像</div>
+                <div field="nick" width="60" headeralign="center" align="left" allowsort="false">昵称</div>
+                <div field="sex" width="50" headeralign="center" align="center" allowsort="false">性别</div>
+                <div field="order_name" width="80" headeralign="center" align="left" allowsort="false">订单名称</div>
+                <div  field="pay_mny" name="pay_mny" width="80" headeralign="center" align="right" allowsort="false" summarytype="sum">支付金额</div>
+                <div name="dtm_pay" width="90" headeralign="center" align="center" allowsort="false">支付时间</div>
+                <div field="order_type" width="80" headeralign="center" align="center" allowsort="false">订单类别</div>
+                <div field="order_mny" width="60" headeralign="center" align="right" allowsort="false">订单金额</div>
+                <div name="dtm_create" width="80" headeralign="center" align="center" allowsort="false">下单时间</div>
+                <div field="order_from" width="80" headeralign="center" align="center" allowsort="false">订单来源</div>
+                <div field="out_id" width="80" headeralign="center" align="center" allowsort="false">外部id</div>
+                <div name="first_time" width="80" headeralign="center" align="center" allowsort="false">首次访问时间</div>
+                <div field="comment2" width="80" headeralign="center" align="center" allowsort="false">备注</div>
+                @*<div field="loc_province" width="60" headeralign="center" align="left" allowsort="false">省份</div>
+                <div field="loc_city" width="60" headeralign="center" align="left" allowsort="false">城市</div>
+
+                <div name="dtl" width="100" headeralign="center" align="center" allowsort="false">操作</div>*@
+            </div>
+        </div>
+        
+    </form>
+</body>
+</html>
+
+
+

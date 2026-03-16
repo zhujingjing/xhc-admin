@@ -1,0 +1,229 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=6"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+        input[type="text"] {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left:5px;
+        } 
+        
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .gray {
+            color: #808080;
+        }
+
+        .blue {
+            color: blue;
+        }
+
+        .red {
+            color: red;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 125);
+
+            mini.parse();
+
+            grid = mini.get("datagrid1");
+
+            grid.load();
+
+            drawCell();
+
+            init();
+        })
+
+        function init() {
+
+        }
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:center";
+
+                    //e.cellHtml = '<a href="javascript:del(\'' + record.id + '\')">删除</a>';
+                    //e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                    e.cellHtml = '<a style="color:blue;"  href="javascript:update(\'' + record.id + '\')">解封</a>';
+                }
+                if (column.name == "photo") 
+                    {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+                  
+                    if (photo == null || photo == "") {
+                        photo = "/Images/frame/i07.png";
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid + '\')"><img src="' + photo + '" class="photo-img" /></a>';
+
+                }
+                if (column.name == "state") {
+                    var state = record.state;
+                 
+                    var cls = 'blue';
+                    if (state == "封杀") {
+                        cls = 'red';
+                    }
+                    
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + state + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                if (column.name == "wx_sex") {
+                    var wx_sex = record.wx_sex;
+                    var txt = '未知';
+                    var cls = 'gray';
+                    if (wx_sex == "2") {
+                        txt = '女';
+                        cls = 'blue';
+                    }
+                    else if (wx_sex == "1") {
+                        txt = '男';
+                        cls = 'red';
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + txt + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                if (column.name == "dtm") {
+                    var dtm = record.dtm;
+                    dtm = dtm.replace(" ", "<br/>");
+                    e.cellHtml = '<span class="red" style="font-size:18px; color:#f00;">' + dtm + '</span>';
+                }
+
+                if (column.name == "dtm_line") {
+                    var dtm_line = record.dtm_line;
+                    dtm_line = dtm_line.replace(" ", "<br/>");
+                    e.cellHtml = '<span class="red" style="font-size:18px; color:#00f;">' + dtm_line + '</span>';
+                }
+
+                
+            });
+        }
+
+        function search() {
+            var key = $("#key").val();
+            var check_state = $("#check_state").val();
+            grid.load({
+                "key": key,
+                "check_state": check_state
+            });
+        }
+
+        function update(id) {
+            if (!confirm("您确定要解除此人的封禁吗?")) {
+                return;
+            }
+
+            //后台删除
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/UnKillUser",
+                data: { "id": id }, 
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        grid.reload();
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+    </script>
+
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">解封用户</a></li>
+        </ul>
+    </div>
+
+    <form id="form1">
+        
+        <div style="padding: 15px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+            查询关键词:<input type="text" id="key" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <select id="check_state" style="height:24px;">
+                <option value="" selected="selected">全部</option>
+                <option value="封杀">封杀</option>
+                <option value="已解封">已解封</option>
+             
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+
+        </div>
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px;"
+             url="/Admin1/GetKillUserList" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[20,50,100]" pagesize="50">
+            <div property="columns">
+            
+                <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+                <div name="photo" width="80" headeralign="center" align="center" allowsort="false">头像</div>
+                <div field="nick" width="60" headeralign="center" align="left" allowsort="false">昵称</div>
+                <div field="sex" width="40" headeralign="center" align="center" allowsort="false">微信性别</div>
+
+                <div field="dtm" name="dtm" width="100" renderer="onGenderRenderer" align="right" headeralign="center">封号时间</div>
+                <div field="kill_hour" width="80" renderer="onGenderRenderer" align="right" headeralign="center">封号时长</div>
+                <div field="kill_type" width="100" renderer="onGenderRenderer" align="left" headeralign="center">封号类别</div>
+                <div field="dtm_line" name="dtm_line" width="100" renderer="onGenderRenderer" align="right" headeralign="center">解封时间</div>
+                <div field="state" name="state" width="80" headeralign="center" align="center" allowsort="false">状态</div>
+                <div field="comment" width="90" headeralign="center" align="left" allowsort="false">备注</div>
+                <div field="reason" width="120" headeralign="center" align="left" allowsort="false">封号原因</div>
+                
+                <div name="dtl" width="120" headeralign="center" align="center" allowsort="false">操作</div>
+
+            </div>
+        </div>
+    </form>
+</body>
+</html>

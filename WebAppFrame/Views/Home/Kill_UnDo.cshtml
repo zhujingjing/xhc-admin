@@ -1,0 +1,558 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>解封用户</title>
+
+
+    <link href="~/Styles/m_public.css?id=3" rel="stylesheet" />
+    <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <style>
+        .mask {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            opacity: 0.7;
+            z-index: 999;
+            display: none;
+        }
+
+        .rtn-money {
+            position: fixed;
+            left: 10%;
+            top: 30%;
+            background-color: #fff;
+            width: 80%;
+            z-index: 1000;
+            display: none;
+            border-radius: 5px;
+        }
+
+        .rtn-content p {
+            line-height: 2em;
+            font-size: 1.2em;
+        }
+
+        .rtn-money {
+            top: 5em;
+        }
+
+        .cls-a {
+            margin-top: 5px;
+            font-size: 1em;
+            line-height: 1.8em;
+        }
+    </style>
+
+    <style>
+        .ub {
+            display: flex;
+        }
+
+        .ub-ver {
+            flex-direction: column;
+        }
+
+        .ub-as {
+            justify-content: flex-start;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac1 {
+            justify-content: space-around;
+        }
+
+        .ub-ac2 {
+            justify-content: space-between;
+        }
+
+        .ub-ac3 {
+            justify-content: space-evenly;
+        }
+
+        .ub-ae {
+            justify-content: flex-end;
+        }
+
+        .ub-ps {
+            align-items: flex-start;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        .ub-f1 {
+            flex-grow: 1;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        tr {
+            text-align: center;
+        }
+
+        th {
+            background-color: #f9fafd;
+            color: #333;
+            font-size: 2em;
+            padding: 11px;
+        }
+
+        table, th, td {
+            border: 1px solid #ebeef8;
+            padding: 11px 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .width {
+            max-width: 80px;
+        }
+
+        .photo {
+            width: 4em;
+            height: 4em;
+            border-radius: 50%;
+        }
+
+        .red {
+            color: red;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .blue {
+            color: #32cd32;
+            font-weight: bold;
+        }
+
+        .backlog {
+            color: #dcdcdc;
+        }
+
+        .backlog2 {
+            color: #777;
+            font-size: 15px;
+        }
+
+        .orange {
+            color: #fc5531;
+            font-size: 15px;
+        }
+
+        .top {
+            font-size: 15px;
+        }
+
+        .info {
+            border: .5px solid #dcdcdc;
+            padding: 12px 10px 12px 10px;
+            margin-bottom: 15px;
+            border-radius: .3em;
+            background-color: #fff;
+        }
+
+        img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .state {
+            font-size: 15px;
+        }
+
+        .time-txt {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .arrow {
+            width: 10em;
+            height: 0.8em;
+        }
+
+        .gift-img {
+            width: 40px;
+            height: 40px;
+        }
+
+        textarea {
+            padding: 6px 6px;
+            line-height: 25px;
+            border: solid 1px #dcdcdc;
+            resize: none;
+            outline: none;
+            width: 100%;
+        }
+
+        .text1 {
+            padding: 6px 6px;
+            font-size: 12px;
+            color: #666;
+            border-left: solid 1px #dcdcdc;
+            border-right: solid 1px #dcdcdc;
+        }
+
+        .text2 {
+            color: #333;
+        }
+
+        .check-btn {
+            width: 100%;
+            background-color: #48befa;
+            border-radius: 5px;
+            color: #fff;
+            height: 35px;
+            font-size: 17px;
+            margin-top: 5px;
+        }
+
+        .operate {
+            margin-top: 10px;
+        }
+
+            .operate a {
+                border-radius: .3em;
+                background-color: #e92162;
+                color: #fff;
+                width: 70px;
+                text-align: center;
+                font-size: 15px;
+                text-decoration: none;
+                padding: 5px 0;
+            }
+
+        .operate2 {
+            margin-top: 10px;
+        }
+
+            .operate2 a {
+                border-radius: .3em;
+                background-color: #dfdfdf;
+                color: #fff;
+                width: 70px;
+                text-align: center;
+                font-size: 15px;
+                text-decoration: none;
+                padding: 5px 0;
+            }
+
+        .top2 {
+            background-color: #e92162;
+            padding: 0 6px;
+            height: 50px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1;
+        }
+
+            .top2 #return {
+                width: 2em;
+                height: 2em;
+                padding: 1em 3em 1em 0;
+            }
+
+            .top2 #refresh {
+                width: 2.7em;
+                height: 2.7em;
+                padding: 1em 1em 1em 3em;
+            }
+
+        body {
+            margin: 0;
+            font-family: PingFangSC-Regular, tahoma, arial, sans-serif;
+            background-color: #F0F0F0;
+        }
+
+        .rst_check {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #form1 {
+            padding: 8px;
+        }
+
+        .line {
+            border-top: 1px dashed #F0F0F0;
+            margin: 3px 0;
+        }
+    </style>
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        $(function () {
+
+            $.ajax({
+                type: "get",
+                url: "/Admin1/GetKillUserList_movie",
+                // data: { "id": id, "state": state },
+                success: function (data) {
+                    //console.log(data);
+                    var data = JSON.parse(data);
+                    var id, uid, dtm, dtm_line, kill_hour, state, comment, reason, photo, nick, sex, create_time;
+                    var h = '';
+                    for (var i = 0; i < data.length; i++) {
+                        id = data[i]["id"];
+                        uid = data[i]["uid"];
+                        dtm = data[i]["dtm"].replace(" ", "<br/>");
+                        dtm_line = data[i]["dtm_line"].replace(" ", "<br/>");
+                        kill_hour = data[i]["kill_hour"]
+                        state = data[i]["state"]
+                        comment = data[i]["comment"]
+                        reason = data[i]["reason"]
+                        photo = data[i]["photo"]
+                        nick = data[i]["nick"]
+                        sex = data[i]["sex"]
+                        create_time = data[i]["create_time"]
+                       
+                        
+
+                        var photo = servUrl_AppData + '/photo/' + photo;
+
+                        photo = ' <a href="javascript:Show(\'' + uid + '\')">  <img src="' + photo + '" /></a>'
+
+                        if (sex == "男生") {
+                            var sex = '<span style="color:blue">(' + sex + ')</span>';
+                        }
+                        if (sex == "女生") {
+                            var sex = '<span style="color:red">(' + sex + ')</span>';
+                        }
+
+                        var btn;
+
+                        if (comment == "") {
+                            btn = ' <div class="operate ub ub-pc ub-ac2">\
+                                    <a href="javascript:update(\'' + id + '\')">解封</a>\
+                                    </div>'
+                        }
+                        if (comment != "") {
+                            btn = ' <div class="operate2 ub ub-pc ub-ac2">\
+                                    <a href="javascript:update(\'' + id + '\')">解封</a>\
+                                </div>'
+                        }
+                        if (state == "封杀") {
+                            state = '<label style="color:red;">' + state + '</label>'
+                        } else {
+                            state = '<label style="color:blue;">' + state + '</label>'
+                        }
+
+                        h += '<div class="info">\
+                                <div class="ub ub-pc ub-ac2">\
+                                    <div class="ub ub-ver ub-pc">\
+                                        '+photo+'\
+                                        <span>\
+                                            <label>' + nick + '</label>\
+                                            <label>' + sex + '</label>\
+                                        </span>\
+                                    </div>\
+                                    <div class="ub ub-ver ub-pc">\
+                                        <span></span>\
+                                        <span><label></label> <label>' + comment + '</label></span>\
+                                    </div>\
+                                '+btn+'\
+                                </div>\
+                                <div class="line" style="margin:5px 0;"></div>\
+                                <div class="ub ub-ac2">\
+                                    <div class="ub ub-ver ub-pc ub-ac">\
+                                        <span>'+dtm+'</span>\
+                                    </div>\
+                                    <div class="ub ub-ver ub-pc ub-ac">\
+                                        <div class="ub ub-pc">\
+                                            <span style="color:#e92162">' + kill_hour + '小时</span>\
+                                        </div>\
+                                        <img class="arrow" src="http://www.daozhenec.com/img/%E5%8F%B3%E7%AE%AD%E5%A4%B4.e607b529.png" />\
+                                        <span style="color:#888">' + reason + '</span>\
+                                    </div>\
+                                    <div class="ub ub-ver ub-pc ub-ac">\
+                                        <span>' + dtm_line + '</span>\
+                                    </div>\
+                                </div>\
+                            </div>'
+                    }
+                    $("#form1").html(h);
+
+
+                }
+            });
+
+            $("#return").bind("click", function () {
+                location.href = '/Home/Check_Survey';
+            });
+
+            $("#refresh").bind("click", function () {
+                location.reload();
+            });
+        });
+
+        function update(id) {
+            if (!confirm("您确定要解除此人的封禁吗?")) {
+                return;
+            }
+
+            //后台删除
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/UnKillUser",
+                data: { "id": id },
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        location.reload();
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+
+    </script>
+</head>
+<body>
+    <div class="main">
+        <div class="top2 ub ub-pc ub-ac2">
+            <img id="return" src="http://wx2.xhchat.cn/img/%E8%BF%94%E5%9B%9E%E7%AE%AD%E5%A4%B4.93b021b8.png" />
+            <img id="refresh" src="~/Images/刷新.png" />
+        </div>
+        <div style="height:58px;"></div>
+        <form id="form1">
+            <div class="info">
+                <div class="ub ub-pc ub-ac2">
+                    <div class="ub ub-ver ub-pc">
+                        <img src="http://xhcapp_i.zhuochuangzb.com/photo/photo_girl/3265.jpg" />
+                        <span>
+                            <label>东方不败</label>
+                            <label>(女生)</label>
+                        </span>
+                    </div>
+                    <div class="ub ub-ver ub-pc">
+                        <span>168小时</span>
+                        <span><label>封杀</label> <label></label></span>
+                    </div>
+                    <div class="operate ub ub-pc ub-ac2">
+                        <a>解封</a>
+                    </div>
+                </div>
+
+                <div class="line" style="margin:5px 0;"></div>
+
+                <div class="ub ub-ac2">
+                    <div class="ub ub-ver ub-pc ub-ac">
+                        <span>2021-03-06 12:09:39</span>
+                    </div>
+                    <div class="ub ub-ver ub-pc ub-ac">
+                        <div class="ub ub-pc">
+                            <span style="color:#e92162">辣鸡广告</span>
+                        </div>
+                        <img class="arrow" src="http://www.daozhenec.com/img/%E5%8F%B3%E7%AE%AD%E5%A4%B4.e607b529.png" />
+                        <span style="color:#888"></span>
+                    </div>
+                    <div class="ub ub-ver ub-pc ub-ac">
+                        <span>2021-03-06 12:09:39</span>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
+
+    </div>
+</body>
+</html>
+
+<script>
+    function openMask(title, content, left, right, _fun_left, _fun_right) {
+        var mask_html = '  <div class="mask"></div>'
+                        + '<div class="rtn-money">'
+                        + '    <div class="ub height3000">'
+                        + '        <a href="javascript:void(0)" class="ub ub-f1 ub-ac ub-pc height3000" style="border-bottom: 1px solid #ff4f72; color: #ff4f72; font-size: 1.2em;">' + title + '</a>'
+                        + '    </div>'
+                        + '    <div class="ub ub-ver font-size1000 padding-a1000 rtn-content">'
+                        + '        <p>' + content + '</p>'
+                        + '    </div>'
+                        + '    <div style="height:1px; width:100%; background-color: #dcdcdc"></div>'
+                        + '    <div class="ub height3000">'
+                        + '        <a href="javascript:' + _fun_left + '()" class="ub ub-f1 ub-ac ub-pc height3000" style="border-right:1px solid #dcdcdc;">' + left + '</a>'
+                        + '        <a href="javascript:' + _fun_right + '()" class="ub ub-f1 ub-ac ub-pc height3000" style="color: #fff; background-color: #ff4f72">' + right + '</a>'
+                        + '    </div>'
+                        + '</div>';
+
+        $(document.body).append(mask_html);
+        $(".mask, .rtn-money").show();
+    }
+    function Show(uid) {
+        $.ajax({
+            type: "get",
+            url: "/Home/GetTalkMsg/" + uid,
+            success: function (data) {
+
+                var h = '';
+                var height = $(window).height() - 200;
+                var width = $(window).width() - 40;
+                h += '<div style="height:' + height + 'px; width:' + width + 'px; overflow:scroll ">';
+                data = JSON.parse(data);
+
+                var data_msg = JSON.parse(data.msg);
+                var data_kill = JSON.parse(data.kill);
+                var data_user = JSON.parse(data.user);
+
+                //console.log(data.msg);
+
+                h += data_user.out_id + '<br/>';
+                h += "注册时长:<span style='color:red; font-size:18px;'>" + data_user.diff_day + "天"
+                    + "</span> - 金币:<span style='color:red; font-size:18px;'>" + data_user.coin
+                    + "</span> - 总消费:<span style='color:red; font-size:18px;'>" + parseInt(data_user.mny)
+                h += "</span><hr/>";
+
+
+                var kill_item;
+                for (var i = 0; i < data_kill.length; i++) {
+                    kill_item = data_kill[i];
+                    h += kill_item.out_id + '<br/><span style="color:red; font-size:18px;">'
+                        + kill_item.state + ' - '
+                        + kill_item.reason + ' - '
+                        + kill_item.kill_hour + '<br/>'
+                        + kill_item.kill_dtm
+                        + '</span><hr/>';
+                }
+
+
+                var msg_state;
+                var msg_txt;
+                var msg_dtm;
+                for (var i = 0; i < data_msg.length; i++) {
+                    msg_state = data_msg[i].state;
+                    msg_txt = data_msg[i].txt;
+                    msg_dtm = data_msg[i].dtm.substr(11, 8);
+
+                    var cls_color = '#333';
+                    if (msg_state == "fail") {
+                        cls_color = 'red';
+                    }
+
+                    h += '<div style="color:' + cls_color + '"> <span style="margin-right:5px;color:#888">[' + msg_dtm + ']</span><span>' + msg_txt + '</span></div>';
+                }
+                h += '</div>';
+                openMask("最近聊天内容", h, "知道了~", "知道了~", "f_left", "f_left");
+            }
+        });
+    }
+    function f_left() {
+        $(".mask, .rtn-money").remove();
+    }
+</script>

@@ -1,0 +1,648 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+        .red {
+            font-size: 22px;
+            font-weight: bold;
+            color: red;
+            height: 38px;
+             line-height: 40px;
+        }
+        .blue {
+            font-size: 18px;
+            font-weight: bold;
+            color: blue;
+             line-height: 40px;
+        }
+        .mny {
+            display: inline-block;
+            align-items: center;
+           padding-right:5px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: left;
+            margin-left: 3px;
+
+        }
+        .mr-left{
+            margin-left:20px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var data = '@Html.Raw(ViewData["data"])';
+        data = JSON.parse(data);
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#divContainer").height(parentHeight - 181);
+
+            init();
+
+            $("#name").change(function () {
+                loadData();
+            });
+        })
+
+        function init() {
+            var name = "@ViewData["name"]";
+            $("#name").val(name);
+
+            var data2 = '@Html.Raw(ViewData["data2"])';
+            data2 = JSON.parse(data2);
+
+            $("#total").html(data2.total);
+            $("#rate").html(data2.rate + "%");
+            $("#gift").html(data2.gift);
+
+            search5();
+        }
+        //加载数据
+        function loadData() {
+            var start = mini.get("start").getText();
+            var end = mini.get("end").getText();
+            var name = $("#name").val();
+            var url = "/Admin1/Sum_UserScore_line/?start=" + start + "&end=" + end + "&name=" + name;
+            window.location.href = url;
+        }
+        //聊天量
+        function search2() {
+            showLine555(data);
+            $("#navigation").html("聊天量");
+        }
+        //普通黑圈
+        function search3() {
+            showLine666(data);
+            $("#navigation").html("消黑圈");
+        }
+
+        //礼物比
+        function search4() {
+            showLine777(data);
+            $("#navigation").html("礼物比");
+        }
+
+        //聊天总分
+        function search5() {
+            showLine888(data);
+            $("#navigation").html("聊天总分");
+        }
+
+        //得分明细
+        function search6() {
+            showLine999(data);
+            $("#navigation").html("得分明细");
+        }
+
+    </script>
+
+
+    @*聊天量*@
+    <script>
+        function showLine555(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+            chart.startDuration = 1;
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            // 图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8; //大小
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF"; //线条颜色 "00FF00" "0000FF"
+            graph.valueField = "c_msg_suc"; //纵轴显示内容
+            graph.title = "日聊天量";
+            graph.balloonText = "[[category]]日聊天量<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";//
+                graph.valueField = "c_msg_suc"; //纵轴显示内容
+                graph.title = "聊天量";
+                graph.balloonText = "[[category]]聊天量<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#7B7B7B";//
+                graph.valueField = "s_msg"; //纵轴显示内容
+                graph.title = "聊天量得分";
+                graph.balloonText = "[[category]]聊天量得分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#5B5B5B";//
+                graph.valueField = "s_blackq"; //纵轴显示内容
+                graph.title = "消黑圈得分";
+                graph.balloonText = "[[category]]消黑圈得分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+
+    @*普通黑圈*@
+    <script>
+        function showLine666(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+            chart.startDuration = 1;
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            // 图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8; //大小
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF"; //线条颜色 "00FF00" "0000FF"
+            graph.valueField = "c_blackq"; //纵轴显示内容
+            graph.title = "普通黑圈";
+            graph.balloonText = "[[category]]日普通黑圈<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            if (true) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";//
+                graph.valueField = "c_blackq_men"; //纵轴显示内容
+                graph.title = "会员黑圈";
+                graph.balloonText = "[[category]]日会员黑圈<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#7B7B7B";//
+                graph.valueField = "s_msg"; //纵轴显示内容
+                graph.title = "聊天量得分";
+                graph.balloonText = "[[category]]聊天量得分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#5B5B5B";//
+                graph.valueField = "s_blackq"; //纵轴显示内容
+                graph.title = "消黑圈得分";
+                graph.balloonText = "[[category]]消黑圈得分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+
+    @*礼物比*@
+    <script>
+        function showLine777(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+            chart.startDuration = 1;
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            // 图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8; //大小
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF"; //线条颜色 "00FF00" "0000FF"
+            graph.valueField = "rate"; //纵轴显示内容
+            graph.title = "礼物比";
+            graph.balloonText = "[[category]]礼物比<br><b><span style='font-size:14px;'>[[value]]%</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";//
+                graph.valueField = "c_blackq_men"; //纵轴显示内容
+                graph.title = "会员黑圈";
+                graph.balloonText = "[[category]]日会员黑圈<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#7B7B7B";//
+                graph.valueField = "s_msg"; //纵轴显示内容
+                graph.title = "聊天量得分";
+                graph.balloonText = "[[category]]聊天量得分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#5B5B5B";//
+                graph.valueField = "s_blackq"; //纵轴显示内容
+                graph.title = "消黑圈得分";
+                graph.balloonText = "[[category]]消黑圈得分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+
+    @*聊天总分*@
+    <script>
+        function showLine888(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+            chart.startDuration = 1;
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            // 图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8; //大小
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF"; //线条颜色 "00FF00" "0000FF"
+            graph.valueField = "total"; //纵轴显示内容
+            graph.title = "聊天总分";
+            graph.balloonText = "[[category]]聊天总分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";//
+                graph.valueField = "c_blackq_men"; //纵轴显示内容
+                graph.title = "会员黑圈";
+                graph.balloonText = "[[category]]日会员黑圈<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#7B7B7B";//
+                graph.valueField = "s_msg"; //纵轴显示内容
+                graph.title = "聊天量得分";
+                graph.balloonText = "[[category]]聊天量得分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#5B5B5B";//
+                graph.valueField = "s_blackq"; //纵轴显示内容
+                graph.title = "消黑圈得分";
+                graph.balloonText = "[[category]]消黑圈得分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+
+    @*得分明细*@
+    <script>
+        function showLine999(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+            chart.startDuration = 1;
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            // 图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8; //大小
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF"; //线条颜色 "00FF00" "0000FF"
+            graph.valueField = "total"; //纵轴显示内容
+            graph.title = "聊天总分";
+            graph.balloonText = "[[category]]聊天总分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            if (true) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";//
+                graph.valueField = "s_gift"; //纵轴显示内容
+                graph.title = "礼物得分";
+                graph.balloonText = "[[category]]礼物得分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#7B7B7B";//
+                graph.valueField = "s_msg"; //纵轴显示内容
+                graph.title = "聊天量得分";
+                graph.balloonText = "[[category]]聊天量得分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+            if (true) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#5B5B5B";//
+                graph.valueField = "s_blackq"; //纵轴显示内容
+                graph.title = "消黑圈得分";
+                graph.balloonText = "[[category]]消黑圈得分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#" id="navigation">得分走势</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+        <div style="padding:10px; margin-bottom:5px; border: solid 1px #dcdcdc;">
+            开始日期: <input id="start" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["start"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            截止日期: <input id="end" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["end"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <select id="name" style="height:24px;">
+                <option value="" selected="selected">全部</option>
+                @{
+                    List<string> list = ViewBag.listMan;
+                    string tie_man = string.Empty;
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        tie_man = list[i];
+                        <option value="@tie_man">@tie_man</option>
+                    }
+                }
+
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" value="加载数据" class="sys-btn" onclick="loadData()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" value="聊天总分" class="sys-btn" style="background-color:#009a44;" onclick="search5()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" value="得分明细" class="sys-btn" style="background-color:#009a44;" onclick="search6()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" value="礼物比" class="sys-btn" style="background-color:#009a44;" onclick="search4()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" value="聊天量" class="sys-btn" style="background-color:#009a44;" onclick="search2()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" value="消黑圈" class="sys-btn" style="background-color:#009a44;" onclick="search3()" />&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+
+        <div style="padding:10px; margin-bottom:5px; border: solid 1px #dcdcdc;">
+            <a class="mny">总得分:<a class="red" id="total"></a></a>
+            <a class="mny mr-left">礼物分:<a class="red" id="gift"></a></a>
+            <a class="mny mr-left">礼物比:<a class="blue" id="rate"></a></a>
+        </div>
+
+        <div id="divContainer" style="width: 100%; border: solid 1px #dcdcdc"></div>
+
+    </form>
+</body>
+</html>
+
+

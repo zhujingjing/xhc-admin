@@ -1,0 +1,207 @@
+﻿﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="/Scripts/jquery.min.js"></script>
+    <script src="/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="/Scripts/Global.js"></script>
+    <link href="/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+
+    <style>
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+
+        .gray {
+            color: #808080;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 120px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 16px;
+            text-align: center;
+            margin-left: 8px;
+        }
+
+        .blue {
+            color: blue;
+        }
+
+        .red {
+            color: red;
+        }
+        
+
+        .bold {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+
+
+    <script type="text/javascript">
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#divContainer").height(parentHeight - 100);
+
+            init();
+        })
+
+        function init() {
+            var data = '@Html.Raw(ViewData["data"])';
+            data = JSON.parse(data);
+            
+            //线图
+            showLine546(data);
+        }
+
+        function search() {
+            var uid = "@ViewData["id"]";
+            var dtm_start = mini.get("dtm_start").getText();
+            var dtm_end = mini.get("dtm_end").getText();
+
+            var url = "/Admin1/User_Live/" + uid + "?dtm_start=" + dtm_start + "&dtm_end=" + dtm_end;
+            window.location.href = url;
+        }
+
+        function exportData() {
+            var uid = "@ViewData["id"]";
+
+            mini.open({
+                url: "/Admin1/User_ExportData_UserChat/" + uid,
+                showMaxButton: false,
+                title: "导出聊天数据",
+                width: 1200,
+                height: 600,
+                ondestroy: function (action) {
+                }
+            });
+        }
+
+    </script>
+
+    <script>
+        function showLine546(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+            chart.startDuration = 1;
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            // 图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8; //大小
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#666666"; //线条颜色 "00FF00" "0000FF"
+            graph.valueField = "c_login"; //纵轴显示内容
+            graph.title = "登录次数";
+            graph.balloonText = "[[category]]登录次数<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+
+
+            if (true) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";//
+                graph.valueField = "c_match"; //纵轴显示内容
+                graph.title = "匹配次数";
+                graph.balloonText = "[[category]]匹配次数<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";//
+                graph.valueField = "c_msg_suc"; //纵轴显示内容
+                graph.title = "发送消息";
+                graph.balloonText = "[[category]]发送消息<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+
+</head>
+<body>
+    <form id="form1">
+        <div style="padding: 15px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+            开始日期:<input id="dtm_start" format="yyyy-MM-dd" class="mini-datepicker" style="width:110px;" value="@ViewData["dtm_start"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            截至日期:<input id="dtm_end" format="yyyy-MM-dd" class="mini-datepicker" style="width:110px;" value="@ViewData["dtm_end"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" value="导出数据" onclick="exportData()" />
+        </div>
+        
+        <div id="divContainer" style="width: 100%; border: solid 1px #dcdcdc"></div>
+    </form>
+</body>
+</html>
+
+

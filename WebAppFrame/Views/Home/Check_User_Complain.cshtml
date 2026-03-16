@@ -1,0 +1,461 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>投诉举报</title>
+
+
+    <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <style>
+        .ub {
+            display: flex;
+        }
+
+        .ub-ver {
+            flex-direction: column;
+        }
+
+        .ub-as {
+            justify-content: flex-start;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac1 {
+            justify-content: space-around;
+        }
+
+        .ub-ac2 {
+            justify-content: space-between;
+        }
+
+        .ub-ac3 {
+            justify-content: space-evenly;
+        }
+
+        .ub-ae {
+            justify-content: flex-end;
+        }
+
+        .ub-ps {
+            align-items: flex-start;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+         .ub-f1 {
+            flex-grow: 1;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        tr {
+            text-align: center;
+        }
+
+        th {
+            background-color: #f9fafd;
+            color: #333;
+            font-size: 2em;
+            padding: 11px;
+        }
+
+        table, th, td {
+            border: 1px solid #ebeef8;
+            padding: 11px 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .width {
+            max-width: 80px;
+        }
+
+        .photo {
+            width: 4em;
+            height: 4em;
+            border-radius: 50%;
+        }
+
+        .red {
+            color: red;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .blue {
+            color: #32cd32;
+            font-weight: bold;
+        }
+
+        .backlog {
+            color: #dcdcdc;
+        }
+
+        .backlog2 {
+            color: #777;
+            font-size: 15px;
+        }
+
+        .orange {
+            color: #fc5531;
+            font-size: 15px;
+        }
+
+        .top {
+            font-size: 15px;
+        }
+
+        .info {
+            border: .5px solid #dcdcdc;
+            padding: 5px 10px 12px 10px;
+            margin-bottom: 15px;
+            border-radius: .3em;
+            background-color: #fff;
+        }
+
+        img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .state {
+            font-size: 15px;
+        }
+
+        .time-txt {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .arrow {
+            width: 10em;
+            height: 0.8em;
+        }
+
+        .gift-img {
+            width: 40px;
+            height: 40px;
+        }
+
+        textarea {
+            padding: 6px 6px;
+            line-height: 25px;
+            border: solid 1px #dcdcdc;
+            resize: none;
+            outline: none;
+            width: 100%;
+        }
+
+        .text1 {
+            padding: 6px 6px;
+            font-size: 12px;
+            color: #666;
+            border-left: solid 1px #dcdcdc;
+            border-right: solid 1px #dcdcdc;
+        }
+
+        .text2 {
+            color: #333;
+        }
+
+        .check-btn {
+            width: 100%;
+            background-color: #48befa;
+            border-radius: 5px;
+            color: #fff;
+            height: 35px;
+            font-size: 17px;
+            margin-top: 5px;
+        }
+
+        .operate {
+            margin-top: 10px;
+        }
+
+            .operate a {
+                border-radius: .3em;
+                background-color: #e92162;
+                color: #fff;
+                width: 70px;
+                text-align: center;
+                font-size: 15px;
+                text-decoration: none;
+                padding: 5px 0;
+            }
+
+        .operate2 {
+            margin-top: 10px;
+        }
+
+            .operate2 a {
+                border-radius: .3em;
+                background-color: #dfdfdf;
+                color: #fff;
+                width: 70px;
+                text-align: center;
+                font-size: 15px;
+                text-decoration: none;
+                padding: 5px 0;
+            }
+
+        .top2 {
+            background-color: #e92162;
+            padding: 0 6px;
+            height: 50px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1;
+        }
+
+            .top2 #return {
+                width: 2em;
+                height: 2em;
+                padding: 1em 3em 1em 0;
+            }
+
+            .top2 #refresh {
+                width: 2.7em;
+                height: 2.7em;
+                padding: 1em 1em 1em 3em;
+            }
+
+        body {
+            margin: 0;
+            font-family: PingFangSC-Regular, tahoma, arial, sans-serif;
+            background-color: #F0F0F0;
+        }
+
+        .rst_check {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #form1 {
+            padding: 8px;
+        }
+
+        .line {
+            border-top: 1px dashed #F0F0F0;
+            margin: 3px 0;
+        }
+    </style>
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        $(function () {
+
+            $.ajax({
+                type: "get",
+                url: "/Admin1/GetComplainData2",
+                // data: { "id": id, "state": state },
+                success: function (data) {
+                    //console.log(data);
+                    var data = JSON.parse(data);
+                    var id, dtm, from_nick, to_nick, from_photo, to_photo, c_type, c_type_dtl, check_state, from_sex, to_sex,diff_m,diff_mc;
+                    var h = '';
+                    for (var i = 0; i < data.length; i++) {
+                        id = data[i]["id"];
+                        check_state = data[i]["check_state"];
+                        dtm = data[i]["dtm"].substring(10);
+                        from_nick = data[i]["from_nick"]
+                        to_nick = data[i]["to_nick"]
+                        from_photo = data[i]["from_photo"]
+                        to_photo = data[i]["to_photo"]
+                        c_type = data[i]["c_type"]
+                        c_type_dtl = data[i]["c_type_dtl"]
+                        uid_from = data[i]["uid_from"]
+                        uid_to = data[i]["uid_to"]
+                        rst_check = data[i]["rst_check"]
+                        from_sex = data[i]["from_sex"]
+                        to_sex = data[i]["to_sex"]
+                        diff_m = data[i]["diff_m"]
+                        diff_mc = data[i]["diff_mc"]
+
+                        var from_photo = servUrl_AppData + '/photo/' + from_photo;
+                        var to_photo = servUrl_AppData + '/photo/' + to_photo;
+                        if (to_sex == "男生") {
+                            var to_sex = '<span style="color:blue">(' + to_sex + ')</span>';
+                        }
+                        if (to_sex == "女生") {
+                            var to_sex = '<span style="color:red">(' + to_sex + ')</span>';
+                        }
+                        if (from_sex == "男生") {
+                            var from_sex = '<span style="color:blue">(' + from_sex + ')</span>';
+                        }
+                        if (from_sex == "女生") {
+                            var from_sex = '<span style="color:red">(' + from_sex + ')</span>';
+                        }
+
+
+                        var btn;
+
+                        if (check_state == "失败") {
+                            check_state = '<span class="red">' + check_state + '</span>'
+                            btn = ' <div class="operate2 ub ub-pc ub-ac2">\
+                                    <a href="javascript:ChartAB(\'' + dtm + '\',\'' + uid_from + '\',\'' + uid_to + '\')">详情</a>\
+                                    <a href="javascript:Check(\'' + id + '\')">审核</a>\
+                                    <a href="javascript:Warn(\'' + uid_to + '\',\'' + id + '\')">警告</a>\
+                                    <a href="javascript:FengHao(\'' + uid_to + '\')">封号</a>\
+                                </div>'
+                        }
+                        if (check_state == "成功") {
+                            check_state = '<span class="blue">' + check_state + '</span>'
+                            btn = ' <div class="operate2 ub ub-pc ub-ac2">\
+                                    <a href="javascript:ChartAB(\'' + dtm + '\',\'' + uid_from + '\',\'' + uid_to + '\')">详情</a>\
+                                    <a href="javascript:Check(\'' + id + '\')">审核</a>\
+                                    <a href="javascript:Warn(\'' + uid_to + '\',\'' + id + '\')">警告</a>\
+                                    <a href="javascript:FengHao(\'' + uid_to + '\')">封号</a>\
+                                </div>'
+                        }
+                        if (check_state == null) {
+                            check_state = "待审核"
+                            check_state = '<span class="backlog">' + check_state + '</span>'
+                            btn = ' <div class="operate ub ub-pc ub-ac2">\
+                                    <a href="javascript:ChartAB(\'' + dtm + '\',\'' + uid_from + '\',\'' + uid_to + '\')">详情</a>\
+                                    <a href="javascript:Check(\'' + id + '\')">审核</a>\
+                                    <a href="javascript:Warn(\'' + uid_to + '\',\'' + id + '\')">警告</a>\
+                                    <a href="javascript:FengHao(\'' + uid_to + '\')">封号</a>\
+                                </div>'
+                        }
+                        if (rst_check == null) {
+                            rst_check = ""
+                            rst_check = '<span>' + rst_check + '</span>'
+                        }
+                        if (rst_check == "忽略") {
+                            rst_check = "已忽略"
+                            rst_check = '<span class="backlog2">' + rst_check + '</span>'
+                        }
+                        if (rst_check == "已警告") {
+                            rst_check = '<span class="orange">' + rst_check + '</span>'
+                        }
+                        if (rst_check == "已封号") {
+                            rst_check = '<span class="red">' + rst_check + '</span>'
+                        }
+                        if (diff_mc == null) {
+                            diff_mc = '';
+                        } else {
+                            diff_mc = diff_mc+'分钟';
+                        }
+
+                        h += '<div class="info">\
+                                <div class="ub ub-pc" style="margin-bottom:5px;>\
+                                     <span class="time-txt">' + dtm + '</span>\
+                                     <span style="color:red;font-size:14px;margin-left:10px;">(' + diff_m + '分钟)</span>\
+                                     <span style="color:blue;font-size:14px;margin-left:15px;">(' + diff_mc + ')</span>\
+                                     <span class="rst_check ub-f1" style="margin-left:48px;">' + rst_check + '</span>\
+                                     <span class="state">' + check_state + '</span>\
+                                </div>\
+                                <div class="line" style="margin-bottom:10px;"></div>\
+                                <div class="ub ub-ac2">\
+                                    <div class="ub ub-ver ub-pc ub-ac">\
+                                        <img src="' + from_photo + '" />\
+                                        <span>' + from_nick + '' + from_sex + '</span>\
+                                    </div>\
+                                    <div class="ub ub-ver ub-pc ub-ac">\
+                                        <div class="ub ub-pc">\
+                                            <span style="color:#e92162">' + c_type + '</span>\
+                                        </div>\
+                                        <img class="arrow" src="http://www.daozhenec.com/img/%E5%8F%B3%E7%AE%AD%E5%A4%B4.e607b529.png" />\
+                                        <span style="color:#888">' + c_type_dtl + '</span>\
+                                    </div>\
+                                    <div class="ub ub-ver ub-pc ub-ac">\
+                                        <img src="' + to_photo + '" />\
+                                        <span>' + to_sex + '' + to_nick + '</span>\
+                                    </div>\
+                                </div>\
+                                 <div class="line"></div>'+ btn + '</div>'
+                    }
+                    $("#form1").html(h);
+
+
+                }
+            });
+
+            $("#return").bind("click", function () {
+                location.href = '/Home/Check_Survey';
+            });
+
+            $("#refresh").bind("click", function () {
+                location.reload();
+            });
+        });
+
+
+        function Check(id) {
+            mini.open({
+                url: "/Admin1/CheckComplain/" + id,
+                showMaxButton: false,
+                title: "审核",
+                width: 350,
+                height: 330,
+                ondestroy: function (action) {
+                    location.reload();
+                }
+            });
+        }
+
+        function Warn(uid, id) {
+            var url = "/Admin1/Warn_Rst/" + id + "?uid=" + uid;
+            mini.open({
+                url: url,
+                showMaxButton: false,
+                title: "警告",
+                width: 350,
+                height: 300,
+                ondestroy: function (action) {
+                    location.reload();
+                }
+            });
+        }
+
+        function FengHao(uid) {
+            mini.open({
+                url: "/Admin1/FengHao_Rst/" + uid,
+                showMaxButton: false,
+                title: "封号",
+                width: 350,
+                height: 300,
+                ondestroy: function (action) {
+                    location.reload();
+                }
+            });
+        }
+
+        function ChartAB(dtm, a, b) {
+            mini.open({
+                url: "/Home/User_Chart_AB/?dtm=" + dtm + "&uid_from=" + a + "&uid_to=" + b,
+                showMaxButton: false,
+                title: "聊天详情",
+                width: 350,
+                height: 580,
+                ondestroy: function (action) {
+
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="main">
+        <div class="top2 ub ub-pc ub-ac2">
+            <img id="return" src="http://wx2.xhchat.cn/img/%E8%BF%94%E5%9B%9E%E7%AE%AD%E5%A4%B4.93b021b8.png" />
+            <img id="refresh" src="~/Images/刷新.png" />
+        </div>
+        <div style="height:58px;"></div>
+        <form id="form1">
+            <div>暂无数据</div>
+        </form>
+
+
+    </div>
+</body>
+</html>

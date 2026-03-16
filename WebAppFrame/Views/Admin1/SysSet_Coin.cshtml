@@ -1,0 +1,181 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=10" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=5"></script>
+
+    <style lang="scss">
+        .range {
+            padding: 8px 3px;
+            margin-bottom: 15px;
+        }
+
+        .menu-block {
+            .menu-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                height: 48px;
+
+                .menu-item-img {
+                    width: 32px;
+                    height: 32px;
+                }
+
+                .menu-item-neme {
+                    font-size: 15px;
+                    margin-left: 12px;
+                    color: #333;
+
+                    .item-fz {
+                        color: rgb(186, 97, 255);
+                        font-size: 10px;
+                    }
+                }
+
+                .menu-item-btn {
+                    background: linear-gradient( 90deg, #8A61FF, #FE9CC0);
+                    width: 80px;
+                    height: 32px;
+                    line-height: 32px;
+                    border-radius: 4.8px;
+                    color: #fff;
+                }
+            }
+
+            .menu-line {
+                border-top: 1px solid #EEEEEE;
+            }
+        }
+        .alert_json {
+            display: none;
+            position: fixed;
+            margin: auto;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 550px;
+            height: 700px;
+            background-color: #E3E6E8;
+            border: 1px solid #999999;
+            z-index: 99;
+        }
+
+        .close {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            height: 30px;
+        }
+
+        .close span {
+            font-size: 14px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        $(function () {
+            init();
+        })
+    </script>
+
+    <script>
+        var data = '@Html.Raw(ViewData["data"])';
+        function init() {
+
+            data = JSON.parse(data);
+
+            var h = '';
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                h += `
+                      <ul class="menu-block">
+                        <li>
+                          <div class="ub ub-pc menu-item">
+                            <div class="ub-f1 ub-ae menu-item-neme">
+                              ${item.brife}
+                              ${item.cm ? `<span class="item-fz">(${item.cm})</span>` : ''}
+                              -------<span>到账${item.coin}</span>
+                            </div>
+                            <div class="ub ub-ac ub-pc menu-item-btn">
+                              ￥${item.mny}
+                            </div>
+                          </div>
+                          <div class="menu-line"></div>
+                        </li>
+                      </ul>
+                    `;
+
+            }
+
+            $("#blk").html(h);
+
+        }
+
+        function SetOnLine() {
+            var tag = confirm("确定要更新吗，这会影响到正式系统的金币支付数据");
+            if(tag)
+            {
+                //后台
+                $.ajax({
+                    type: "Get",
+                    url: "/Home/SetOnline_Coin",
+                    success:function (data) {
+                        if(data == "True"){
+                            alert("更新成功");
+                        }
+                    }
+                });
+            }
+        }
+        function show_json(data) {
+            var json_data = JSON.stringify(data);
+            document.getElementById("alert_json").style.display = 'flex';
+            document.getElementById("alert_json").style.flexDirection = 'column';
+            document.getElementById("alert_json").style.justifyContent = 'center';
+            $("#json_data").html(json_data);
+        }
+
+        function closePopup() {
+            document.getElementById("alert_json").style.display = 'none';
+        }
+    </script>
+</head>
+<body>
+    <div id="alert_json" class="alert_json">
+        <div class="close">
+            <span>json数据</span>
+            <span style="font-size: 16px;" onclick="closePopup()">关闭</span>
+        </div>
+        <textarea id="json_data" style="height: 95%; background: white; resize: none;padding:3px;"></textarea>
+    </div>
+
+    <form id="form1">
+        <div class="tools">
+            <ul class="toolbar">
+                <li class="click" onclick="SetOnLine()"><span><img src="/Images/frame/ico04.png" /></span>上线</li>
+                <li style="margin-left:10px;" class="click" onclick="show_json(data)"><span><img src="/Images/frame/ico02.png" /></span>数据</li>
+            </ul>
+        </div>
+
+        <div>购买金币配置数据</div>
+        <div id="blk" class="sys-content-border range" style="width:500px;">
+        </div>
+
+
+    </form>
+</body>
+</html>
+

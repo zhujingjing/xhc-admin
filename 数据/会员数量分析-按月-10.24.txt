@@ -1,0 +1,8 @@
+select CONVERT(char(7), dtm_pay, 120) as dtm,
+       COUNT(*) as c
+from dbo.sys_order 
+where order_state = '付款成功' and order_type='购买会员' and dtm_pay > '2023-01-01'
+group by CONVERT(char(7), dtm_pay, 120)
+order by dtm asc
+ 
+select DATEADD(MONTH, -12, GETDATE())

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>下拉框选项编辑</title>
+    <script src="~/Scripts/jquery-1.8.2.min.js?id=123"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <script src="~/Scripts/public.js"></script>
+
+    <style>
+        .txt {
+            margin: 5px;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        var id = '@ViewData["id"]';
+
+        $(function () {
+            var data = '@Html.Raw(ViewData["data"])';
+            data = data.replace(/[\r\n]/g, "");
+            if (data) {
+                data = JSON.parse(data);
+                for (var key in data) {
+                    $("#" + key).val(data[key]);
+                }
+            }
+
+            $("#btnOK").bind("click", function () {
+                doSave();
+            });
+
+            // 编辑模式下禁用key字段，防止修改
+            if (id != "") {
+                $("#key").attr("disabled", "disabled");
+            }
+        })
+
+        function doSave() {
+            var id = $("#id").val();
+            var key = $("#key").val();
+            var value = $("#value").val();
+            var category = $("#category").val();
+            var parent_key = $("#parent_key").val();
+            var parent_category = $("#parent_category").val();
+            var sort_order = $("#sort_order").val();
+            var status = $("#status").val();
+            var comment = $("#comment").val();
+
+            var send = {
+                "id": id,
+                "key": key,
+                "value": value,
+                "category": category,
+                "parent_key": parent_key,
+                "parent_category": parent_category,
+                "sort_order": sort_order,
+                "status": status,
+                "comment": comment
+            };
+            var strSend = JSON.stringify(send);
+
+            //后台
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/SaveDropdownConfig",
+                data: { "send": strSend },
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        // 刷新对应分类的缓存
+                        var category = $("#category").val();
+                        if (category) {
+                            refreshDropdownCache(category);
+                        }
+                        // 刷新父级分类的缓存
+                        var parentCategory = $("#parent_category").val();
+                        if (parentCategory) {
+                            refreshDropdownCache(parentCategory);
+                        }
+                        alert(data.msg);
+                        CloseWindow("ok");
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function CloseWindow(action) {
+            if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+            else window.close();
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+        <div style="padding: 15px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+            <table>
+                <tr>
+                    <td class="lb">id</td>
+                    <td class="ctxt">
+                        <input class="txt" type="text" id="id"  />
+                    </td>
+                </tr>
+                
+               
+
+                <tr>
+                    <td class="lb">下拉位置</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="text" id="comment" style="width:450px;"/>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">显示内容</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="text" id="value" style="width:450px;"/>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">排序</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="number" id="sort_order" value="0" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">分类</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="text" id="category" style="width:450px;" />
+                    </td>
+                </tr>
+
+                 <tr>
+                    <td class="lb">键值</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="text" id="key" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">父级分类</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="text" id="parent_category" style="width:450px;" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">父级键值</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="text" id="parent_key" style="width:450px;" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">状态</td>
+                    <td class="ctxt ">
+                        <select class="txt" id="status">
+                            <option value="1">启用</option>
+                            <option value="0">禁用</option>
+                        </select>
+                    </td>
+                </tr>
+            
+                <tr>
+                    <td class="lb"></td>
+                    <td class="ctxt ">
+                        <input class="sys-btn" type="button" id="btnOK" value="保存" />
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+    </form>
+</body>
+</html>

@@ -1,0 +1,9 @@
+D:\小火柴项目\code-admin\BLL\bin\Debug\BLL.dll
+D:\小火柴项目\code-admin\BLL\bin\Debug\BLL.pdb
+D:\小火柴项目\code-admin\BLL\bin\Debug\CommonTool.dll
+D:\小火柴项目\code-admin\BLL\bin\Debug\ConfigHelper.dll
+D:\小火柴项目\code-admin\BLL\bin\Debug\DBHelper.dll
+D:\小火柴项目\code-admin\BLL\bin\Debug\External.dll
+D:\小火柴项目\code-admin\BLL\obj\Debug\BLL.dll
+D:\小火柴项目\code-admin\BLL\obj\Debug\BLL.pdb
+D:\小火柴项目\code-admin\BLL\bin\Debug\Newtonsoft.Json.dll

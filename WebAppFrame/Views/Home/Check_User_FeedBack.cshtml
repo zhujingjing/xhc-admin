@@ -1,0 +1,340 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>用户反馈</title>
+    <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <style>
+        .ub {
+            display: flex;
+        }
+
+        .ub-ver {
+            flex-direction: column;
+        }
+
+        .ub-as {
+            justify-content: flex-start;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac1 {
+            justify-content: space-around;
+        }
+
+        .ub-ac2 {
+            justify-content: space-between;
+        }
+
+        .ub-ac3 {
+            justify-content: space-evenly;
+        }
+
+        .ub-ae {
+            justify-content: flex-end;
+        }
+
+        .ub-ps {
+            align-items: flex-start;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        .info {
+            border: .5px solid #dcdcdc;
+            background-color: #fff;
+            padding: 5px 10px;
+            border-radius: .5em;
+            margin-bottom: 15px;
+        }
+
+        .nike {
+            margin-top: 8px;
+        }
+
+        .width {
+            max-width: 80px;
+        }
+
+        td a {
+            text-decoration: none;
+        }
+
+        .photo {
+            width: 4em;
+            height: 4em;
+            border-radius: 50%;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .blue {
+            color: #32cd32;
+        }
+
+        .state {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .time-txt {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .top2 {
+            background-color: #e92162;
+            padding: 0 6px;
+            height: 50px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1;
+        }
+
+            .top2 #return {
+                width: 2em;
+                height: 2em;
+                padding: 1em 3em 1em 0;
+            }
+
+            .top2 #refresh {
+                width: 2.7em;
+                height: 2.7em;
+                padding: 1em 1em 1em 3em;
+            }
+
+        body {
+            margin: 0;
+            font-family: PingFangSC-Regular, tahoma, arial, sans-serif;
+            background-color: #F0F0F0;
+        }
+
+        #form1 {
+            padding: 8px;
+        }
+
+        img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .line {
+            border-top: 1px dashed #F0F0F0;
+            margin: 3px 0;
+        }
+
+        .infomation {
+            width: 120px;
+        }
+
+        .tx-dtl {
+            border: 1px solid #dcdcdc;
+            width: 100%;
+            padding: 2px 3px 2px 5px;
+            border-radius:5px;
+            margin-left:10px;
+        }
+
+        .operate {
+           
+        }
+
+            .operate a {
+                border-radius: .3em;
+                background-color: #e92162;
+                color: #fff;
+                width: 70px;
+                text-align: center;
+                font-size: 15px;
+                text-decoration: none;
+                padding: 5px 0;
+                margin-left:20px;
+            }
+
+        .operate2 {
+           
+        }
+
+            .operate2 a {
+                border-radius: .3em;
+                background-color: #dfdfdf;
+                color: #fff;
+                width: 70px;
+                text-align: center;
+                font-size: 15px;
+                text-decoration: none;
+                padding: 5px 0;
+                margin-left:20px;
+            }
+
+        .backlog {
+            color: #dcdcdc;
+        }
+    </style>
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        $(function () {
+            $.ajax({
+                type: "get",
+                url: "/Admin1/GetFeedBackData",
+                // data: { "id": id, "state": state },
+                success: function (data) {
+                    //console.log(data);
+                    var data = JSON.parse(data);
+                    var id, create_time, nick, photo, sex, check_state, dtm_check, brife, rst_check;
+                    var h = '';
+                    for (var i = 0; i < data.length; i++) {
+                        id = data[i]["id"];
+                        create_time = data[i]["create_time"];
+                        nick = data[i]["nick"].substring(0, 4);
+                        photo = data[i]["photo"];
+                        sex = data[i]["sex"];
+                        check_state = data[i]["check_state"];
+                        dtm_check = data[i]["dtm_check"];
+                        brife = data[i]["brife"];
+                        rst_check = data[i]["rst_check"];
+
+                        var pic = servUrl_AppData + '/photo/' + photo;
+                        var btn;
+
+                        if (check_state == "失败") {
+                            check_state = '<span class="red">' + check_state + '</span>'
+                            btn = '<div class="operate2 ub ub-pc ub-ae">\
+                                    <a href="javascript:dtl(\'' + id + '\')">详情</a>\
+                                    <a href="javascript:Check(\'' + id + '\')">审核</a>\
+                                </div>';
+                        }
+                        if (check_state == "成功") {
+                            check_state = '<span class="blue">' + check_state + '</span>'
+                            btn = '<div class="operate2 ub ub-pc ub-ae">\
+                                    <a href="javascript:dtl(\'' + id + '\')">详情</a>\
+                                    <a href="javascript:Check(\'' + id + '\')">审核</a>\
+                                </div>';
+
+                        }
+                        if (check_state == "待审核") {
+                            check_state = '<span class="backlog">' + check_state + '</span>'
+                            btn = '<div class="operate ub ub-pc ub-ae">\
+                                    <a href="javascript:dtl(\'' + id + '\')">详情</a>\
+                                    <a href="javascript:Check(\'' + id + '\')">审核</a>\
+                                </div>';
+                        }
+
+
+                        h += '<div class="info">\
+                                <div class="ub ub-ac2">\
+                                    <span class="time-txt">' + create_time + '</span>\
+                                    <span class="state">' + check_state + '</span>\
+                                </div>\
+                                <div class="line" style="margin-bottom:10px;"></div>\
+                                <div class="ub ub-ac2">\
+                                    <div class="infomation ub ub-ver ub-pc ub-ac">\
+                                        <img src="' + pic + '" />\
+                                        <div class="nike ub">\
+                                            <span>' + nick + '</span>\
+                                            (<span>'+ sex + '</span>)\
+                                        </div>\
+                                    </div>\
+                                    <div class="tx-dtl">' + brife + '</div>\
+                                </div>\
+                                <div class="ub" style="margin-top:10px;">\
+                                </div>'+btn+'</div>'
+                    }
+                    $("#form1").html(h);
+
+
+                }
+            });
+            $("#return").bind("click", function () {
+                location.href = '/Home/Check_Survey';
+            });
+
+            $("#refresh").bind("click", function () {
+                location.reload();
+            });
+        });
+
+    </script>
+
+    <script>
+        function dtl(id) {
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            var parentWidth = $(window.parent.document).find("#rightFrame").width();
+            mini.open({
+                url: "/Admin1/FeedBack_dtl/" + id,
+                showMaxButton: false,
+                title: "详情",
+                width: 360,
+                height: 600,
+                ondestroy: function (action) {
+
+                }
+            });
+        }
+
+        function Check(id) {
+            mini.open({
+                url: "/Admin1/CheckFeedBack/" + id,
+                showMaxButton: false,
+                title: "审核",
+                width: 350,
+                height: 300,
+                ondestroy: function (action) {
+                    location.reload();
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="main">
+        <div class="top2 ub ub-pc ub-ac2">
+            <img id="return" src="http://wx2.xhchat.cn/img/%E8%BF%94%E5%9B%9E%E7%AE%AD%E5%A4%B4.93b021b8.png" />
+            <img id="refresh" src="~/Images/刷新.png" />
+        </div>
+        <div style="height:58px;"></div>
+        <form id="form1">
+
+            <div class="info">
+                <div class="ub ub-ac2">
+                    <span class="time-txt">2020-12-12 16:27:30</span>
+                    <span class="state">成功</span>
+                </div>
+                <div class="line" style="margin-bottom:10px;"></div>
+                <div class="ub ub-ac2">
+                    <div class="infomation ub ub-ver ub-pc ub-ac">
+                        <img src="http://xhcapp.zhuochuangzb.com/photo/photo_girl/1001.jpg" />
+                        <div class="nike ub">
+                            <span>急急如律令</span>
+                            (<span></span>)
+                        </div>
+
+                    </div>
+                    <div class="tx-dtl"></div>
+                </div>
+
+                <div class="ub" style="margin-top:10px;">
+                    <span class="ub ub-ac ub-pc" style="width:120px;">2020-12-12<br />16:27:30</span>
+                    <textarea style="width:100%;resize: none; outline:none;border-color:#dcdcdc;color:#777; "></textarea>
+                </div>
+
+                <div class="operate ub ub-pc ub-ac2">
+                    <a>详情</a>
+                    <a>审核</a>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</body>
+</html>

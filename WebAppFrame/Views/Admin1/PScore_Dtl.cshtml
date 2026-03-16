@@ -1,0 +1,87 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <script src="~/Scripts/jquery-1.8.2.min.js?id=123"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+
+    <style>
+        .txt {
+            margin: 5px;
+            line-height: 22px;
+            width: 400px;
+            padding-left: 5px;
+            border-bottom: 1px solid #dcdcdc;
+        }
+
+        .red {
+            color: red;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        $(function () {
+            var data = '@Html.Raw(ViewData["data"])';
+            data = data.replace(/[\r\n]/g, "");
+            data = JSON.parse(data);
+            for (var key in data) {
+                $("#" + key).val(data[key]);
+
+
+                $("#" + key).html(data[key]);
+            }
+        })
+
+        function CloseWindow(action) {
+            if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+            else window.close();
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+        <div style="padding: 15px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+            <table>
+                <tr>
+                    <td class="lb">id</td>
+                    <td class="ctxt">
+                        <div class="txt" id="id"></div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">日期</td>
+                    <td class="ctxt ">
+                        <div class="txt" id="dtm"></div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">统计对象</td>
+                    <td class="ctxt ">
+
+                        <div class="txt" id="name"></div>
+                    </td>
+                </tr>
+
+                
+
+                <tr>
+                    <td class="lb">聊天总分</td>
+                    <td class="ctxt ">
+
+                        <div class="txt" id="total"></div>
+                    </td>
+                </tr>
+
+               
+            </table>
+        </div>
+    </form>
+</body>
+</html>

@@ -1,0 +1,453 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=5"></script>
+
+    <style>
+        .range {
+            padding: 8px 3px;
+            margin-bottom: 15px;
+        }
+        .img-emoji {
+            width: 80px;
+            height: 80px;
+        }
+
+        .open {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .img-gift {
+            width: 100px;
+            height: 100px;
+        }
+
+        .img-gif {
+            width: 6.7em;
+            height: 6.7em;
+            border:1px dashed #dcdcdc;
+            margin-left:3px;
+        }
+
+        .gift-ys {
+            display: flex;
+            flex-direction: column;
+            align-content: center;
+        }
+
+        .text {
+            text-align: center;
+        }
+
+        .topic {
+            line-height: 3em;
+        }
+
+        .home-color {
+            border:1px  #dcdcdc;
+            width: 12em;
+            height: 8em;
+        }
+
+        .home-bg {
+            width: 12em;
+            height: 8em;
+            border:1px dashed #dcdcdc;
+            margin-left:3px;
+        }
+        .show_btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 28px;
+            min-width: 80px;
+            line-height: 28px;
+            border: 1px solid gray;
+            background: RGB(62, 175, 224);
+            cursor: pointer;
+            color: white;
+            border-radius: 3px;
+        }
+
+        .alert_json {
+            display: none;
+            position: fixed;
+            margin: auto;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 550px;
+            height: 700px;
+            background-color: #E3E6E8;
+            border: 1px solid #999999;
+            z-index: 99;
+        }
+
+        .close {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            height: 30px;
+        }
+       .close span {
+           font-size: 14px;
+       }
+    </style>
+
+    <script type="text/javascript">
+        $(function () {
+            init();
+        })
+    </script>
+
+    <script>
+        var data = '@Html.Raw(ViewData["data"])';
+        data = JSON.parse(data);
+
+        var emoji_1 = data.emoji_1;
+        var emoji_2 = data.emoji_2;
+
+        var gif_boy = data.gif_boy;
+        var gif_girl = data.gif_girl;
+
+        var gift_1 = data.gift_1;
+        var gift_2 = data.gift_2;
+
+        var topic = data.topic;
+
+        var hello_gif_boy = data.hello_boy;
+        var hello_gif_girl = data.hello_girl;
+
+        var home = data.home;
+
+        function init() {
+            init_topic(topic);
+            init_home_bg(home);
+
+        }
+
+        //emoji_1 加载
+        function init_emoji1(data) {
+            var emoji_1 = data;
+            var h = '<div class="open">';
+            for (var i = 0; i < 15; i++) {
+                var item = emoji_1[i];
+                if (i > 0 && (i % 5 == 0)) {
+                    h += '</div>';
+                    h += '<div class="open">';
+                }
+                h += '<img src="' + item.url + '" class="img-emoji" />';
+            }
+            h += '</div>';
+            $("#emoji_1").html(h);
+        }
+
+        //emoji_2 加载
+        function init_emoji2(data) {
+            var emoji_2 = data;
+            h = '<div class="open">';
+            for (var i = 0; i < 15; i++) {
+                var item = emoji_2[i];
+                if (i > 0 && (i % 5 == 0)) {
+                    h += '</div>';
+                    h += '<div class="open">';
+                }
+                h += '<img src="' + item.url + '" class="img-emoji" />';
+            }
+            h += '</div>';
+            $("#emoji_2").html(h);
+        }
+
+        //gif_boy
+        function init_gif_boy(data) {
+            var gif_boy = data;
+            var h = '';
+            for (var i = 0; i < gif_boy.length; i++) {
+                var item = gif_boy[i];
+                h += '<img src="' + item.url + '" class="img-gif" />';
+            }
+            $("#gif_boy").html(h);
+        }
+
+        //gif_girl
+        function init_gif_girl(data) {
+            var gif_girl = data;
+            var h = '';
+            for (var i = 0; i < gif_girl.length; i++) {
+                var item = gif_girl[i];
+                h += '<img src="' + item.url + '" class="img-gif" />';
+            }
+            $("#gif_girl").html(h);
+        }
+
+        //gift1 加载
+        function init_gift1(data) {
+            var gift1 = data;
+            var h = '<div class="open">';
+            for (var i = 0; i < 8; i++) {
+                var item = gift1[i];
+                if (i > 0 && (i % 4 == 0)) {
+                    h += '</div>';
+                    h += '<div class="open">';
+                }
+                h += '<div class="gift-ys">'
+                  +  '<img class="img-gift" src="'+ item.url +'" />'
+                  +  '<div class="text">'+ item.name +'</div>'
+                  +  '<div class="text">'+ item.coin +'金币</div>'
+                  +  '</div>';
+            }
+            h += '</div>';
+            $("#gift_1").html(h);
+        }
+
+        //gift2 加载
+        function init_gift2(data) {
+            var gift2 = data;
+            var h = '<div class="open">';
+            for (var i = 0; i < 8; i++) {
+                var item = gift2[i];
+                if (i > 0 && (i % 4 == 0)) {
+                    h += '</div>';
+                    h += '<div class="open">';
+                }
+                h += '<div class="gift-ys">'
+                  + '<img class="img-gift" src="' + item.url + '" />'
+                  + '<div class="text">' + item.name + '</div>'
+                  + '<div class="text">' + item.coin + '金币</div>'
+                  + '</div>';
+            }
+            h += '</div>';
+            $("#gift_2").html(h);
+        }
+
+        //topic
+        function init_topic(data) {
+            var topic = data;
+            var h = '';
+            for (var i = 0; i < topic.length; i++) {
+                var item = topic[i];
+                h += '<div class="topic">'+ item +'</div>';
+            }
+            $("#topic").html(h);
+        }
+
+
+        //gif_boy
+        function init_gif_hello(data,id) {
+            var gif_boy = data;
+            var h = '';
+            for (var i = 0; i < gif_boy.length; i++) {
+                var item = gif_boy[i];
+                h += '<img src="' + item + '" class="img-gif" />';
+            }
+            $("#"+id).html(h);
+        }
+
+
+        //home
+        function init_home_bg(data) {
+            var home = data;
+            if (!home) {
+                return false;
+            }
+            var txt = '';
+            for (var key in data) {
+                txt += "<div><span style='color:#666;'>" + key + "</span>: <span style='color:red;'>" + data[key] + "</span></div>";
+            }
+            $("#home_json").html(txt);
+
+            if (home.bg_img) {
+                var h = '<img src="' + home.bg_img + '" class="home-bg" />';
+                $("#home_bg_img").html(h);
+            }
+            if (home.bg_color) {
+                var h = '<div  class="home-color"  />';
+                $("#home_bg_color").html(h);
+                $("#home_bg_color").css("background-color", home.bg_color);
+            }
+            if (home.top_img) {
+                var h = '<img src="' + home.top_img + '" class="home-bg" />';
+                $("#home_top_img").html(h);
+            }
+            if (home.top_color) {
+                var h = '<div  class="home-color"/>';
+                $("#home_top_color").html(h);
+                $("#home_top_color").css("background-color", home.top_color);
+            }
+
+        }
+
+
+        function SetOnLine() {
+            var tag = confirm("确定要更新吗，这会影响到正式系统的相关图片显示");
+            if(tag)
+            {
+                //后台
+                $.ajax({
+                    type: "Get",
+                    url: "/Home/SetOnline",
+                    success:function (data) {
+                        if(data == "True"){
+                            alert("更新成功");
+                        }
+                    }
+                });
+            }
+        }
+
+        function show_emoji1() {
+            document.getElementById('emoji1_show').style.display = 'none';
+            document.getElementById('emoji_1').style.display = 'block';
+            init_emoji1(emoji_1);
+        }
+
+        function show_emoji2() {
+            document.getElementById('emoji2_show').style.display = 'none';
+            document.getElementById('emoji_2').style.display = 'block';
+            init_emoji2(emoji_2);
+        }
+
+        function show_gif_boy() {
+            document.getElementById('gif_boy_show').style.display = 'none';
+            document.getElementById('gif_boy').style.display = 'block';
+            init_gif_boy(gif_boy);
+        }
+
+        function show_gif_girl() {
+            document.getElementById('gif_girl_show').style.display = 'none';
+            document.getElementById('gif_girl').style.display = 'block';
+            init_gif_girl(gif_girl);
+        }
+
+        function show_gift_1() {
+            document.getElementById('gift_1_show').style.display = 'none';
+            document.getElementById('gift_1').style.display = 'block';
+            init_gift1(gift_1);
+        }
+
+        function show_gift_2() {
+            document.getElementById('gift_2_show').style.display = 'none';
+            document.getElementById('gift_2').style.display = 'block';
+            init_gift2(gift_2);
+        }
+
+        function show_hello_boy() {
+            document.getElementById('gif_helloBoy_show').style.display = 'none';
+            document.getElementById('gif_hello_boy').style.display = 'block';
+            init_gif_hello(hello_gif_boy, "gif_hello_boy");
+        }
+
+        function show_hello_girl() {
+            document.getElementById('gif_helloGirl_show').style.display = 'none';
+            document.getElementById('gif_hello_girl').style.display = 'block';
+            init_gif_hello(hello_gif_girl, "gif_hello_girl");
+        }
+
+        function show_json(data) {
+            var json_data = JSON.stringify(data);
+            document.getElementById("alert_json").style.display = 'flex';
+            document.getElementById("alert_json").style.flexDirection = 'column';
+            document.getElementById("alert_json").style.justifyContent = 'center';
+            $("#json_data").html(json_data);
+        }
+
+        function closePopup() {
+            document.getElementById("alert_json").style.display = 'none';
+        }
+
+    </script>
+</head>
+<body>
+    <div id="alert_json" class="alert_json" >
+        <div class="close">
+            <span>json数据</span>
+            <span style="font-size: 16px;" onclick="closePopup()">关闭</span>
+        </div>
+        <textarea id="json_data" style="height: 95%; background: white; resize: none;padding:3px;"></textarea>
+    </div>
+
+    <form id="form1">
+        <div class="tools">
+            <ul class="toolbar">
+                <li class="click" onclick="SetOnLine()"><span><img src="/Images/frame/ico04.png" /></span>上线</li>
+            </ul>
+        </div>
+
+        <div>表情1<a onclick="show_json(emoji_1)">(显示json)</a></div>
+        <div id="emoji_1" class="sys-content-border range" style="width:600px; display:none;"></div>
+        <div id="emoji1_show" class="sys-content-border range" style="width: 600px; height: 250px; display: flex; justify-content: center; align-items: center; border: 1px solid #333;"><span class="show_btn" onclick="show_emoji1()">显示</span></div>
+
+        <div>表情2<a onclick="show_json(emoji_2)">(显示json)</a></div>
+        <div id="emoji_2" class="sys-content-border range" style="width: 600px; display: none;"></div>
+        <div id="emoji2_show" class="sys-content-border range" style="width: 600px; height: 250px; display: flex; justify-content: center; align-items: center; border: 1px solid #333;"><span class="show_btn" onclick="show_emoji2()">显示</span></div>
+
+        <div>动图-男<a onclick="show_json(gif_boy)">(显示json)</a></div>
+        <div id="gif_boy" class="sys-content-border range" style="display: none;"></div>
+        <div id="gif_boy_show" class="sys-content-border range" style="height: 280px; display: flex; justify-content: center; align-items: center; border: 1px solid #333;"><span class="show_btn" onclick="show_gif_boy()">显示</span></div>
+
+        <div>动图-女<a onclick="show_json(gif_girl)">(显示json)</a></div>
+        <div id="gif_girl" class="sys-content-border range" style="display: none;"></div>
+        <div id="gif_girl_show" class="sys-content-border range" style="height: 280px; display: flex; justify-content: center; align-items: center; border: 1px solid #333;"><span class="show_btn" onclick="show_gif_girl()">显示</span></div>
+
+        <div>礼物1<a onclick="show_json(gift_1)">(显示json)</a></div>
+        <div id="gift_1" class="sys-content-border range" style="width: 800px; display: none;"></div>
+        <div id="gift_1_show" class="sys-content-border range" style="width: 800px; height: 280px; display: flex; justify-content: center; align-items: center; border: 1px solid #333;"><span class="show_btn" onclick="show_gift_1()">显示</span></div>
+
+        <div>礼物2<a onclick="show_json(gift_2)">(显示json)</a></div>
+        <div id="gift_2" class="sys-content-border range" style="width: 800px; display: none;"></div>
+        <div id="gift_2_show" class="sys-content-border range" style="width: 800px; height: 280px; display: flex; justify-content: center; align-items: center; border: 1px solid #333;"><span class="show_btn" onclick="show_gift_2()">显示</span></div>
+
+        <div>话题卡</div>
+        <div id="topic" class="sys-content-border range">
+            <div>
+                xxxxxxxxxxx
+            </div>
+            <div>
+                xxxxxxxxxxx
+            </div>
+            <div>
+                xxxxxxxxxxx
+            </div>
+        </div>
+
+        <div>动图-hello-boy<a onclick="show_json(hello_gif_boy)">(显示json)</a></div>
+        <div id="gif_hello_boy" class="sys-content-border range" style="display: none;"></div>
+        <div id="gif_helloBoy_show" class="sys-content-border range" style=" height: 548px; display: flex; justify-content: center; align-items: center; border: 1px solid #333;"><span class="show_btn" onclick="show_hello_boy()">显示</span></div>
+
+        <div>动图-hello-girl<a onclick="show_json(hello_gif_girl)">(显示json)</a></div>
+        <div id="gif_hello_girl" class="sys-content-border range" style="display: none;"></div>
+        <div id="gif_helloGirl_show" class="sys-content-border range" style=" height: 548px; display: flex; justify-content: center; align-items: center; border: 1px solid #333;"><span class="show_btn" onclick="show_hello_girl()">显示</span></div>
+
+        <div>
+            <div>首页背景</div>
+            <div class="sys-content-border range" style="height:100px;">
+                <div id="home_bg_img" style="float:left; margin-right: 2em;"></div>
+                <div id="home_bg_color" style="float:left; margin-right: 2em;"></div>
+                <div id="home_top_img" style="float:left; margin-right: 2em;"></div>
+                <div id="home_top_color" style="float:left; margin-right: 2em;"></div>
+                <div id="home_json" style="float:left; margin-right: 2em;"></div>
+            </div>
+        </div>
+
+
+
+
+
+    </form>
+</body>
+</html>
+

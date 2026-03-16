@@ -1,0 +1,55 @@
+--金币
+select CONVERT(char(10), dtm, 120) as dtm, type, type_dtl,
+       COUNT(*) as c1,
+       sum(amount) as c2
+from dbo.coin
+where dtm >= '2024-11-26 00:00:00' and dtm <= '2024-11-26 23:59:59'
+group by CONVERT(char(10), dtm, 120),type, type_dtl
+
+
+--积分
+select CONVERT(char(10), dtm, 120) as dtm, type, type_dtl,
+       COUNT(*) as c1,
+       sum(amount) as c2
+from dbo.score
+where dtm >= '2024-11-26 00:00:00' and dtm <= '2024-11-26 23:59:59'
+group by CONVERT(char(10), dtm, 120),type, type_dtl
+
+
+--金币统计
+select CONVERT(char(10), dtm, 120) as dtm,
+       sum(case when type = '增加' then amount else 0 end) as coin_add,  
+       sum(case when type = '增加' and type_dtl = '购买' then amount else 0 end) as coin_add_buy,
+       sum(case when type = '增加' and type_dtl = '任务奖励-会员' then amount else 0 end) as coin_add_vip,
+       sum(case when type = '增加' and type_dtl = '签到' then amount else 0 end) as coin_add_sign,
+       sum(case when type = '增加' and (type_dtl = 'newuser_1' or type_dtl = 'newuser_2' or type_dtl = '任务奖励-打招呼' or type_dtl = '任务奖励-回复' or type_dtl = '任务奖励-在线' or type_dtl = '任务奖励-登录') then amount else 0 end) as coin_add_task,
+       
+       
+       sum(case when type = '减少' then amount else 0 end) as coin_sub,
+       sum(case when type = '减少' and type_dtl = '发送礼物' then amount else 0 end) as coin_sub_gift,
+       sum(case when type = '减少' and type_dtl = '消息支出' then amount else 0 end) as coin_sub_msg,
+       sum(case when type = '减少' and type_dtl = '添加好友' then amount else 0 end) as coin_sub_friend
+       
+from dbo.coin 
+where dtm >= '2024-11-3' and dtm <= '2024-12-3'
+group by CONVERT(char(10), dtm, 120)
+order by dtm asc
+
+--积分统计
+
+select CONVERT(char(10), dtm, 120) as dtm,
+       sum(case when type = '增加' then amount else 0 end) as score_add,  
+       sum(case when type = '增加' and type_dtl = '收到礼物' then amount else 0 end) as score_add_gift,
+       sum(case when type = '增加' and type_dtl = '消息收入' then amount else 0 end) as score_add_msg,
+       sum(case when type = '增加' and type_dtl = '同意添加好友' then amount else 0 end) as score_add_friend,
+       sum(case when type = '增加' and (type_dtl = '任务奖励-打招呼' or type_dtl = '任务奖励-回复' or type_dtl = '任务奖励-在线' or type_dtl = '任务奖励-登录') then amount else 0 end) as score_add_task,
+       
+       
+       sum(case when type = '减少' then amount else 0 end) as score_sub,
+       sum(case when type = '减少' and type_dtl = '提现' then amount else 0 end) as score_sub_tx,
+       sum(case when type = '减少' and type_dtl = '兑换金币' then amount else 0 end) as score_sub_coin
+       
+from dbo.score 
+where dtm >= '2024-11-3' and dtm <= '2024-12-3'
+group by CONVERT(char(10), dtm, 120)
+order by dtm asc

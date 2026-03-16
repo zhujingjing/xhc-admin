@@ -1,0 +1,600 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .blue {
+            display: inline-block;
+            color: blue;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .red {
+            display: inline-block;
+            color: red;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 180px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .tag-a {
+            color: blue;
+            font-size: 16px;
+        }
+
+        a:visited {
+            color: red;
+        }
+
+        .title {
+            margin: 10px 0;
+            font-size: 20px;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#container").height(parentHeight - 20);
+            init();
+        })
+
+        function init() {
+            var coin_sum = '@Html.Raw(ViewData["coin_sum"])';
+            var score_sum = '@Html.Raw(ViewData["score_sum"])';
+            coin_sum = JSON.parse(coin_sum);
+            score_sum = JSON.parse(score_sum);
+            var item;
+            for (var i = 0; i < coin_sum.length; i++) {
+                item = coin_sum[i];
+                item.coin_other = item.coin_add - (item.coin_add_buy + item.coin_add_vip + item.coin_add_sign + item.coin_add_task);
+                item.coin_sub_other = item.coin_sub - (item.coin_sub_gift + item.coin_sub_msg + item.coin_sub_friend);
+            }
+            for (var i = 0; i < score_sum.length; i++) {
+                item = score_sum[i];
+                item.score_add_other = item.score_add - (item.score_add_gift + item.score_add_msg + item.score_add_friend + item.score_add_task);
+                item.score_sub_other = item.score_sub - (item.score_sub_tx + item.score_sub_coin);
+            }
+            //线图
+            showLineCoinAdd(coin_sum);
+            showLineCoinSub(coin_sum);
+
+            showLineScoreAdd(score_sum);
+            showLineScoreSub(score_sum);
+
+        }
+
+    </script>
+    <script>
+        function showLineCoinAdd(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            //图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8;
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF";
+            graph.valueField = "coin_add";
+            graph.title = "金币增加";
+            graph.balloonText = "截止到[[category]]点累计金币增加<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "coin_sub"; //纵轴显示内容
+                graph.title = "金币减少";
+                graph.balloonText = "截止到[[category]]点累计金币减少<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "coin_add_buy"; //纵轴显示内容
+                graph.title = "购买";
+                graph.balloonText = "截止到[[category]]点累计购买<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "coin_add_sign"; //纵轴显示内容
+                graph.title = "签到";
+                graph.balloonText = "截止到[[category]]点累计签到<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "coin_add_task"; //纵轴显示内容
+                graph.title = "任务";
+                graph.balloonText = "截止到[[category]]点累计任务<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "coin_add_vip"; //纵轴显示内容
+                graph.title = "会员";
+                graph.balloonText = "截止到[[category]]点累计会员<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "coin_other"; //纵轴显示内容
+                graph.title = "其他";
+                graph.balloonText = "截止到[[category]]点累计其他<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+
+        function showLineCoinSub(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            //图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8;
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#ff0099";
+            graph.valueField = "coin_sub";
+            graph.title = "金币减少";
+            graph.balloonText = "截止到[[category]]点累计金币增加<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "coin_add"; //纵轴显示内容
+                graph.title = "金币增加";
+                graph.balloonText = "截止到[[category]]点累计金币增加<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "coin_sub_gift"; //纵轴显示内容
+                graph.title = "礼物";
+                graph.balloonText = "截止到[[category]]点累计礼物<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "coin_sub_msg"; //纵轴显示内容
+                graph.title = "消息";
+                graph.balloonText = "截止到[[category]]点累计消息<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "coin_sub_friend"; //纵轴显示内容
+                graph.title = "好友";
+                graph.balloonText = "截止到[[category]]点累计好友<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "coin_sub_other"; //纵轴显示内容
+                graph.title = "其他";
+                graph.balloonText = "截止到[[category]]点累计其他<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer1");
+        };
+
+        function showLineScoreAdd(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            //图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8;
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF";
+            graph.valueField = "score_add";
+            graph.title = "积分增加";
+            graph.balloonText = "截止到[[category]]点累计积分增加<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "score_sub"; //纵轴显示内容
+                graph.title = "积分减少";
+                graph.balloonText = "截止到[[category]]点累计积分减少<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "score_add_gift"; //纵轴显示内容
+                graph.title = "礼物";
+                graph.balloonText = "截止到[[category]]点累计礼物<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "score_add_msg"; //纵轴显示内容
+                graph.title = "消息";
+                graph.balloonText = "截止到[[category]]点累计消息<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "score_add_friend"; //纵轴显示内容
+                graph.title = "好友";
+                graph.balloonText = "截止到[[category]]点累计好友<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "score_add_task"; //纵轴显示内容
+                graph.title = "任务";
+                graph.balloonText = "截止到[[category]]点累计任务<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "score_add_other"; //纵轴显示内容
+                graph.title = "其他";
+                graph.balloonText = "截止到[[category]]点累计其他<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer2");
+        };
+
+        function showLineScoreSub(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            //图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8;
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#ff0099";
+            graph.valueField = "score_sub";
+            graph.title = "积分减少";
+            graph.balloonText = "截止到[[category]]点累计积分减少<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "score_add"; //纵轴显示内容
+                graph.title = "积分增加";
+                graph.balloonText = "截止到[[category]]点累计积分增加<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "score_sub_tx"; //纵轴显示内容
+                graph.title = "提现";
+                graph.balloonText = "截止到[[category]]点累计提现<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "score_sub_coin"; //纵轴显示内容
+                graph.title = "兑换金币";
+                graph.balloonText = "截止到[[category]]点累计兑换金币<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "score_sub_other"; //纵轴显示内容
+                graph.title = "其他";
+                graph.balloonText = "截止到[[category]]点累计其他<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer3");
+        };
+    </script>
+
+</head>
+<body>
+    <div id="container">
+        <span class="title">金币增加趋势图</span>
+        <div id="divContainer" style="width: 99%; height:600px; border: solid 1px #dcdcdc">
+
+        </div>
+        <span class="title">金币减少趋势图</span>
+        <div id="divContainer1" style="width: 99%; height:600px; border: solid 1px #dcdcdc">
+
+        </div>
+        <span class="title">积分增加趋势图</span>
+        <div id="divContainer2" style="width: 99%; height: 600px; border: solid 1px #dcdcdc">
+
+        </div>
+        <span class="title">积分减少趋势图</span>
+        <div id="divContainer3" style="width: 99%; height: 600px; border: solid 1px #dcdcdc">
+
+        </div>
+    </div>
+    
+</body>
+</html>
+
+

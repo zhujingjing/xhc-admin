@@ -1,0 +1,96 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=6"></script>
+
+    <style>
+             .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 220px;
+        }
+
+    </style>
+
+
+    <script>
+        
+        function doUpdate() {
+
+            var tag = confirm("这是敏感操作,确定要找回吗？");
+
+            if (!tag) {
+                return false
+            }
+
+            var new_uid = $("#new_uid").val().trim();
+            var new_openid = $("#new_openid").val().trim();
+
+            var old_uid = $("#old_uid").val().trim();
+            var old_openid = $("#old_openid").val().trim();
+
+            //检测参数
+            if (new_uid && new_openid && old_uid && old_openid)
+            {
+                //后台修改
+                $.ajax({
+                    type: "POST",
+                    url: "/Admin1/FindAccount",
+                    data: { "new_uid": new_uid, "new_openid": new_openid, "old_uid": old_uid, "old_openid": old_openid },
+                    success: function (data) {
+                        data = JSON.parse(data)
+                        if (data.state == "1") {
+                            alert("成功");
+                        }
+                        else {
+                            alert(data.msg);
+                        }
+                    }
+                });
+            }else
+            {
+                alert("4个参数不能为空");
+            }
+
+           
+        }
+
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">账号找回</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+            新uid: <input type="text" class="txt" id="new_uid" />&nbsp;&nbsp;&nbsp;&nbsp;
+            新opendid: <input type="text" class="txt" id="new_openid" />&nbsp;&nbsp;&nbsp;&nbsp; <br />
+            
+            旧uid: <input type="text" class="txt" id="old_uid" />&nbsp;&nbsp;&nbsp;&nbsp;
+            旧opendid: <input type="text" class="txt" id="old_openid" />&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input id="btn_search" type="button" class="sys-btn" value="找回" onclick="doUpdate()" />
+        </div>
+
+        
+    </form>
+</body>
+</html>

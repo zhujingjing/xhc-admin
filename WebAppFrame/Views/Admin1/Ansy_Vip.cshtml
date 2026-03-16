@@ -1,0 +1,252 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .blue {
+            display: inline-block;
+            color: blue;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .red {
+            display: inline-block;
+            color: red;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .item {
+            display: flex;
+            flex-direction: column;
+            padding: 5px 0;
+            margin-right: 20px;
+            background-color: #FF9502;
+        }
+
+        .num {
+            display: flex;
+            justify-content:center;
+            align-items: center;
+            min-width: 180px;
+            height: 60px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .tips {
+            display: flex;
+            justify-content: center;
+            height: 30px;
+            font-size: 12px;
+            color: #888;
+            color: #fff;
+        }
+
+    </style>
+
+    <script type="text/javascript">
+        var data = '@Html.Raw(ViewData["data"])';
+        var data_line = '@Html.Raw(ViewData["data_line"])';
+        var data_lineMonth = '@Html.Raw(ViewData["data_lineMonth"])';
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#container").height(parentHeight - 180);
+            init();
+        })
+
+        function init() {
+            data = JSON.parse(data);
+            data_line = JSON.parse(data_line);
+            data_lineMonth = JSON.parse(data_lineMonth);
+
+            //统计
+            $("#c_total").html(data.c_total);
+            $("#c_month_pre").html(data.c_month_pre);
+            $("#c_month_cur").html(data.c_month_cur);
+            $("#c_yest").html(data.c_yest);
+            $("#c_today").html(data.c_today);
+            $("#c_canuse").html(data.c_canuse);
+            //线图
+            showLine(data_line);
+
+            showLine2(data_lineMonth)
+        }
+
+
+    </script>
+    <script>
+        function showLine(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            //图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8;
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF";
+            graph.valueField = "c";
+            graph.title = "会员数(天)";
+            graph.balloonText = "[[category]]会员数<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+
+
+        };
+
+        function showLine2(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            //图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8;
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF";
+            graph.valueField = "c";
+            graph.title = "会员数（月）";
+            graph.balloonText = "[[category]]会员数<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer2");
+
+
+        };
+
+        function search() {
+            
+        }
+    </script>
+
+</head>
+<body>
+    <form id="form1">
+        <ul id="desc" style="display:flex;  margin-bottom: 5px;">
+            <li class="item">
+                <div class="num" id="c_total"></div>
+                <div class="tips">累计</div>
+            </li>
+            <li class="item">
+                <div class="num" id="c_month_pre"></div>
+                <div class="tips">上个月</div>
+            </li>
+            <li class="item" style="background-color: #00BBFF;">
+                <div class="num" id="c_month_cur"></div>
+                <div class="tips">本月</div>
+            </li>
+            <li class="item" style="background-color: #00BBFF;">
+                <div class="num" id="c_yest"></div>
+                <div class="tips">昨日</div>
+            </li>
+            <li class="item" style="background-color: #00BBFF;">
+                <div class="num" id="c_today"></div>
+                <div class="tips">今日</div>
+            </li>
+            <li class="item" style="background-color:blue;">
+                <div class="num" id="c_canuse"></div>
+                <div class="tips">当前会员</div>
+            </li>
+        </ul>
+
+        <div id="container" style="display: flex; justify-content: space-between;">
+            <div id="divContainer" style="width: 49%; height: 100%; border: solid 1px #dcdcdc;"></div>
+            <div id="divContainer2" style="width: 49%; height: 100%; border: solid 1px #dcdcdc"></div>
+        </div>
+    </form>
+
+</body>
+</html>
+
+

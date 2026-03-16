@@ -1,0 +1,255 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=5"></script>
+
+    <style lang="scss">
+        span {
+            font-size: 14px;
+        }
+
+        .range {
+            padding: 8px 3px;
+            margin-bottom: 15px;
+        }
+
+        .img-hello {
+            width: 80px;
+            height: 80px;
+            margin: 5px;
+        }
+
+        #hello_boy2 {
+            display: none;
+        }
+
+        #boy_gif {
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #hello_girl2 {
+            display: none;
+        }
+
+        #girl_gif {
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .tit {
+            font-size: 16px;
+        }
+        .show_btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 28px;
+            min-width: 80px;
+            line-height: 28px;
+            border: 1px solid gray;
+            background: RGB(62, 175, 224);
+            cursor: pointer;
+            color: white;
+            border-radius: 3px;
+        }
+        .alert_json {
+            display: none;
+            position: fixed;
+            margin: auto;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 550px;
+            height: 700px;
+            background-color: #E3E6E8;
+            border: 1px solid #999999;
+            z-index: 99;
+        }
+
+        .close {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            height: 30px;
+        }
+
+        .close span {
+            font-size: 14px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        $(function () {
+            init();
+        })
+    </script>
+
+    <script>
+        var data = '@Html.Raw(ViewData["data"])';
+        var boy_hello_text = [];
+        var boy_hello_gif = [];
+        var girl_hello_text = [];
+        var girl_hello_gif = [];
+
+        function init() {
+           data = JSON.parse(data);
+            var hello_data = data;
+
+            boy_hello_text = hello_data.boy.filter(item => item.msg_type === "text");
+            boy_hello_gif = hello_data.boy.filter(item => item.msg_type === "gif");
+
+            girl_hello_text = hello_data.girl.filter(item => item.msg_type === "text");
+            girl_hello_gif = hello_data.girl.filter(item => item.msg_type === "gif");
+
+            init_BoyText(boy_hello_text);
+            init_GirlText(girl_hello_text);
+        }
+
+        function init_BoyText(data) {
+            var h = '<div style="height: 200px; overflow-y: auto;">';
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                h += '<p>' + item.txt + '</p>';
+            }
+            h += '</div>';
+            $("#hello_boy").html(h);
+        }
+
+
+        function init_GirlText(data) {
+            var h = '<div style="height: 200px; overflow-y: auto;">';
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                h += '<p>' + item.txt + '</p>';
+            }
+            h += '</div>';
+            $("#hello_girl").html(h);
+        }
+
+        function SetOnLine() {
+            var tag = confirm("确定要更新吗，这会影响到正式系统的相关图片显示");
+            if(tag)
+            {
+                //后台
+                $.ajax({
+                    type: "Get",
+                    url: "/Home/SetOnline_SayHelloMsg",
+                    success: function (data) {
+                        if (data == "True") {
+                            alert("更新成功");
+                        }
+                    }
+                });
+            }
+        }
+
+        function showBoy() {
+            document.getElementById('boy_gif').style.display = 'none';
+            document.getElementById('hello_boy2').style.display = 'block';
+            init_BoyGif();
+        }
+
+        function showGirl() {
+            document.getElementById('girl_gif').style.display = 'none';
+            document.getElementById('hello_girl2').style.display = 'block';
+            init_GrilGif();
+        }
+
+        function init_BoyGif() {
+            var h2 = '<div>';
+            for (var j = 0; j < boy_hello_gif.length; j++) {
+                var item = boy_hello_gif[j];
+                h2 += '<img src="' + item.txt + '" class="img-hello" />';
+            }
+            h2 += '</div>';
+            $("#hello_boy2").html(h2);
+        }
+
+        function init_GrilGif() {
+            var h2 = '<div>';
+            for (var j = 0; j < girl_hello_gif.length; j++) {
+                var item = girl_hello_gif[j];
+                h2 += '<img src="' + item.txt + '" class="img-hello" />';
+            }
+            h2 += '</div>';
+            $("#hello_girl2").html(h2);
+        }
+
+        function show_json(data) {
+            var json_data = JSON.stringify(data);
+            document.getElementById("alert_json").style.display = 'flex';
+            document.getElementById("alert_json").style.flexDirection = 'column';
+            document.getElementById("alert_json").style.justifyContent = 'center';
+            $("#json_data").html(json_data);
+        }
+
+        function closePopup() {
+            document.getElementById("alert_json").style.display = 'none';
+        }
+    </script>
+</head>
+<body>
+    <div id="alert_json" class="alert_json">
+        <div class="close">
+            <span>json数据</span>
+            <span style="font-size: 16px;" onclick="closePopup()">关闭</span>
+        </div>
+        <textarea id="json_data" style="height: 95%; background: white; resize: none;padding:3px;"></textarea>
+    </div>
+
+
+    <form id="form1">
+        <div class="tools">
+            <ul class="toolbar">
+                <li class="click" onclick="SetOnLine()"><span><img src="/Images/frame/ico04.png" /></span>上线</li>
+                <li style="margin-left:10px;" class="click" onclick="show_json(data)"><span><img src="/Images/frame/ico02.png" /></span>数据</li>
+            </ul>
+        </div>
+
+        <div class="tit">男生打招呼(文本)</div>
+        <div class="sys-content-border range">
+            <div id="hello_boy" style="width: 400px;"></div>
+        </div>
+        <div class="tit">男生打招呼（表情）</div>
+        <div class="sys-content-border range">
+            <div id="hello_boy2"></div>
+
+            <div id="boy_gif" style="border: 1px solid #333;">
+                <span class="show_btn" onclick="showBoy()">显示</span>
+            </div>
+        </div>
+
+        <div class="tit">女生打招呼（文本）</div>
+        <div class="sys-content-border range">
+            <div id="hello_girl" style="width: 400px;"></div>
+        </div>
+        <div class="tit">女生打招呼（表情）</div>
+        <div class="sys-content-border range">
+            <div id="hello_girl2"></div>
+
+            <div id="girl_gif" style="border: 1px solid #333;">
+                <span class="show_btn" onclick="showGirl()">显示</span>
+            </div>
+        </div>
+
+    </form>
+</body>
+</html>
+

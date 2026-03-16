@@ -1,0 +1,571 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/Style_chart.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=77"></script>
+    <style>
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        #chat_dtl {
+            overflow-x: hidden;
+            border: solid 1px #dcdcdc;
+            background-color: RGB(239,239,244);
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .size-x {
+            font-size: 14px;
+            color: blue;
+        }
+
+        .size-xx {
+            font-size: 14px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .size-xxx {
+            font-size: 18px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .gray {
+            color: red;
+        }
+
+        .msg-rece {
+            display: flexbox;
+            border: solid 1px red;
+            padding: 8px;
+            color: white;
+            background-color: black;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .lb {
+            color: #666;
+            margin-left: 20px;
+        }
+
+        .txt {
+            margin-left: 6px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .right {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .left {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .off {
+            position: fixed;
+            bottom: 30px;
+            right: 80px;
+            padding: 5px 10px;
+            background-color: #e92162;
+            color: #fff;
+            border-radius: 5px;
+            width: 400px;
+            text-align: center;
+        }
+
+        .msg-more {
+            text-align: center;
+            color: blue;
+            cursor: pointer;
+        }
+
+        .message-text {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+
+        .fg-line {
+            text-align: center;
+            color: #808080;
+            background: #dcdcdc;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        var grid;
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent).height();
+            $("#datagrid1,#chat_dtl").height(parentHeight - 160);
+            mini.parse();
+            grid = mini.get("datagrid1");
+            //grid.load();
+            drawCell();
+            search();
+        })
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //时间
+                if (column.name == "time_start") {
+                    var dtm = record.time_start;
+                    if (dtm == null) { dtm = ''; }
+                    else { dtm = dtm.replace(' ', '<br/>'); }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="dtm">' + dtm + '</span>';
+                }
+
+                //是否对方发起会话
+                if (column.name == "diff_first") {
+                    var diff_first = record.diff_first;
+
+                    var txt = 0;
+                    if (diff_first == null ) {
+                        txt = '未响应';
+                    }
+                    else if (diff_first < 0) {
+                        //对方发起的会话
+                        if (diff_first <= -60) {
+                            txt = (diff_first / 60).toFixed(0) + '分钟';
+                        } else {
+                            txt = diff_first + '秒';
+                        }
+                    }
+                    else {
+                        //自己发起的
+                        if (diff_first >= 60) {
+                            txt = (diff_first / 60).toFixed(0) + '分钟';
+                        } else {
+                            txt = diff_first + '秒';
+                        }
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + txt + '</span>';
+                }
+
+                //持续时长
+                if (column.name == "sec_diff") {
+                    var time_start = record.time_start;
+                    var time_end = record.time_end;
+                    var sec_diff = record.sec_diff;
+
+                    var txt = 0;
+                    if (sec_diff) {
+                        txt = DateDiff_Txt(time_start, time_end);
+                    }
+                    else {
+                        txt = sec_diff;
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + txt + '</span>';
+                }
+
+                //消息条数
+                if (column.name == "tiaoshu") {
+                    var txt = record.tiaoshu;
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + txt + '</span>';
+                }
+
+                if (column.name == "tiaoshu_receive") {
+                    var txt = record.tiaoshu_receive;
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + txt + '</span>';
+                }
+
+
+                //消息内容
+                if (column.name == "txt") {
+                    var txt = record.txt;
+                    var type = record.type;
+                    var state = record.state;
+                    var txt_state = '';
+                    if (type.startsWith('check')) {
+                        txt = JSON.parse(txt);
+                        txt = txt.txt;
+                        e.cellStyle = "text-align:left";
+                        e.cellHtml = '<span style="color:red;">' + txt + '</span>';
+                    } else {
+                        e.cellStyle = "text-align:left";
+                        e.cellHtml = '<span style="color:blue;">' + txt + '</span>';
+                    }
+                }
+
+                if (column.name == "photo2") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo2;
+                    var nick = record.nick2;
+                    var sex = record.sex2;
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid_from + '\',500,1300)"><img src="' + photo + '" class="photo-img" /><br/>';
+                    e.cellHtml += nick + "-(" + sex + ")";
+                    e.cellHtml += "</a>";
+                }
+
+
+            });
+        }
+
+        function search() {
+            uid_from = "";
+            uid_to = "";
+            $('.messages').html('');
+            $("#btn_msg_more").hide();
+            $("#btn_msg_more_after").hide();
+
+            var start = mini.get("datestart").getText();
+            var end = mini.get("dateend").getText();
+            var type = $("#type").val();
+
+             grid.load({
+                "service_uid":"wx_1BH9UIZDAULXHIND",
+                "start": start,
+                "end": end,
+                "sort": "time_start2 desc",
+                "type": type
+            });
+        }
+
+        function jump_date(num) {
+            var d = new Date(mini.get("datestart").getText());
+            d.setDate(d.getDate() + num);
+            var dtm = formatTime(d);
+            mini.get("datestart").setValue(dtm);
+
+            var start = mini.get("datestart").getText();
+            var end = start.substr(0, 11) + "23:59:59";
+            mini.get("dateend").setValue(end);
+
+            search();
+        }
+
+        function formatTime(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            return year + '-' + month + '-' + day;
+        }
+
+        function onValueChanged() {
+            var start = mini.get("datestart").getText();
+            var end = start.substr(0, 11) + "23:59:59";
+            mini.get("dateend").setValue(end);
+        }
+
+        function onDrawSummaryCell(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+            //客户端汇总计算
+            if (e.field == "tiaoshu" || e.field == "tiaoshu_receive") {
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:12px 0; font-size:18px;color:red; font-weight: bold;">' + e.cellHtml + '</span>';
+            }
+
+        }
+
+        function onRowClick(e) {
+            var item = e.record;
+            $('.messages').html('');
+            $("#btn_msg_more").show();
+            $("#btn_msg_more_after").show();
+            photo_from = servUrl_AppData + '/photo/' + item.photo2;
+
+            uid_from = item.uid_from;
+            uid_to = item.uid_to;
+            var start = mini.get("datestart").getText();
+            var end = mini.get("dateend").getText();
+            //重置历史数据日期
+            pre_time = start;
+            front_time = start;
+
+            $.ajax({
+                type: "GET",
+                url: "/Admin1/GetChartA_B",
+                data: { "start": start, "end": end, "from": uid_from, "to": uid_to },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    show_msg(data);
+                    var htmlTxt = '<div class="fg-line">' + start.substr(0, 10) + '</div>';
+                    $(".messages").prepend(htmlTxt);
+                }
+            });
+        }
+
+
+    </script>
+
+    <script type="text/javascript">
+        var photo_from = "";
+
+        var uid_from = "";
+        var uid_to = "";
+
+        var pre_time = '@ViewData["start"]';
+        var after_time = '@ViewData["end"]';
+
+        function show_msg(data) {
+            for (var i = 0; i < data.length; i++) {
+                //跳过探测消息
+                if (data[i].type == "sys_probe") {
+                    continue;
+                }
+                if (data[i].uid_to == uid_to) {
+                    appendHistory("3", data[i], 1);
+                }
+                if (data[i].uid_to == uid_from) {
+                    appendHistory("2", data[i], 1);
+                }
+
+            }
+        }
+
+        function appendHistory(txtType, data, pos) {
+            var txt = data.txt;
+            var msg_type = data.type;
+            if (msg_type == "pic" || msg_type == "gif" || msg_type == "emoji" || msg_type == "gift") {
+                txt = "<img src='" + txt + "' style='width:100px;' />";
+            }
+            if (msg_type.startsWith('check')) {
+                msg = JSON.parse(data.txt);
+                txt = msg.txt;
+            }
+
+            if (data.type == "sys_kill") {
+                var kill_info = JSON.parse(txt);
+                txt = "封号消息:" + kill_info.kill_time / (1000 * 60 * 60) + "小时,原因:" + kill_info.kill_ause;
+            }
+            if (data.type == "sys_warn") {
+                txt = "警告消息:" + txt / 1000 + "秒";
+            }
+
+            var id = '';
+            var htmlTxt = '';
+            var iwidth;
+
+            var font_wt = "";
+            var time_ss = "";
+
+            if (pos == 1) {
+                var timestamp = parseInt(data.dtm.match(/\d+/)[0], 10);
+                var dtm = new Date(timestamp);
+                time_ss = formatTimestamp(dtm);
+            }
+            if (pos == -1) {
+                time_ss = data.dtm;
+                if (data.dtm.startsWith('/Date')) {
+                    var timestamp = parseInt(data.dtm.match(/\d+/)[0], 10);
+                    var dtm = new Date(timestamp);
+                    time_ss = formatTimestamp(dtm);
+                }
+                //time_ss = data.dtm.substr(10, 10); //data.dtm.replace(" ", "<br/>");
+            }
+            time_ss = time_ss.substr(10, 10);
+
+            switch (txtType) {
+
+                case "2":
+                    id = Math.floor(Math.random() * 100000);
+
+                    htmlTxt = '<div id="m' + id + '" class="message right" style="max-width: 45rem;"><div class="" style="">' + time_ss + '</div> <div class="message-text' + font_wt + '" style="max-width: 30rem;">' + txt + '</div></div>';
+                    if (pos == 1) {
+                        $(".messages").append(htmlTxt);
+                    }
+                    if (pos == -1) {
+                        $(".messages").prepend(htmlTxt);
+                    }
+
+                    iwidth = $("#m" + id + " .message-text").width() + 60;
+                    $("#m" + id + " .readSign").css({ "right": iwidth.toString() + "px", "visibility": "visible" });
+                    break;
+                //对方说话
+                case "3":
+                    id = Math.floor(Math.random() * 100000);
+                    if (msg_type.startsWith('check')) {
+                        htmlTxt = '<div id="m' + id + '" class="message left" style="max-width: 45rem;"> <img id="photo_to" style="width:50px;border-radius:50%;" src="' + photo_from + '"/> <div class="message-text' + font_wt + '" style="border-radius: 0;border-right: 2px solid red; margin-right: 10px;">' + txt + '</div><div class="" style="">' + time_ss + '</div></div>';
+                    } else {
+                        htmlTxt = '<div id="m' + id + '" class="message left" style="max-width: 45rem;"> <img id="photo_to" style="width:50px;border-radius:50%;" src="' + photo_from + '"/> <div class="message-text' + font_wt + '" style="max-width: 30rem; margin-right: 10px;" >' + txt + '</div><div class="" style="">' + time_ss + '</div></div>';
+                    }
+
+                    if (pos == 1) {
+                        $(".messages").append(htmlTxt);
+                    }
+                    if (pos == -1) {
+                        $(".messages").prepend(htmlTxt);
+                    }
+                    break;
+
+            }
+        }
+
+        //前一天
+        function history_msg_front() {
+            //后台
+            var start = pre_time;
+            var time = get_dtm(start,"front");
+            pre_time = time;
+            $.ajax({
+                type: "GET",
+                url: "/Admin1/GetChartA_B",
+                data: { "start": time + " 00:00:00", "end": time +" 23:59:59", "from": uid_from, "to": uid_to },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    dtl_history(data, uid_to, uid_from, -1);
+                    //增加一个分割线
+                    var htmlTxt = '<div class="fg-line">' + time.substr(0, 10) + '</div>';
+                    $(".messages").prepend(htmlTxt);
+                }
+            });
+
+        }
+
+        //后一天
+        function history_msg_after() {
+            //后台
+            var start = front_time;
+            var time = get_dtm(start, "after");
+            front_time = time;
+            $.ajax({
+                type: "GET",
+                url: "/Admin1/GetChartA_B",
+                data: { "start": time + " 00:00:00", "end": time + " 23:59:59", "from": uid_from, "to": uid_to },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    //增加一个分割线
+                    var htmlTxt = '<div class="fg-line">' + time.substr(0, 10) + '</div>';
+                    $(".messages").append(htmlTxt);
+                    var reversedData = data.reverse(); //处理后一天消息倒排
+                    dtl_history(reversedData, uid_to, uid_from, 1);
+
+                }
+            });
+        }
+
+        function dtl_history(data, uid_to, uid_from ,pos) {
+            for (var i = data.length - 1; i >= 0; i--) {
+                if (data[i].type == "sys_probe") {
+                    continue;
+                }
+                if (data[i].uid_to == uid_to) {
+                    appendHistory("3", data[i], pos);
+                }
+                if (data[i].uid_to == uid_from) {
+                    appendHistory("2", data[i], pos);
+                }
+            }
+        }
+
+        function get_dtm(dtm, type) {
+            var [datePart, timePart] = dtm.split(" ");
+            var dateParts = datePart.split("-");
+            var year = parseInt(dateParts[0], 10);
+            var month = parseInt(dateParts[1], 10) - 1; // 月份从0开始
+            var day = parseInt(dateParts[2], 10);
+            var date = new Date(year, month, day);
+            date.setDate(date.getDate());
+            if (type == "after") {
+                date.setDate(date.getDate() + 2);
+            }
+            var newDate = date.toISOString().split("T")[0];
+            return newDate;
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+
+        <div style="padding: 15px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+            开始时间: <input id="datestart" format="yyyy-MM-dd HH:mm:ss" class="mini-datepicker" style="width:180px;" value="@ViewData["start"]" onvaluechanged="onValueChanged" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            截止时间: <input id="dateend" format="yyyy-MM-dd HH:mm:ss" class="mini-datepicker" style="width:180px;" value="@ViewData["end"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            筛选:
+            <select id="type" style="height:24px;">
+                <option value="" selected="selected">默认</option>
+                <option value="msg">消息</option>
+                <option value="check">审核</option>
+                <option value="check_tx">提现</option>
+                <option value="check_seekPeople">寻人区</option>
+                <option value="check_userInfo">信息审核</option>
+                <option value="check_album">相册审核</option>
+                <option value="check_gift">礼物审核</option>
+                <option value="check_complain">聊天举报</option>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" style="background-color:forestgreen" value="前一天" onclick="jump_date(-1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" style="background-color:orange" value="后一天" onclick="jump_date(1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+
+        <table>
+            <tr>
+                <td style="display: flex; justify-content: space-between;">
+                    <div id="datagrid1" class="mini-datagrid" style="width:49%;"
+                         url="/Admin1/GetChartDtl_OnlineService" idfield="id" allowresize="true"
+                         showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell" onrowclick="onRowClick"
+                         sizelist="[50,100,200]" pagesize="200">
+                        <div property="columns">
+
+                            <div field="xh" name="xh" width="30" headeralign="center" align="center" allowsort="false">序号</div>
+                            <div field="time_start" name="time_start" width="70" align="center" headeralign="center">时间</div>
+                            <div name="photo2" width="100" align="center" headeralign="center">用户</div>
+                            <div field="txt" name="txt" width="120" headeralign="center" align="left" allowsort="false">首条消息</div>
+                            <div field="diff_first" name="diff_first" width="80" headeralign="center" align="left" allowsort="false">对方响应</div>
+                            <div field="sec_diff" name="sec_diff" width="60" align="center" headeralign="center">自己持续</div>
+                            <div field="tiaoshu" name="tiaoshu" width="60" headeralign="center" align="center" allowsort="center" summarytype="sum">发送量</div>
+                            <div field="tiaoshu_receive" name="tiaoshu_receive" width="60" headeralign="center" align="center" allowsort="center" summarytype="sum">接收量</div>
+
+                        </div>
+                    </div>
+
+                    <div style="width: 49%;">
+                        <div id="chat_dtl">
+
+                            <div class="content-inner" style="height:90%; transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1); transition-duration: 0ms; transform: translate(0px, 0px) translateZ(0px);">
+                                <div id="btn_msg_more" class="msg-more" style="display:none;" onclick="history_msg_front()">--- 前一天 ---</div>
+                                <div id="contMsg" class="messages"></div>
+                                <div id="btn_msg_more_after" class="msg-more" style="display:none;" onclick="history_msg_after()">--- 后一天 ---</div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+    </form>
+</body>
+</html>

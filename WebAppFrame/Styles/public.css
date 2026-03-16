@@ -1,0 +1,155 @@
+
+
+.test {border:1px red solid;}
+
+body {
+    font-size: 12px;
+    font-family: "微软雅黑", Helvetica, Arial, sans-serif;
+    color: #333;
+    background: #fff;
+}
+ul, li {
+    list-style: none;
+}
+
+form {
+    padding:8px;
+}
+
+/**************************************************/
+/**************************************************/
+
+/*弹性盒子部分*/
+.ub
+{
+	display: -webkit-box;
+	display: box;
+	position:relative;
+}
+
+.ub-ver
+{
+	-webkit-box-orient:vertical;
+	box-orient:vertical;
+}
+
+.ub-as
+{
+	-webkit-box-align:start;
+	box-align:start;
+}
+.ub-ac
+{
+	-webkit-box-align:center;
+	box-align:center;
+}
+.ub-ae
+{
+	-webkit-box-align:end;
+	box-align:end;
+}
+
+.ub-ps
+{
+	-webkit-box-pack:start;
+	box-pack:start;
+}
+.ub-pc
+{
+	-webkit-box-pack:center;
+	box-pack:center;
+}
+.ub-pe
+{
+	-webkit-box-pack:end;
+	box-pack:end;
+}
+.ub-pj
+{
+	-webkit-box-pack:justify;
+	box-pack:justify;
+}
+
+.ub-f1
+{
+	position:relative;
+	-webkit-box-flex: 1; 
+	box-flex: 1;
+}
+
+.ub-f2
+{
+	position:relative;
+	-webkit-box-flex: 2;
+	box-flex: 2; 
+}
+
+.ub-f3
+{
+	position:relative;
+	-webkit-box-flex: 3;
+	box-flex: 3;
+}
+
+.ub-f4
+{
+	position:relative;
+	-webkit-box-flex: 4;
+	box-flex: 4;
+}
+/*弹性盒子部分*/
+
+/**************************************************/
+/**************************************************/
+
+.menu-line {
+    height: 1px;
+    background-color: #dcdcdc;
+}
+
+.sys-btn 
+{
+            height: 28px;
+            min-width:80px;
+            line-height: 28px;
+            border: 1px solid gray;
+            background:RGB(62,175,224);
+            cursor:pointer;
+            color:white;
+            border-radius:3px;
+}
+
+.sys-btn:hover{
+    background:RGB(65,152,202);
+}
+
+.sys-title {
+    background-color: #F0F9FD; 
+    padding: 5px; 
+    margin: 5px 0; 
+    border: solid 1px #dcdcdc; 
+    border-radius:3px;
+    font-size:12px;
+    letter-spacing:1px;
+}
+
+.sys-warn {
+    padding:15px ; 
+    margin-bottom:5px; 
+    border:solid 1px #f6e247; 
+    color:#ff6a00;
+    border-radius:3px;
+}
+
+.sys-content-border
+{
+    border:solid 1px #dcdcdc;
+    border-radius:3px;
+    padding:5px;
+}
+.sys-search-border
+{
+    border:solid 1px #dcdcdc;
+    border-radius:3px;
+    padding:15px;
+}

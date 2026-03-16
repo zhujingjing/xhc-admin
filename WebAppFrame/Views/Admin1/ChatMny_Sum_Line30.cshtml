@@ -1,0 +1,197 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .blue {
+            display: inline-block;
+            color: blue;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .red {
+            display: inline-block;
+            color: red;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 180px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .tag-a {
+            color: blue;
+            font-size: 16px;
+        }
+
+        a:visited {
+            color: red;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#divContainer").height(parentHeight - 20);
+            init();
+        })
+
+        function init() {
+            var data_score = '@Html.Raw(ViewData["data"])';
+            var data_coin = '@Html.Raw(ViewData["data_coin"])';
+            data_score = JSON.parse(data_score);
+            data_coin = JSON.parse(data_coin);
+
+            var data_new = [];
+            data_new = data_score.map(item1 => {
+                var item2 = data_coin.find(item => item.dtm === item1.dtm);
+                if (item2) {
+                    return {
+                        dtm: item1.dtm,
+                        chat_score: item1.chat_score,
+                        chat_count_score: item1.chat_count,
+                        chat_coin: item2.chat_coin,
+                        chat_count_coin: item2.chat_count
+                    };
+                }
+            });
+
+            //线图
+            showLine(data_new);
+        }
+
+    </script>
+    <script>
+        function showLine(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            //图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8;
+            graph.bulletBorderColor = "#FFFFFF";
+            graph.lineColor = "#0000FF";
+            graph.valueField = "chat_score";
+            graph.title = "聊天积分";
+            graph.balloonText = "[[category]]聊天积分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "red";
+                graph.valueField = "chat_coin"; //纵轴显示内容
+                graph.title = "聊天金币";
+                graph.balloonText = "[[category]]聊天金币<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "chat_count_score"; //纵轴显示内容
+                graph.title = "积分次数";
+                graph.balloonText = "[[category]]积分次数<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "red";
+                graph.valueField = "chat_count_coin"; //纵轴显示内容
+                graph.title = "金币次数";
+                graph.balloonText = "[[category]]金币次数<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+
+    </script>
+
+</head>
+<body>
+    <div id="divContainer" style="width: 99%; border: solid 1px #dcdcdc">
+
+    </div>
+</body>
+</html>
+
+

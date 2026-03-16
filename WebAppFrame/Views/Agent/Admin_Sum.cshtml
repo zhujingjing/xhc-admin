@@ -1,0 +1,200 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 160px;
+        }
+
+        .blue {
+            display: inline-block;
+            color: blue;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .red {
+            display: inline-block;
+            color: red;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 180px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .tag-a {
+            color: blue;
+            font-size: 16px;
+        }
+
+        a:visited {
+            color: red;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#divContainer").height(parentHeight - 70);
+            
+            init();
+        })
+
+        function init() {
+            var data = '@Html.Raw(ViewData["data"])';
+            data = JSON.parse(data);
+            var item;
+            for (var i = 0; i < data.length; i++) {
+                item = data[i];
+                item.score = Math.floor(item.score / 1000);
+            }
+            //线图
+            showLine546(data);
+        }
+
+        function search() {
+            var start = mini.get("dtm_start").getText();
+            var end = mini.get("dtm_end").getText();
+            var fz_tag = $("#fz_tag").val().trim();
+            var url = "/Agent/Admin_Sum?" + "start=" + start + "&end=" + end + "&fz_tag=" + fz_tag;
+            window.location.href = url;
+        }
+    </script>
+    <script>
+        function showLine546(data) {
+
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            //图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8;
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF";
+            graph.valueField = "score";
+            graph.title = "收益";
+            graph.balloonText = "[[category]]<br><b><span style='font-size:14px;'>￥[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "c1"; //纵轴显示内容
+                graph.title = "邀请人数";
+                graph.balloonText = "[[category]]邀请人数<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "red";
+                graph.valueField = "c2"; //纵轴显示内容
+                graph.title = "完成注册人数";
+                graph.balloonText = "[[category]]完成注册人数<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+    
+
+</head>
+<body>
+    <div class="sys-content-border" style="padding:8px 3px;">
+        开始: <input id="dtm_start" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["start"]" />&nbsp;&nbsp;&nbsp;&nbsp;
+        结束: <input id="dtm_end" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["end"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+        fz_tag:<input type="text" class="txt" id="fz_tag" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />
+    </div>
+
+    <div id="divContainer" style="width: 99%; border: solid 1px #dcdcdc">
+
+    </div>
+</body>
+</html>
+
+

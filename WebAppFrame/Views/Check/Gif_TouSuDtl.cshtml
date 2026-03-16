@@ -1,0 +1,53 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/demo.css" rel="stylesheet" type="text/css" />
+    <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+    <style>
+        .main {
+           padding:20px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        #form1 {
+            text-align: center;
+        }
+
+        .up-block {
+            width: 340px;
+        }
+
+        .paper-img {
+            border: 1px dashed #6b6b6b;
+            width: 100%;
+        }
+        
+    </style>
+    <script type="text/javascript">
+        $(function () {
+         
+            var data = '@Html.Raw(ViewData["data"])';
+            data = JSON.parse(data);
+            for (var i = 0; i < data.length; i++) {
+                $("#pics").attr("src", data[i])
+            }
+        });
+        function CloseWindow(action) {
+            if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+            else window.close();
+        }
+    </script>
+</head>
+<body>
+    <div class="main">
+        <form id="form1">
+            <div class="up-block">
+                <img id="pics" src="" class="paper-img" />
+            </div>
+          
+        </form>
+    </div>
+</body>
+</html>

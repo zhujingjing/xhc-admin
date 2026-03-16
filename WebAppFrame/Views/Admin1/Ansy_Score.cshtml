@@ -1,0 +1,188 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .blue {
+            display: inline-block;
+            color: blue;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .red {
+            display: inline-block;
+            color: red;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 180px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .tag-a {
+            color: blue;
+            font-size: 16px;
+        }
+
+        a:visited {
+            color: red;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#divContainer").height(parentHeight - 90);
+            init();
+        })
+
+        function init() {
+            var data = '@Html.Raw(ViewData["data"])';
+            data = JSON.parse(data);
+            //线图
+            showLine(data);
+        }
+
+
+    </script>
+    <script>
+        function showLine(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            //图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8;
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#666";
+            graph.valueField = "score_total";
+            graph.title = "总积分";
+            graph.balloonText = "[[category]]总积分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "score_coin"; //纵轴显示内容
+                graph.title = "礼物/好友积分";
+                graph.balloonText = "[[category]]礼物/好友积分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "score_task"; //纵轴显示内容
+                graph.title = "任务积分";
+                graph.balloonText = "[[category]]任务积分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+
+
+        };
+
+        function search() {
+            var start = mini.get("datestart").getText();
+            var end = mini.get("dateend").getText();
+
+            var url = "/Admin1/Ansy_Score/@ViewData["id"]" + "?start=" + start + "&end=" + end;
+            window.location.href = url;
+        }
+    </script>
+
+</head>
+<body>
+
+    <form id="form1">
+        <div style="padding: 15px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+            开始: <input id="datestart" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["start"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            截止: <input id="dateend" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["end"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" value="加载数据" class="sys-btn" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;<br />
+        </div>
+
+        <div id="divContainer" style="width: 100%; border: solid 1px #dcdcdc"></div>
+    </form>
+    
+</body>
+</html>
+
+

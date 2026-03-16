@@ -1,0 +1,432 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>聊天用户</title>
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+    
+
+    <style>
+        .ub {
+            display: flex;
+        }
+
+        .ub-ver {
+            flex-direction: column;
+        }
+
+        .ub-as {
+            justify-content: flex-start;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac1 {
+            justify-content: space-around;
+        }
+
+        .ub-ac2 {
+            justify-content: space-between;
+        }
+
+        .ub-ac3 {
+            justify-content: space-evenly;
+        }
+
+        .ub-ae {
+            justify-content: flex-end;
+        }
+
+        .ub-ps {
+            align-items: flex-start;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        tr {
+            text-align: center;
+        }
+
+        th {
+            background-color: #f9fafd;
+            color: #333;
+            font-size: 2em;
+            padding: 11px;
+        }
+
+        table, th, td {
+            border: 1px solid #dcdcdc;
+            padding: 11px 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .width {
+            max-width: 80px;
+        }
+
+        .photo {
+            width: 4em;
+            height: 4em;
+            border-radius: 50%;
+        }
+
+        .red {
+            color: red;
+            font-weight: bold;
+        }
+
+        .blue {
+            color: #32cd32;
+            font-weight: bold;
+        }
+
+        .backlog {
+            color: #dcdcdc;
+        }
+
+        .backlog2 {
+            color: #777;
+        }
+
+        .orange {
+            color: #fc5531;
+        }
+
+        .top {
+            font-size: 15px;
+        }
+
+        .info {
+            border: .5px solid #dcdcdc;
+            padding: 5px 10px 12px 10px;
+            margin-bottom: 15px;
+            border-radius: .3em;
+            background-color: #fff;
+        }
+
+        img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .state {
+            font-size: 15px;
+            color: #23a756;
+        }
+
+        .time-txt {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .arrow {
+            width: 10em;
+            height: 0.8em;
+        }
+
+        .gift-img {
+            width: 40px;
+            height: 40px;
+        }
+
+        textarea {
+            padding: 6px 6px;
+            line-height: 25px;
+            border: solid 1px #dcdcdc;
+            resize: none;
+            outline: none;
+            width: 100%;
+        }
+
+        .text1 {
+            padding: 6px 6px;
+            font-size: 12px;
+            color: #666;
+            border-left: solid 1px #dcdcdc;
+            border-right: solid 1px #dcdcdc;
+        }
+
+        .text2 {
+            color: #333;
+        }
+
+        .check-btn {
+            width: 100%;
+            background-color: #48befa;
+            border-radius: 5px;
+            color: #fff;
+            height: 35px;
+            font-size: 17px;
+            margin-top: 5px;
+        }
+
+        .operate {
+            margin-top: 10px;
+        }
+
+            .operate a {
+                border-radius: .3em;
+                background-color: #e92162;
+                color: #fff;
+                width: 70px;
+                text-align: center;
+                font-size: 15px;
+                text-decoration: none;
+                padding: 5px 0;
+            }
+
+        .operate2 {
+            margin-top: 10px;
+        }
+
+            .operate2 a {
+                border-radius: .3em;
+                background-color: #dfdfdf;
+                color: #fff;
+                width: 70px;
+                text-align: center;
+                font-size: 15px;
+                text-decoration: none;
+                padding: 5px 0;
+            }
+
+        .top2 {
+            background-color: #e92162;
+            padding: 0 6px;
+            height: 50px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1;
+        }
+
+            .top2 #return {
+                width: 2em;
+                height: 2em;
+                padding: 1em 3em 1em 0;
+            }
+
+            .top2 #refresh {
+                width: 2.7em;
+                height: 2.7em;
+                padding: 1em 1em 1em 3em;
+            }
+
+        body {
+            margin: 0;
+            font-family: PingFangSC-Regular, tahoma, arial, sans-serif;
+            background-color: #F0F0F0;
+        }
+
+        .rst_check {
+            color: #333;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #form1 {
+            padding: 8px;
+        }
+
+        .line {
+            border-top: 1px dashed #F0F0F0;
+            margin: 3px 0;
+        }
+
+        .time {
+            resize: none;
+            outline: none;
+            border-color: #dfdfdf;
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: #dfdfdf;
+            padding: 4px 3px;
+            font-size: 14px;
+        }
+    </style>
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        var grid;
+        $(function () {
+            init_page();
+           
+          
+            $("#return").bind("click", function () {
+                location.href = '/Home/Check_Survey';
+            });
+
+            $("#refresh").bind("click", function () {
+                location.reload();
+            });
+        });
+
+        function init_page() {
+            var v1 = 0;
+            var v2 = 0;
+            var v3 = 0;
+            var v4 = 0;
+            var v5 = 0;
+            $.ajax({
+                type: "get",
+                url: "/Admin1/GetChatUserData_m",
+                // data: { "id": id, "state": state },
+                success: function (data) {
+
+                    var data = JSON.parse(data);
+                    var photo, nick, sex, s_total, s_tx, s_jt, s_1, s_2, remark, first_time;
+                    var h = '';
+                    for (var i = 0; i < data.length; i++) {
+                        photo = data[i]["photo"];
+                        nick = data[i]["nick"];
+                        sex = data[i]["sex"];
+                        s_total = deal_Num(data[i]["s_total"]);
+                        s_tx = deal_Num(data[i]["s_tx"]);
+                        s_jt = deal_Num(data[i]["s_jt"]);
+                        s_1 = deal_Num(data[i]["s_1"]);
+                        s_2 = deal_Num(data[i]["s_2"]);
+                        remark = data[i]["remark"];
+                        first_time = data[i]["first_time"];
+
+                        var photo = servUrl_AppData + '/photo/' + photo;
+
+                        h += '<div style="background-color:#fff;padding:.8em;border-radius:5px;margin-bottom:15px;">\
+                                    <div class="ub ub-pc" style="margin-bottom:10px;">\
+                                        <img class="photo" src="' + photo + '" />\
+                                        <span style="margin-left:10px;">' + nick + '</span>\
+                                        <span style="margin-left:10px;color:red;">' + remark + '</span>\
+                                        <span style="margin-left:10px; color:#e92162;">(' + sex + ')</span>\
+                                        <span style="margin-left:10px;color:#777;">' + first_time + '</span>\
+                                    </div>\
+                                    <table border="1">\
+                                        <thead>\
+                                            <tr>\
+                                                <th>今日</th>\
+                                                <th>昨日</th>\
+                                                <th>前日</th>\
+                                                <th>可提现</th>\
+                                                <th>总积分</th>\
+                                            </tr>\
+                                        </thead>\
+                                        <tbody id="con">\
+                                            <tr>\
+                                                <td style="text-align:right;color:blue; font-weight: bold;font-size:14px;">' + s_jt + '</td>\
+                                                <td style="text-align:right;color:blue;">' + s_1 + '</td>\
+                                                <td style="text-align:right;color:blue;">' + s_2 + '</td>\
+                                                <td style="text-align:right;color:red;">' + s_tx + '</td>\
+                                                <td style="text-align:right;color:blue; font-weight: bold;font-size:14px;">' + s_total + '</td>\
+                                            </tr>\
+                                        </tbody>\
+                                    </table>\
+                                </div>';
+
+                        v1 += data[i]["s_jt"];
+                        v2 += data[i]["s_1"];
+                        v3 += data[i]["s_2"];
+                        v4 += data[i]["s_tx"];
+                        v5 += data[i]["s_total"];
+                    }
+                    $("#form1").html(h);
+                    $("#v1").html(deal_Num(v1));
+                    $("#v2").html(deal_Num(v2));
+                    $("#v3").html(deal_Num(v3));
+                    $("#v4").html(deal_Num(v4));
+                    $("#v5").html(deal_Num(v5));
+
+
+                }
+            });
+
+        }
+
+        function deal_Num(v) {
+            v = v + "";
+            var len = v.length;
+            if (v.length > 3) {
+                var pre = v.substring(0, len - 3);
+                var last3 = v.substring(len - 3);
+                var newV = pre + ',' + last3;
+                return newV;
+            }
+
+            return v;
+        }
+     
+
+    </script>
+</head>
+<body>
+    <div class="main">
+        <div class="top2 ub ub-pc ub-ac2">
+            <img id="return" src="http://wx2.xhchat.cn/img/%E8%BF%94%E5%9B%9E%E7%AE%AD%E5%A4%B4.93b021b8.png" />
+            <img id="refresh" src="~/Images/刷新.png" />
+        </div>
+        <div style="height:58px;"></div>
+        <div style="padding:8px">
+        <div style="background-color:#fff;padding:.8em;border-radius:5px;">
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>今日</th>
+                        <th>昨日</th>
+                        <th>前日</th>
+                        <th>可提现</th>
+                        <th>总积分</th>
+                    </tr>
+                </thead>
+                <tbody id="con">
+                    <tr>
+                        <td id="v1" style="text-align:right;color:blue; font-weight: bold;font-size:14px;">35,900</td>
+                        <td id="v2" style="text-align:right;color:blue;">23,400</td>
+                        <td id="v3" style="text-align:right;color:blue;">11,800</td>
+                        <td id="v4" style="text-align:right;color:red;">167,606</td>
+                        <td id="v5" style="text-align:right;color:blue; font-weight: bold;font-size:14px;">185,606</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+            <form id="form1">
+                <div style="background-color:#fff;padding:.8em;border-radius:5px;margin-bottom:15px;">
+                    <div class="ub ub-pc" style="margin-bottom:10px;">
+                        <img class="photo" src="http://xhcapp.zhuochuangzb.com/photo/photo_girl/2580.jpg" />
+                        <span style="margin-left:10px;">大小姐</span>
+                        <span style="margin-left:10px;">备注</span>
+                        <span style="margin-left:10px;">(女生)</span>
+                        <span style="margin-left:10px;">2020-11-22</span>
+                    </div>
+
+                    <table border="1">
+                        <thead>
+                            <tr>
+                                <th>今日</th>
+                                <th>昨日</th>
+                                <th>前日</th>
+                                <th>可提现</th>
+                                <th>总积分</th>
+                            </tr>
+                        </thead>
+                        <tbody id="con">
+                            <tr>
+                                <td style="text-align:right">35,900</td>
+                                <td style="text-align:right">23,400</td>
+                                <td style="text-align:right">11,800</td>
+                                <td style="text-align:right">167,606</td>
+                                <td style="text-align:right">185,606</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+</body>
+</html>

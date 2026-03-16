@@ -1,0 +1,7 @@
+--全部会员分析（过期时间，最近登录，）
+select u.uid, u.photo, u.sex,  
+       u.coin_total, u.coin, u.score_total, u.score,
+       u.create_time, u.least_time,
+       isnull((select MAX(dtm_pay) from dbo.sys_order where uid = u.uid and order_state = '付款成功' and order_type='购买会员'), '') as dtm_pay
+from dbo.[user] u
+where u.uid in (select uid from dbo.sys_order where order_state = '付款成功' and order_type='购买会员')

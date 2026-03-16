@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>小火柴移动端后台</title>
+    <link href="~/Styles/m_public.css?id=3" rel="stylesheet" />
+    <style>
+        .chart-nav {
+            width: 100%;
+            background-color: #e91e63;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 900;
+        }
+
+        .nav-top {
+            height: 2.5em;
+        }
+
+            .nav-top a {
+                font-size: 1.6em;
+                color: #fff;
+                font-weight: 400;
+            }
+
+        .spider {
+            width: 100%;
+            height: 1px;
+            background-color: #dfdfdf;
+        }
+
+        .item {
+            font-size: 1.2em;
+        }
+
+        #main {
+            overflow: scroll;
+        }
+    </style>
+
+    <style>
+        .mask {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            opacity: 0.7;
+            z-index: 999;
+            display: none;
+        }
+
+        .rtn-money {
+            position: fixed;
+            left: 10%;
+            top: 30%;
+            background-color: #fff;
+            width: 80%;
+            z-index: 1000;
+            display: none;
+            border-radius: 5px;
+        }
+
+        .rtn-content p {
+            line-height: 2em;
+            font-size: 1.2em;
+        }
+
+        .rtn-money {
+            top: 5em;
+        }
+
+        .cls-a {
+            margin-top: 5px;
+            font-size: 1em;
+            line-height: 1.8em;
+        }
+
+        .red {
+            color: red;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="nav-top ub padding-a500 chart-nav" style="background-color: #ff4f72; height: 3em; ">
+        <a href="javascript:void(0);" class="ub width4000 ub-ac ub-ps " style="font-size:1.2em;">
+            主站
+        </a>
+        <a class="ub ub-f1 ub-ac ub-pc " style="font-size:1.4em; font-weight:500;">
+            功能清单(新版)
+        </a>
+        <a href="javascript:void(0);" class="ub width6000 ub-ac ub-pc " style="font-size:1em;">
+            规则
+        </a>
+    </div>
+
+    <div class="height4000"></div>
+
+    <div id="main">
+
+        <div id="item_2" class="item ub ub-ac ub-ps height4000 padding-l1000 ">
+            （消息）封号监控
+        </div>
+        <div class="spider"></div>
+
+        <div id="item_1" class="item ub ub-ac ub-ps height4000 padding-l1000 ">
+            今日得分
+        </div>
+        <div class="spider"></div>
+
+        <div id="item_usernew_hour" class="item ub ub-ac ub-ps height4000 padding-l1000 ">
+            小时流量
+        </div>
+        <div class="spider"></div>
+
+        <div id="item_5" class="item ub ub-ac ub-ps height4000 padding-l1000 ">
+            信息审核
+        </div>
+        <div class="spider"></div>
+
+        <div id="item_3" class="item ub ub-ac ub-ps height4000 padding-l1000 ">
+            （消息）消息监控
+        </div>
+        <div class="spider"></div>
+
+        <div id="item_4" class="item ub ub-ac ub-ps height4000 padding-l1000 ">
+            （消息）封号历史
+        </div>
+        <div class="spider"></div>
+        <div class="spider"></div>
+        <div class="spider"></div>
+        <div class="spider"></div>
+
+        <div id="item_6" class="item ub ub-ac ub-ps height4000 padding-l1000 ">
+            订单
+        </div>
+        <div class="spider"></div>
+
+        <div id="item_7" class="item ub ub-ac ub-ps height4000 padding-l1000 ">
+            聊天消息
+        </div>
+        <div class="spider"></div>
+
+        <div id="item_8" class="item ub ub-ac ub-ps height4000 padding-l1000 ">
+            寻人区
+        </div>
+        <div class="spider"></div>
+
+    </div>
+
+</body>
+</html>
+
+<script src="~/Scripts/jquery-1.8.2.min.js"></script>
+
+
+<script>
+    var id_key = '@ViewData["id_key"]';
+    $(function () {
+        init();
+        bindEvent();
+    })
+
+    function init() {
+
+    }
+
+    function bindEvent() {
+        $("#item_usernew_hour").bind("click", function () {
+            window.location.href = "/Home/UserNew_Hour/" + id_key;
+        });
+        $("#item_moniter_chartdtl").bind("click", function () {
+            window.location.href = "http://msgtool.zhuochuangzb.com/Home/MsgCur/zjj_201906";
+        });
+        $("#item_online_user").bind("click", function () {
+            window.location.href = "/Home/ScanOnlineUser/" + id_key;
+        });
+        $("#item_1").bind("click", function () {
+            window.location.href = "http://tie.zhuochuangzb.com/Home/SummaryTotalScore2/?user_name=";
+        });
+        $("#item_2").bind("click", function () {
+            window.location.href = "http://curmsg.zhuochuangzb.com/Home/MsgCur_Girl/zjj_201906";
+        });
+        $("#item_3").bind("click", function () {
+            window.location.href = "http://curmsg.zhuochuangzb.com/Home/MsgCur/zjj_201906";
+        });
+        $("#item_4").bind("click", function () {
+            window.location.href = "http://curmsg.zhuochuangzb.com/Home/Msg_History/zjj_201906";
+        });
+        $("#item_5").bind("click", function () {
+            window.location.href = "http://xhcadmin.zhuochuangzb.com/Home/Check_UserInfo";
+        });
+        $("#item_6").bind("click", function () {
+            window.location.href = "http://watch.zhuochuangzb.com/Home/Order/zjj_201812?bll=member";
+        });
+        $("#item_7").bind("click", function () {
+            window.location.href = "http://watch.zhuochuangzb.com/Home/Monitor_ChartDtl/zjj_201812";
+        });
+        $("#item_8").bind("click", function () {
+            window.location.href = "http://watch.zhuochuangzb.com/Home/SeekPeople/zjj_201812";
+        });
+        
+
+        
+
+    }
+
+
+    function SeekRule() {
+        var h = '';
+        openMask("寻人", h, "知道了~", "我要", "f_left", "f_left");
+    }
+
+
+</script>
+
+<script>
+    function openMask(title, content, left, right, _fun_left, _fun_right) {
+        var mask_html = '  <div class="mask"></div>'
+                        + '<div class="rtn-money">'
+                        + '    <div class="ub height3000">'
+                        + '        <a href="javascript:void(0)" class="ub ub-f1 ub-ac ub-pc height3000" style="border-bottom: 1px solid #ff4f72; color: #ff4f72; font-size: 1.2em;">' + title + '</a>'
+                        + '    </div>'
+                        + '    <div class="ub ub-ver font-size1000 padding-a1000 rtn-content">'
+                        + '        <p>' + content + '</p>'
+                        + '    </div>'
+                        + '    <div style="height:1px; width:100%; background-color: #dcdcdc"></div>'
+                        + '    <div class="ub height3000">'
+                        + '        <a href="javascript:' + _fun_left + '()" class="ub ub-f1 ub-ac ub-pc height3000" style="border-right:1px solid #dcdcdc;">' + left + '</a>'
+                        + '        <a href="javascript:' + _fun_right + '()" class="ub ub-f1 ub-ac ub-pc height3000" style="color: #fff; background-color: #ff4f72">' + right + '</a>'
+                        + '    </div>'
+                        + '</div>';
+
+        $(document.body).append(mask_html);
+        $(".mask, .rtn-money").show();
+    }
+
+    function f_left() {
+        $(".mask, .rtn-money").remove();
+    }
+</script>
+

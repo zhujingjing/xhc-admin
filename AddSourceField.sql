@@ -1,0 +1,1 @@
+ALTER TABLE dbo.user_record ADD source VARCHAR(100) NULL;

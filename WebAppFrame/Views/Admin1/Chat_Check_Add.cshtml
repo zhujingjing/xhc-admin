@@ -1,0 +1,362 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>聊天审核评价</title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/Global.js?id=1"></script>
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=90"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        form {
+            width: 100%;
+            margin: 0;
+        }
+
+        .form-item {
+            margin: 15px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .form-label {
+            width: 80px;
+            text-align: right;
+            margin-right: 10px;
+            font-weight: bold;
+            flex-shrink: 0;
+            padding-top: 6px;
+        }
+
+        .form-input {
+            flex: 1;
+            min-width: 0;
+            max-width: 600px;
+        }
+
+        .txt {
+            height: 32px;
+            line-height: 32px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding: 0 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .txtarea {
+            min-height: 120px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding: 10px;
+            width: 100%;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        .readonly {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+
+        .btn-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .sys-btn {
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            display: inline-block;
+            min-width: 160px;
+       
+        }
+
+        .btn-save {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+    <script type="text/javascript">
+        var id = '@ViewData["id"]';
+        var uidFrom = '@ViewData["uidFrom"]';
+        var uidTo = '@ViewData["uidTo"]';
+        var dtm = '@ViewData["dtm"]';
+        var coinUsed = '@ViewData["coinUsed"]';
+        var scoreEarned = '@ViewData["scoreEarned"]';
+        var sendCount = '@ViewData["sendCount"]';
+        var receiveCount = '@ViewData["receiveCount"]';
+        var chatDepth = '@ViewData["chatDepth"]';
+
+        $(function () {
+            init();
+        });
+
+        function init() {
+            // 填充表单数据
+            $("#uidFrom").val(uidFrom);
+            $("#uidTo").val(uidTo);
+            $("#dtm_chat").val(dtm);
+            $("#coinUsed").val(coinUsed);
+            $("#scoreEarned").val(scoreEarned);
+            $("#sendCount").val(sendCount);
+            $("#receiveCount").val(receiveCount);
+            $("#chatDepth").val(chatDepth);
+
+            // 批量加载下拉框数据
+            var categories = ["chat_check_source", "chat_check_evaluation", "chat_check_add_brife"];
+            loadBatchDropdownOptions(categories, function(data) {
+                
+                // 更新下拉框选项
+                updateDropdown("source", data["chat_check_source"], false);
+                updateDropdown("evaluation", data["chat_check_evaluation"], false);
+                updateDropdown("brief", data["chat_check_add_brife"], true);
+                
+                // 检查是否已经存在当天的聊天评价记录
+                if (!id && uidFrom && uidTo && dtm) {
+                    checkExistingRecord(uidFrom, uidTo, dtm);
+                }
+
+                // 如果是编辑模式，加载现有数据
+                if (id) {
+                    loadData();
+                }
+            });
+
+            // 监听简述下拉框变化，加载详情模板
+            $("#brief").change(function() {
+                var briefValue = $(this).val();
+                if (briefValue) {
+                    loadCascadingDropdownOptions("chat_check_detail_template", "detail_template", briefValue, "chat_check_add_brife");
+                } else {
+                    $("#detail_template").empty().append($('<option value="">请选择详情模板</option>'));
+                }
+            });
+
+            // 监听详情模板下拉框变化，填充详情输入框
+            $("#detail_template").change(function() {
+                var templateValue = $(this).val();
+                if (templateValue) {
+                    $("#details").val(templateValue);
+                }
+            });
+        }
+
+        function checkExistingRecord(uidFrom, uidTo, dtm) {
+            $.ajax({
+                url: "/Admin1/CheckExistingChatCheck",
+                type: "GET",
+                data: { uidFrom: uidFrom, uidTo: uidTo, dtm: dtm },
+                dataType: "json",
+                success: function (result) {
+                    if (result && result.id) {
+                        id = result.id;
+                        loadData();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("检查记录失败:", error);
+                }
+            });
+        }
+
+        function loadData() {
+            $.ajax({
+                url: "/Admin1/GetChatCheckById",
+                type: "GET",
+                data: { id: id },
+                dataType: "json",
+                success: function (result) {
+                    if (result && result.length > 0) {
+                        var data = result[0];
+                        $("#uidFrom").val(data.uid_from);
+                        $("#uidTo").val(data.uid_to);
+                        $("#dtm_chat").val(data.dtm_chat);
+                        $("#coinUsed").val(data.coin_used);
+                        $("#scoreEarned").val(data.score_earned);
+                        $("#sendCount").val(data.send_count);
+                        $("#receiveCount").val(data.receive_count);
+                        $("#chatDepth").val(data.chat_depth);
+                        $("#evaluation").val(data.evaluation);
+                        $("#brief").val(data.brief);
+                        $("#details").val(data.details);
+                        $("#source").val(data.source);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert("加载数据失败: " + error);
+                }
+            });
+        }
+
+        function save() {
+            // 表单验证
+            var source = $("#source").val();
+            var evaluation = $("#evaluation").val();
+            var brief = $("#brief").val();
+            var details = $("#details").val();
+
+            if (!source || !evaluation || !brief || !details) {
+                alert("请填写所有必填项");
+                return;
+            }
+
+            // 构建参数
+            var parm = {
+                uid_from: $("#uidFrom").val(),
+                uid_to: $("#uidTo").val(),
+                dtm_chat: $("#dtm_chat").val(),
+                coin_used: $("#coinUsed").val(),
+                score_earned: $("#scoreEarned").val(),
+                send_count: $("#sendCount").val(),
+                receive_count: $("#receiveCount").val(),
+                chat_depth: $("#chatDepth").val(),
+                evaluation: evaluation,
+                brief: brief,
+                details: details,
+                source: source
+            };
+
+            // 从框架页面顶部获取操作人信息
+            var operator_name = "";
+            if (window.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            if (window.parent.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            parm.operator_name = operator_name;
+
+            // 在编辑模式下添加id
+            if (id) {
+                parm.id = id;
+            }
+
+            var json = JSON.stringify(parm);
+
+            var url = "/Admin1/AddChatCheck";
+            if (id) {
+                url = "/Admin1/UpdateChatCheck";
+            }
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: { send: json },
+                dataType: "json",
+                success: function (result) {
+                    try {
+                        var state = result.state || result.State;
+                        var msg = result.msg || result.Msg || "未知错误";
+
+                        if (state == "1" || state == 1) {
+                            alert("保存成功");
+                            CloseWindow("ok");
+                        } else {
+                            alert("保存失败: " + msg);
+                        }
+                    } catch (e) {
+                        console.error("解析返回结果失败:", e);
+                        alert("解析返回结果失败: " + e.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("请求错误:", error);
+                    alert("请求错误: " + error);
+                }
+            });
+        }
+
+        function cancel() {
+            CloseWindow();
+        }
+
+        function CloseWindow(action) {
+            if (window.CloseOwnerWindow) {
+                window.CloseOwnerWindow(action);
+            } else {
+                window.parent.CloseWindow(action);
+            }
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+        <!-- 隐藏不需要输入的字段，只在后台提交时使用 -->
+        <input type="hidden" id="uidFrom" name="uidFrom" />
+        <input type="hidden" id="uidTo" name="uidTo" />
+        <input type="hidden" id="dtm_chat" name="dtmChat" />
+        <input type="hidden" id="coinUsed" name="coinUsed" />
+        <input type="hidden" id="scoreEarned" name="scoreEarned" />
+        <input type="hidden" id="sendCount" name="sendCount" />
+        <input type="hidden" id="receiveCount" name="receiveCount" />
+        <input type="hidden" id="chatDepth" name="chatDepth" />
+
+        <div class="form-item">
+            <div class="form-label">来源：</div>
+            <div class="form-input">
+                <select id="source" name="source" class="txt" required="true">
+                    <option value="">请选择</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-item">
+            <div class="form-label">评价：</div>
+            <div class="form-input">
+                <select id="evaluation" name="evaluation" class="txt" required="true">
+                    <option value="">请选择</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-item">
+            <div class="form-label">简述：</div>
+            <div class="form-input">
+                <select id="brief" name="brief" class="txt" required="true">
+                    <option value="">请选择</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-item">
+            <div class="form-label">&nbsp;</div>
+            <div class="form-input">
+                <select id="detail_template" name="detail_template" class="txt">
+                    <option value="">请选择详情模板</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-item">
+            <div class="form-label">详情：</div>
+            <div class="form-input">
+                <textarea id="details" name="details" class="txtarea" required="true" placeholder="请描述具体违规行为"></textarea>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <input type="button" class="sys-btn btn-save" value="保存" onclick="save()" />
+            <input type="button" class="sys-btn btn-cancel" value="取消" onclick="cancel()" />
+        </div>
+    </form>
+</body>
+</html>

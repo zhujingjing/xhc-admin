@@ -1,0 +1,113 @@
+﻿﻿﻿﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>导出聊天数据</title>
+    <script src="/Scripts/jquery.min.js"></script>
+    <script src="/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="/Scripts/Global.js"></script>
+    <link href="/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        .sys-content-border {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #dcdcdc;
+            display: flex;
+            align-items: center;
+        }
+        .sys-content-border > span {
+            margin-right: 10px;
+        }
+        .sys-content-border > input[type="text"] {
+            margin-right: 20px;
+        }
+        .sys-btn {
+            margin-right: 10px;
+            cursor: pointer;
+            text-align: center;
+            vertical-align: middle;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 32px;
+        }
+        body {
+            margin: 0;
+            padding: 10px;
+            overflow: hidden;
+        }
+        .mini-datagrid {
+            margin-top: 10px;
+        }
+    </style>
+    <script type="text/javascript">
+        mini.parse();
+        
+        $(function () {
+            // 初始化页面
+            init();
+        });
+        
+        function init() {
+            // 页面加载时自动查询数据
+            setTimeout(() => {
+                search();
+            }, 1000);
+            
+        }
+        
+        function search() {
+            var uid = "@ViewData["id"]";
+            var dtm_start = mini.get("dtm_start").getText();
+            var dtm_end = mini.get("dtm_end").getText();
+            
+            // 刷新数据表格
+            var grid = mini.get("datagrid");
+            grid.load({
+                uid: uid,
+                dtm_start: dtm_start,
+                dtm_end: dtm_end
+            });
+        }
+        
+        function exportData() {
+            var uid = "@ViewData["id"]";
+            var dtm_start = mini.get("dtm_start").getText();
+            var dtm_end = mini.get("dtm_end").getText();
+            
+            // 导出数据
+            window.location.href = "/Admin1/ExportUserChatData/?uid=" + uid + "&dtm_start=" + dtm_start + "&dtm_end=" + dtm_end;
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+        <!-- 上边部分：日期选择和按钮 -->
+        <div class="sys-content-border">
+            <span>起始日期:</span>
+            <input id="dtm_start" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm_start"]" />
+            <span>截止日期:</span>
+            <input id="dtm_end" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm_end"]" />
+            <input type="button" class="sys-btn" value="查询" onclick="search()" />
+            <input type="button" class="sys-btn" value="导出" onclick="exportData()" />
+        </div>
+        
+        <!-- 下边部分：数据表格 -->
+        <div id="datagrid" class="mini-datagrid" style="width:100%; height:460px;" 
+             url="/Admin1/GetUserChatExportData" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[50,100,500]" pagesize="50">
+            <div property="columns">
+                <div field="xh" width="50" headeralign="center" align="center" allowsort="false">序号</div>
+                <div field="dtm" width="180" headeralign="center" align="center" allowsort="true" dateformat="yyyy-MM-dd HH:mm:ss">时间</div>
+                <div field="uid_from" width="100" headeralign="center" align="center" allowsort="true">发送用户ID</div>
+                <div field="uid_to" width="100" headeralign="center" align="center" allowsort="true">接收用户ID</div>
+                <div field="name_to" width="100" headeralign="center" align="center" allowsort="true">接收用户昵称</div>
+                <div field="state" width="80" headeralign="center" align="center" allowsort="true">状态</div>
+                <div field="type" width="80" headeralign="center" align="center" allowsort="true">类型</div>
+                <div field="txt" width="400" headeralign="center" align="left" allowsort="false">消息内容</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

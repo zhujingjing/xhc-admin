@@ -1,0 +1,140 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    
+    <style>
+        .btn {
+            margin-top: 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 18px;
+            line-height: 30px;
+            bottom: 0;
+            border: 1px solid RGB(62,175,224);
+            border-radius: 5px;
+            width: 40%;
+            cursor: pointer;
+        }
+
+        .ok {
+            background-color: RGB(62,175,224);
+        }
+
+        .no {
+            background-color: #f00;
+        }
+
+        .mini-tools span {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            overflow: hidden;
+            cursor: pointer;
+            margin-left: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="">
+            <form id="form1">
+                <div style="height:40px; line-height:40px;">
+                    <span>发放金额:</span>
+                    <select id="txt_pay_mny" style="height:28px; line-height:28px; width:120px; padding-left:5px; border-radius:3px;">
+                        <option value="0.0">0.0</option>
+                        <option value="0.8" >0.8</option>
+                        <option value="8" >8</option>   
+                        <option value="40" >40</option>
+                        <option value="80" >80</option>
+                        <option value="240" >240</option>
+                        <option value="480" >480</option>
+                        <option value="800" >800</option>
+                        <option value="1600" >1600</option>
+                        <option value="2400" >2400</option>
+                        <option value="4000" >4000</option>
+                    </select>
+                      
+</div>
+                <select id="slt_txt" style="width:100%; height:28px; line-height:28px;">
+                    <option value="已通过客服微信发放（企微）" selected>已通过客服微信发放（企微）</option>
+                    <option value="已通过客服微信发放（个微）">已通过客服微信发放（个微）</option>
+                    <option value="已通过对公账户发放" >已通过对公账户发放</option>
+                    <option value="已通过支付宝发放" >已通过支付宝发放</option>
+                    <option value="无法发放提现红包，客服确认提现金额，你还未回复">无法发放提现红包，客服确认提现金额，你还未回复</option>
+                    <option value="无法发放提现红包,你提交的提现申请信息错误,客服无法与你取得联系（微信号码错误）">无法发放提现红包,你提交的提现申请信息错误,客服无法与你取得联系（微信号码错误）</option>
+                    <option value="无法发放提现红包,客服已申请添加你为微信好友，你还未通过好友申请">无法发放提现红包,客服已申请添加你为微信好友，你还未通过好友申请</option>
+                    <option value="系统检测出你聊天过程中有违规行为(广告)，将从你的提现申请中扣除1元做为处罚，剩余提现已发放；请遵守平台规则，否则会加大处罚力度">系统检测出你聊天过程中有违规行为(广告)，将从你的提现申请中扣除1元做为处罚，剩余提现已发放；请遵守平台规则，否则会加大处罚力度</option>
+                </select>
+                <div id="reason" contenteditable="true" style="padding: 15px;height:80px; margin-top:10px; line-height:20px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+
+                </div>
+
+                <input type="button" id="btnok" class="btn ok" value="通过" />
+                &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                <input type="button" id="btnno" class="btn no" value="不通过" />
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+
+<script src="~/Scripts/jquery-1.8.2.min.js"></script>
+
+<script type="text/javascript">
+
+    window.onload = function () {
+        var pay_mny = "@ViewData["pay_mny"]";
+        $("#txt_pay_mny").val(pay_mny).trigger("change");
+    }
+
+    $(function () {
+        $("#btnok").bind("click", function () {
+            var id = "@ViewData["id"]";
+            var state = "成功";
+            doUpdate(id, state);
+        });
+
+
+        $("#btnno").bind("click", function () {
+            var id = "@ViewData["id"]";
+            var state = "失败";
+            doUpdate(id, state);
+        });
+
+        $("#slt_txt").change(function () {
+            var txt = $("#slt_txt").val();
+            $("#reason").text(txt);
+        });
+
+
+        var txt = $("#slt_txt").val();
+        $("#reason").text(txt);
+    });
+
+    function doUpdate(id, state) {
+        var reason = $("#reason").html();
+        var pay_mny = $("#txt_pay_mny").val().trim();
+        $.ajax({
+            type: "POST",
+            url: "/Check/UpdateApply_Tx",
+            data: { "id": id, "state": state, "reason": reason, "pay_mny": pay_mny },
+            success: function (data) {
+                data = JSON.parse(data);
+                if (data.state = "1") {
+                    alert("成功");
+                    CloseWindow("ok");
+                }
+                else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+
+
+    function CloseWindow(action) {
+        if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+        else window.close();
+    }
+</script>

@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>管理GIF</title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=5"></script>
+
+    <style>
+        body {
+            line-height: 0;
+        }
+        .container {
+            display: flex;
+        }
+        .toolbar li {
+            padding: 0 5px;
+        }
+        .click {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .left-item {
+            margin-right: 10px;
+            border: 1px solid #96c6db;
+        }
+
+        .img-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 10px;
+            position: relative;
+            cursor: move;
+        }
+
+        .img-gif {
+            width: 80px;
+            height: 80px;
+            border: 1px dashed #dcdcdc;
+        }
+
+        .gif-info {
+            text-align: center;
+            font-size: 12px;
+            color: #333;
+            margin-top: 15px;
+        }
+
+        .right-item {
+            display: flex;
+            flex-wrap: wrap;
+            width: 550px;
+            border: 1px solid #333;
+            position: relative;
+            padding: 5px;
+            min-height: 690px;
+            border: 1px solid #96c6db;
+        }
+
+        textarea {
+            padding: 5px;
+            min-width: 550px;
+            height: 700px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var gifs = [];
+
+        $(function () {
+            init();
+        });
+
+        function init() {
+            var target_div = null;
+            $('.img-wrapper').each(function () {
+                var $this = $(this);
+
+                $this.attr('draggable', true);
+
+                $this.on('dragstart', function () {
+                    target_div = this;
+                });
+
+                $this.on('dragover', function (event) {
+                    event.preventDefault();
+                });
+
+                $this.on('drop', function () {
+                    if (target_div !== this) {
+                        $(target_div).insertBefore(this);
+                        updateJson();
+                        change_json();
+                    }
+                });
+            });
+        }
+
+        function change_img() {
+            var jsonInput = $('#jsonTextarea').val();
+
+            try {
+                gifs = JSON.parse(jsonInput);
+
+                if (Array.isArray(gifs) && gifs.length === 0) {
+                    alert("数据内容不能为空");
+                }
+
+                $('#gif_boy').empty();
+
+                gifs.forEach(gif => {
+                    $('#gif_boy').append(`
+                    <div class="img-wrapper" data-id="${gif.id}">
+                        <img src="${gif.url}" alt="${gif.alt}" class="img-gif">
+                        <div class="gif-info">${gif.id}-${gif.name.length > 5 ? gif.name.substr(0, 4) + "..." : gif.name}</div>
+                    </div>
+                `);
+                });
+
+                init();
+            } catch (e) {
+                alert("数据格式错误");
+            }
+        }
+
+
+        function change_json() {
+            var jsonInput = $('#jsonTextarea').val();
+            var gifs = JSON.parse(jsonInput);
+
+            gifs.forEach((gif, index) => {
+                gif.id = index + 1;
+            });
+
+            $('#jsonTextarea').val(JSON.stringify(gifs, null, 2));
+            change_img();
+        }
+
+
+        function updateJson() {
+            var updatedGifs = [];
+            $('#gif_boy').children('.img-wrapper').each(function () {
+                var $this = $(this);
+                var id = $this.data('id');
+                var gif = gifs.find(g => g.id === id);
+                if (gif) {
+                    updatedGifs.push(gif);
+                }
+            });
+
+            $('#jsonTextarea').val(JSON.stringify(updatedGifs, null, 2));
+        }
+
+    </script>
+</head>
+
+<body>
+
+    <form id="form1">
+        <div class="tools">
+            <ul class="toolbar">
+                <li class="click"  onclick="change_img()">转换为照片</li>
+            </ul>
+        </div>
+        <div class="container">
+            <div id="gif_json" class="left-item">
+                <textarea id="jsonTextarea" placeholder="请输入数据"></textarea>
+            </div>
+
+            <div id="gif_boy" class="right-item">
+            </div>
+        </div>
+    </form>
+</body>
+
+</html>

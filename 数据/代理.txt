@@ -1,0 +1,75 @@
+select CONVERT(char(10), dtm, 120) as dtm, 
+       uid_from,
+       sum(amount) as score_invite,
+       sum(case when type_dtl = '邀请收益(充值)' then amount else 0 end) as score_pay,
+       sum(case when type_dtl = '邀请收益(礼物)' then amount else 0 end) as score_gift,
+       sum(case when type_dtl = '邀请收益(私信)' then amount else 0 end) as score_msg,
+       u.uid, u.photo, u.nick, u.sex, u.score_total, u.score, u.coin, u.coin_total
+from dbo.score s
+left join dbo.[user] u on (s.uid_from = u.uid)
+where  dtm > '2024-12-01'
+and (type_dtl = '邀请收益(充值)' or type_dtl = '邀请收益(礼物)' or type_dtl = '邀请收益(私信)') 
+group by CONVERT(char(10), dtm, 120), uid_from,u.uid, u.photo, u.nick, u.sex, u.score_total, u.score, u.coin, u.coin_total
+
+
+=========================
+
+1、 代理管理员端
+Admin
+Admin_Sum
+Admin_Sum_Day
+Admin_Invite
+Admin_Pay
+Admin_Score
+------------------------
+Ag_Sum_Day
+Ag_Invite
+Ag_Pay
+Ag_Score
+
+--管理員端統計
+select  CONVERT(char(10), dtm, 120) as dtm,
+        sum(amount) as score,
+        0 as c1,
+        0 as c2
+from dbo.score 
+where (type_dtl = '邀请收益(充值)' or type_dtl = '邀请收益(礼物)' or type_dtl = '邀请收益(私信)') and dtm >= '2024-12-01'
+group by CONVERT(char(10), dtm, 120)
+order by dtm desc
+
+
+=========================================
+--总体统计
+
+select a.*,
+       b.*
+from 
+(select 
+       ag.fz_tag, 
+       u.uid, u.photo, u.nick, u.sex, u.score_total, u.score, u.coin, u.coin_total,u.remark,
+       '2024-12-17' as dtm,
+       sum(case when ag.create_time >= '2024-12-17 00:00:00' and ag.create_time <= '2024-12-17 23:59:59' then 1 else 0 end) c_dtm,
+       COUNT(ag.uid) as c1,
+       sum(case when ag.reg_complete=1 then 1 else 0 end) c2
+       
+from dbo.[user] ag
+left join dbo.[user] u on (ag.fz_tag = u.uid)
+where ag.fz_tag <> '0'
+group by ag.fz_tag, u.uid, u.photo, u.nick, u.sex, u.score_total, u.score, u.coin, u.coin_total,u.remark
+) 
+as a left join 
+(select 
+                                   uid_from,
+                                   sum(case when s.dtm >= '2024-12-17 00:00:00' and s.dtm <= '2024-12-17 23:59:59' then amount else 0 end) as score_dtm,
+                                   
+                                   sum(case when type_dtl = '邀请收益(充值)' then amount else 0 end) as score_pay,
+                                   sum(case when type_dtl = '邀请收益(礼物)' then amount else 0 end) as score_gift,
+                                   sum(case when type_dtl = '邀请收益(私信)' then amount else 0 end) as score_msg,
+                                   sum(amount) as score_invite
+                            from dbo.score s
+                         
+                            where 
+                             (type_dtl = '邀请收益(充值)' or type_dtl = '邀请收益(礼物)' or type_dtl = '邀请收益(私信)') 
+                            group by uid_from)
+as b on (a.fz_tag = b.uid_from)
+order by c_dtm desc

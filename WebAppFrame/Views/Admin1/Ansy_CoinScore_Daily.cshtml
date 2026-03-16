@@ -1,0 +1,529 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/Global.js"></script>
+    <script src="~/Scripts/public.js?id=6"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        #container {
+            display: flex;
+            justify-content: space-between;
+            height: 500px;
+        }
+
+        .item {
+            display: flex;
+            flex-direction: column;
+            width: 24%;
+            height: 100%;
+        }
+
+        .tit {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .search_day {
+            padding: 10px;
+        }
+        .other {
+            font-size:12px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        var grid2;
+        //金币增加
+        var coin_add = {
+            "购买": 0,
+            "会员": 0,
+            "签到": 0,
+            "任务": 0,
+            "其它": 0
+        };
+        //金币减少
+        var coin_decrease = {
+            "礼物": 0,
+            "消息": 0,
+            "好友": 0,
+            "其它": 0
+        };
+
+        //积分增加
+        var score_add = {
+            "礼物": 0,
+            "消息": 0,
+            "好友": 0,
+            "语音":0,
+            "任务": 0,
+            "其它": 0
+        }
+        //积分减少
+        var socre_decrease = {
+            "提现": 0,
+            "兑换金币": 0,
+            "其它": 0
+        }
+
+        var coin_add_other = "";
+        var coin_decrease_other = "";
+        var score_add_other = "";
+        var score_decrease_other = "";
+
+        $(function () {
+            mini.parse();
+            grid = mini.get("datagrid1");
+            grid2 = mini.get("datagrid2");
+            drawCell();
+            search();
+        })
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+
+                if (column.field == "c2") {
+                    var coin = record.c2;
+                    var type = record.type;
+                    var type_dtl = record.type_dtl;
+                    if (type == "减少") {
+                        //礼物
+                        if (type_dtl == "发送礼物") {
+                            coin_decrease.礼物 += coin;
+                        } else
+                        //好友
+                        if (type_dtl == "添加好友") {
+                            coin_decrease.好友 += coin;
+                        } else
+                        //消息
+                        if (type_dtl == "消息支出") {
+                            coin_decrease.消息 += coin;
+                        }
+                        //其它
+                        else {
+                            coin_decrease.其它 += coin;
+                            coin_decrease_other += type_dtl + "("+ coin +")" + "+" ;
+                            $("#other_coin_decrease").html(coin_decrease_other.slice(0, -1));
+                        }
+
+                    }
+                    if (type == "增加") {
+                        //购买
+                        if (type_dtl == "购买") {
+                            coin_add.购买 += coin;
+                        } else
+                        //签到
+                        if (type_dtl == "签到") {
+                            coin_add.签到 += coin;
+                        } else
+                        //会员
+                        if (type_dtl == "任务奖励-会员") {
+                            coin_add.会员 += coin;
+                        } else
+                        //任务
+                        if (type_dtl == "newuser_1" || type_dtl == "newuser_2" || type_dtl == "任务奖励-打招呼" || type_dtl == "任务奖励-登录" || type_dtl == "任务奖励-回复" || type_dtl == "任务奖励-在线") {
+                            coin_add.任务 += coin;
+                        //其它
+                        } else {
+                            coin_add.其它 += coin;
+                            coin_add_other += type_dtl  + "("+ coin +")" + "+" ;
+                            $("#other_coin_add").html(coin_add_other.slice(0, -1));
+                        }
+                    }
+                }
+            });
+            grid2.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                if (column.field == "c2") {
+                    var coin = record.c2;
+                    var type = record.type;
+                    var type_dtl = record.type_dtl;
+                    if (type == "减少") {
+                        if (type_dtl == "兑换金币") {
+                            socre_decrease.兑换金币 += coin;
+                        } else
+                        if (type_dtl == "提现") {
+                            socre_decrease.提现 += coin;
+                        } else
+                        {
+                            socre_decrease.其它 += coin;
+                            score_decrease_other += type_dtl  + "("+ coin +")" + "+" ;
+                            $("#other_score_decrease").html(score_decrease_other.slice(0, -1));
+                        }
+                    }
+                    if (type == "增加") {
+                        //礼物
+                        if (type_dtl == "收到礼物") {
+                            score_add.礼物 += coin;
+                        } else
+                        //好友
+                        if (type_dtl == "同意添加好友") {
+                            score_add.好友 += coin;
+                        } else
+                        //消息
+                        if (type_dtl == "消息收入") {
+                            score_add.消息 += coin;
+                        } else
+                        //消息
+                        if (type_dtl == "语音收入") {
+                            score_add.语音 += coin;
+                        } else
+                        //任务
+                        if (type_dtl == "任务奖励-打招呼" || type_dtl == "任务奖励-登录" || type_dtl == "任务奖励-回复" || type_dtl == "任务奖励-礼物" || type_dtl == "任务奖励-在线") {
+                            score_add.任务 += coin;
+                        } else
+                        //其它
+                        {
+                            score_add.其它 += coin;
+                            score_add_other += type_dtl  + "("+ coin +")" + "+" ;
+                            $("#other_score_add").html(score_add_other.slice(0, -1));
+                        }
+                    }
+                }
+            });
+        }
+
+
+
+    </script>
+
+    <script>
+        function search() {
+            //金币增加
+            for (var key in coin_add) {
+                coin_add[key] = 0;
+            }
+            //金币减少
+            for (var key in coin_decrease) {
+                coin_decrease[key] = 0;
+            }
+            //积分增加
+            for (var key in score_add) {
+                score_add[key] = 0;
+            }
+            //积分减少
+            for (var key in socre_decrease) {
+                socre_decrease[key] = 0;
+            }
+            coin_add_other = "";
+            coin_decrease_other = "";
+            score_add_other = "";
+            score_decrease_other = "";
+
+
+            var dtm = mini.get("dtm").getText();
+            grid.load({
+                "dtm": dtm
+            }, function () {
+                updateDataCoin();
+            });
+            grid2.load({
+                "dtm": dtm
+            }, function () {
+                updateDataScore();
+            });
+        }
+
+        function jump_date(num) {
+            var d = new Date(mini.get("dtm").getText());
+            d.setDate(d.getDate() + num);
+            var dtm = formatTime(d);
+
+            mini.get("dtm").setValue(dtm);
+
+            search();
+        }
+
+        function formatTime(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            return year + '-' + month + '-' + day;
+        }
+
+        function updateDataCoin() {
+            //金币减少饼图
+            var coin_decreaseData = Object.entries(coin_decrease).map(([key, value]) => ({
+                "类别": key,
+                "金币": value
+            }));
+            showPie_coin_decrease("divContainer2", coin_decreaseData);
+
+            //金币增加饼图
+            var coin_addData = Object.entries(coin_add).map(([key, value]) => ({
+                "类别": key,
+                "金币": value
+            }));
+            showPie_coin_add("divContainer", coin_addData);
+
+            
+
+        }
+
+        function updateDataScore() {
+            //积分减少饼图
+            var score_decreaseData = Object.entries(socre_decrease).map(([key, value]) => ({
+                "类别": key,
+                "积分": value
+            }));
+            showPie_score_decrease("divContainer4", score_decreaseData);
+
+            //积分增加饼图
+            var score_addData = Object.entries(score_add).map(([key, value]) => ({
+                "类别": key,
+                "积分": value
+            }));
+            showPie_score_add("divContainer3", score_addData);
+        }
+
+        //显示金币增加饼图
+        function showPie_coin_add(divContainer, data) {
+            var arrColors = ["#2ac106", "#ff0000", "#ff0066", "#ff00cc", "#ff33ff"];
+            chart = new AmCharts.AmPieChart();
+            chart.colors = arrColors; //饼图颜色集合
+            chart.dataProvider = data;
+
+            chart.titleField = "类别";//"类别"; //：之前的提示内容
+            chart.valueField = "金币"; //"次数"/"积分"; //饼块的组成
+            chart.outlineColor = "#FFFFFF";
+            chart.outlineAlpha = 1;
+            chart.outlineThickness = 2;
+            var dtm = mini.get("dtm").getText();
+            var sum = 0;
+            for (var i = 0; i < data.length; i++) {
+                sum += data[i].金币;
+            }
+            if (sum > 10000) {
+                sum = (sum / 10000).toFixed(2) + "万";
+            }
+            var tit = dtm + "金币增加(" + sum + ")";
+            chart.addTitle(tit);
+            chart.labelText = "[[value]]";
+            chart.balloonText = "[[title]]：<br><span style='font-size:14px'><b>[[value]]金币</b> ([[percents]]%)</span>"; //提示信息
+            chart.numberFormatter.precision = 0;
+            chart.depth3D = 0; //3d效果程度  0 , 15, 35
+            chart.angle = 0;
+            chart.labelRadius = 30; //提示内容线条长度 10 , 100
+            chart.innerRadius = 0; //内环大小  0， 20 ， 50
+            legend = new AmCharts.AmLegend();
+            legend.align = "center"; //图标 center, left , right
+            legend.valueText = "";
+            if (1 == 1) {//是否显示图标
+                chart.addLegend(legend);
+            }
+
+            chart.write(divContainer);
+        }
+
+        //显示金币减少饼图
+        function showPie_coin_decrease(divContainer, data) {
+            var arrColors = ["#2ac106", "#7ce962", "#b1efa2", "#00ffff"];
+            chart = new AmCharts.AmPieChart();
+            chart.colors = arrColors; //饼图颜色集合
+            chart.dataProvider = data;
+
+            chart.titleField = "类别";//"类别"; //：之前的提示内容
+            chart.valueField = "金币"; //"次数"/"积分"; //饼块的组成
+            chart.outlineColor = "#FFFFFF";
+            chart.outlineAlpha = 1;
+            chart.outlineThickness = 2;
+            var dtm = mini.get("dtm").getText();
+            var sum = 0;
+            for (var i = 0; i < data.length; i++) {
+                sum += data[i].金币;
+            }
+            if (sum > 10000) {
+                sum = (sum / 10000).toFixed(2) + "万";
+            }
+            var tit = dtm + "金币减少(" + sum + ")";
+            chart.addTitle(tit);
+            chart.labelText = "[[value]]";
+            chart.balloonText = "[[title]]：<br><span style='font-size:14px'><b>[[value]]金币</b> ([[percents]]%)</span>"; //提示信息
+            chart.numberFormatter.precision = 0;
+            chart.depth3D = 0; //3d效果程度  0 , 15, 35
+            chart.angle = 0;
+            chart.labelRadius = 30; //提示内容线条长度 10 , 100
+            chart.innerRadius = 0; //内环大小  0， 20 ， 50
+            legend = new AmCharts.AmLegend();
+            legend.align = "center"; //图标 center, left , right
+            legend.valueText = "";
+            if (1 == 1) {//是否显示图标
+                chart.addLegend(legend);
+            }
+
+            chart.write(divContainer);
+        }
+
+        //显示积分增加饼图
+        function showPie_score_add(divContainer, data) {
+            var arrColors = ["#2ac106", "#7ce962", "#b1efa2","#7ce962", "#ff0000", "#ff00cc"];
+            chart = new AmCharts.AmPieChart();
+            chart.colors = arrColors; //饼图颜色集合
+            chart.dataProvider = data;
+
+            chart.titleField = "类别";//"类别"; //：之前的提示内容
+            chart.valueField = "积分"; //"次数"/"积分"; //饼块的组成
+            chart.outlineColor = "#FFFFFF";
+            chart.outlineAlpha = 1;
+            chart.outlineThickness = 2;
+            var dtm = mini.get("dtm").getText();
+            var sum = 0;
+            for (var i = 0; i < data.length; i++) {
+                sum += data[i].积分;
+            }
+            if (sum > 10000) {
+                sum = (sum / 10000).toFixed(2) + "万";
+            }
+            var tit = dtm + "积分增加(" + sum + ")";
+            chart.addTitle(tit);
+            chart.labelText = "[[value]]";
+            chart.balloonText = "[[title]]：<br><span style='font-size:14px'><b>[[value]]积分</b> ([[percents]]%)</span>"; //提示信息
+            chart.numberFormatter.precision = 0;
+            chart.depth3D = 0; //3d效果程度  0 , 15, 35
+            chart.angle = 0;
+            chart.labelRadius = 30; //提示内容线条长度 10 , 100
+            chart.innerRadius = 0; //内环大小  0， 20 ， 50
+            legend = new AmCharts.AmLegend();
+            legend.align = "center"; //图标 center, left , right
+            legend.valueText = "";
+            if (1 == 1) {//是否显示图标
+                chart.addLegend(legend);
+            }
+
+            chart.write(divContainer);
+        }
+
+        //显示积分减少饼图
+        function showPie_score_decrease(divContainer, data) {
+            var arrColors = ["#2ac106", "#7ce962", "#ff00cc"];
+            chart = new AmCharts.AmPieChart();
+            chart.colors = arrColors; //饼图颜色集合
+            chart.dataProvider = data;
+
+            chart.titleField = "类别";//"类别"; //：之前的提示内容
+            chart.valueField = "积分"; //"次数"/"积分"; //饼块的组成
+            chart.outlineColor = "#FFFFFF";
+            chart.outlineAlpha = 1;
+            chart.outlineThickness = 2;
+            var dtm = mini.get("dtm").getText();
+            var sum = 0;
+            for (var i = 0; i < data.length; i++) {
+                sum += data[i].积分;
+            }
+            if (sum > 10000) {
+                sum = (sum / 10000).toFixed(2) + "万";
+            }
+            var tit = dtm + "积分减少(" + sum + ")";
+            chart.addTitle(tit);
+            chart.labelText = "[[value]]";
+            chart.balloonText = "[[title]]：<br><span style='font-size:14px'><b>[[value]]积分</b> ([[percents]]%)</span>"; //提示信息
+            chart.numberFormatter.precision = 0;
+            chart.depth3D = 0; //3d效果程度  0 , 15, 35
+            chart.angle = 0;
+            chart.labelRadius = 30; //提示内容线条长度 10 , 100
+            chart.innerRadius = 0; //内环大小  0， 20 ， 50
+            legend = new AmCharts.AmLegend();
+            legend.align = "center"; //图标 center, left , right
+            legend.valueText = "";
+            if (1 == 1) {//是否显示图标
+                chart.addLegend(legend);
+            }
+
+            chart.write(divContainer);
+        }
+    </script>
+</head>
+<body>
+    <div class="search_day">
+        <input id="dtm" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+        <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="button" class="sys-btn" style="background-color:forestgreen" value="前一天" onclick="jump_date(-1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="button" class="sys-btn" style="background-color:orange" value="后一天" onclick="jump_date(1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+
+    <div id="container" style="padding:0 8px; margin-top:5px;">
+        <div class="item">
+            <div id="divContainer" style="width: 100%; height:100%; max-height:455px; border: solid 1px #dcdcdc"></div>
+            <span class="other"><span>其它=</span><span id="other_coin_add"></span> </span>
+        </div>
+        <div class="item">
+
+            <div id="divContainer2" style="width: 100%; height: 100%; max-height: 455px; border: solid 1px #dcdcdc"></div>
+            <span class="other"><span>其它=</span><span id="other_coin_decrease"></span> </span>
+        </div>
+        <div class="item">
+
+            <div id="divContainer3" style="width: 100%; height: 100%; max-height: 455px; border: solid 1px #dcdcdc "></div>
+            <span class="other"><span>其它=</span><span id="other_score_add"></span> </span>
+        </div>
+        <div class="item">
+
+            <div id="divContainer4" style="width: 100%; height: 100%; max-height: 455px; border: solid 1px #dcdcdc "></div>
+            <span class="other"><span>其它=</span><span id="other_score_decrease"></span> </span>
+        </div>
+    </div>
+
+    <table style="width: 100%; margin-top: 5px; padding: 0 8px;">
+        <tr>
+            <td style="width: 49%; ">
+                <div id="datagrid1" class="mini-datagrid" style="width: 100%; height: 660px;"
+                     url="/Admin1/GetAnsy_CoinData" idfield="id" allowresize="true"
+                     showsummaryrow="true"
+                     sizelist="[50]" pagesize="50">
+                    <div property="columns">
+                        <div field="xh" width="20" headeralign="center" align="center" allowsort="false">序号</div>
+
+                        <div field="dtm" width="30" renderer="onGenderRenderer" align="center" headeralign="center">时间</div>
+                        <div field="type" width="60" renderer="onGenderRenderer" align="center" headeralign="center">类型</div>
+                        <div field="type_dtl" width="60" renderer="onGenderRenderer" align="left" headeralign="center">类型详情</div>
+                        <div field="c1" width="60" renderer="onGenderRenderer" align="right" headeralign="center">次数</div>
+                        <div field="c2" width="60" renderer="onGenderRenderer" align="right" headeralign="center">金币</div>
+                    </div>
+                </div>
+            </td>
+            <td style="width: 2%;"></td>
+            <td style="width: 49%;">
+                <div id="datagrid2" class="mini-datagrid" style="width:100%; height:660px;"
+                     url="/Admin1/GetAnsy_ScoreData" idfield="id" allowresize="true"
+                     sizelist="[50]" pagesize="50">
+                    <div property="columns">
+                        <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+
+                        <div field="dtm" width="30" renderer="onGenderRenderer" align="center" headeralign="center">时间</div>
+                        <div field="type" width="60" renderer="onGenderRenderer" align="center" headeralign="center">类型</div>
+                        <div field="type_dtl" width="60" renderer="onGenderRenderer" align="left" headeralign="center">类型详情</div>
+                        <div field="c1" width="60" renderer="onGenderRenderer" align="right" headeralign="center">次数</div>
+                        <div field="c2" width="60" renderer="onGenderRenderer" align="right" headeralign="center">积分</div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+
+

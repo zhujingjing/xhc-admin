@@ -1,0 +1,205 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        #container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 33%;
+            height: 100%;
+        }
+        #divContainer {
+            height: 100%;
+        }
+        #divContainer2 {
+            height: 100%;
+        }
+        #divContainer3 {
+            height: 100%;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        $(function () {
+            init();
+        })
+
+        function init() {
+            //设置高度
+            var parentHeight = $(window).height();
+            $("#container").height(parentHeight - 100);
+        }
+
+        function setData(data) {
+            var charData = [
+                { "类别": "200次及以上", "人数": data.sum_people.v_200 },
+                { "类别": "100-200次", "人数": data.sum_people.v_100200 },
+                { "类别": "50-100次", "人数": data.sum_people.v_50100 },
+                { "类别": "50次以下", "人数": data.sum_people.v_50 }
+            ];
+            var sum_people = data.sum_people.v_200 + data.sum_people.v_100200 + data.sum_people.v_50100 + data.sum_people.v_50;
+            showPie_people("divContainer", charData, "类别", "人数", sum_people);
+
+            var scoreData = [
+                { "类别": "200次及以上", "积分": data.sum_score.v_200 },
+                { "类别": "100-200次", "积分": data.sum_score.v_100200 },
+                { "类别": "50-100次", "积分": data.sum_score.v_50100 },
+                { "类别": "50次以下", "积分": data.sum_score.v_50 }
+            ];
+            var sum_score = data.sum_score.v_200 + data.sum_score.v_100200 + data.sum_score.v_50100 + data.sum_score.v_50;
+            showPie_score("divContainer2", scoreData, "类别", "积分", sum_score);
+
+            var chatCountData = [
+                { "类别": "200次及以上", "次数": data.sum_chatCount.v_200 },
+                { "类别": "100-200次", "次数": data.sum_chatCount.v_100200 },
+                { "类别": "50-100次以下", "次数": data.sum_chatCount.v_50100 },
+                { "类别": "50次以下", "次数": data.sum_chatCount.v_50 }
+            ];
+            var sum_chatCount = data.sum_chatCount.v_200 + data.sum_chatCount.v_100200 + data.sum_chatCount.v_50100 + data.sum_chatCount.v_50;
+            showPie_chatCount("divContainer3", chatCountData, "类别", "次数", sum_chatCount);
+        }
+
+    </script>
+
+    <script>
+
+        //显示饼图
+        function showPie_people(divContainer, data, titleField, valueField, sum) {
+            var arrColors = ["#2ac106", "#2ac106", "#2ac106", "#DE4023"];
+            var params = new URLSearchParams(window.location.search);
+            var dtm = params.get('dtm');
+            chart = new AmCharts.AmPieChart();
+            chart.colors = arrColors; //饼图颜色集合
+            chart.dataProvider = data;
+            
+            chart.titleField = titleField;//"类别"; //：之前的提示内容
+            chart.valueField = valueField; //"次数"/"积分"; //饼块的组成
+            chart.outlineColor = "#FFFFFF";
+            chart.outlineAlpha = 1;
+            chart.outlineThickness = 2;
+            var title = dtm + "号-聊天人数组成" + "("+ sum +"人)";
+            chart.addTitle(title);
+            chart.labelText = "[[value]]人";
+            chart.balloonText = "[[title]]：<br><span style='font-size:14px'><b>[[value]]人</b> ([[percents]]%)</span>"; //提示信息
+            chart.numberFormatter.precision = 0;
+            chart.depth3D = 0; //3d效果程度  0 , 15, 35
+            chart.angle = 0;
+            chart.labelRadius = 30; //提示内容线条长度 10 , 100
+            chart.innerRadius = 0; //内环大小  0， 20 ， 50
+            legend = new AmCharts.AmLegend();
+            legend.align = "center"; //图标 center, left , right
+            legend.valueText = "";
+            if (1 == 1) {//是否显示图标
+                chart.addLegend(legend);
+            }
+
+            chart.write(divContainer);
+        }
+
+        function showPie_score(divContainer, data, titleField, valueField, sum) {
+            var arrColors = ["#2ac106", "#2ac106", "#2ac106", "#DE4023"];
+            var params = new URLSearchParams(window.location.search);
+            var dtm = params.get('dtm');
+            chart = new AmCharts.AmPieChart();
+            chart.colors = arrColors; //饼图颜色集合
+            chart.dataProvider = data;
+            chart.titleField = titleField;//"类别"; //：之前的提示内容
+            chart.valueField = valueField; //"次数"/"积分"; //饼块的组成
+            chart.outlineColor = "#FFFFFF";
+            chart.outlineAlpha = 1;
+            chart.outlineThickness = 2;
+            if (sum > 10000) {
+                sum = (sum / 10000).toFixed(2) + "万";
+            }
+            var title = dtm + "号-聊天积分组成" + "(" + sum +"积分)";
+            chart.addTitle(title);
+            chart.labelText = "[[value]]积分";
+            chart.balloonText = "[[title]]：<br><span style='font-size:14px'><b>[[value]]积分</b> ([[percents]]%)</span>"; //提示信息
+            chart.numberFormatter.precision = 0;
+            chart.depth3D = 0; //3d效果程度  0 , 15, 35
+            chart.angle = 0;
+            chart.labelRadius = 30; //提示内容线条长度 10 , 100
+            chart.innerRadius = 0; //内环大小  0， 20 ， 50
+            legend = new AmCharts.AmLegend();
+            legend.align = "center"; //图标 center, left , right
+            legend.valueText = "";
+            if (1 == 1) {//是否显示图标
+                chart.addLegend(legend);
+            }
+
+            chart.write(divContainer);
+        }
+
+        function showPie_chatCount(divContainer, data, titleField, valueField, sum) {
+            var arrColors = ["#2ac106", "#2ac106", "#2ac106", "#DE4023"];
+            var params = new URLSearchParams(window.location.search);
+            var dtm = params.get('dtm');
+            chart = new AmCharts.AmPieChart();
+            chart.colors = arrColors; //饼图颜色集合
+            chart.dataProvider = data;
+
+            chart.titleField = titleField;//"类别"; //：之前的提示内容
+            chart.valueField = valueField; //"次数"/"积分"; //饼块的组成
+            chart.outlineColor = "#FFFFFF";
+            chart.outlineAlpha = 1;
+            chart.outlineThickness = 2;
+            var title = dtm + "号-聊天次数组成" + "(" + sum +"次)";
+            chart.addTitle(title);
+            chart.labelText = "[[value]]次";
+            chart.balloonText = "[[title]]：<br><span style='font-size:14px'><b>[[value]]次</b> ([[percents]]%)</span>"; //提示信息
+            chart.numberFormatter.precision = 0;
+            chart.depth3D = 0; //3d效果程度  0 , 15, 35
+            chart.angle = 0;
+            chart.labelRadius = 30; //提示内容线条长度 10 , 100
+            chart.innerRadius = 0; //内环大小  0， 20 ， 50
+            legend = new AmCharts.AmLegend();
+            legend.align = "center"; //图标 center, left , right
+            legend.valueText = "";
+            if (1 == 1) {//是否显示图标
+                chart.addLegend(legend);
+            }
+
+            chart.write(divContainer);
+        }
+    </script>
+</head>
+<body>
+    <div id="container">
+        <div class="item">
+            <div id="divContainer" style="width: 100%; border: solid 1px #dcdcdc"></div>
+        </div>
+        <div class="item">
+            <div id="divContainer3" style="width: 100%; border: solid 1px #dcdcdc"></div>
+        </div>
+        <div class="item">
+            <div id="divContainer2" style="width: 100%; border: solid 1px #dcdcdc"></div>
+        </div>
+
+    </div>
+</body>
+</html>
+
+

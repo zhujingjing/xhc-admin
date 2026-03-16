@@ -1,0 +1,225 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=9"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .blue {
+            font-size: 18px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .tag-bg-good {
+            display: inline-block;
+            width: 100%;
+            height: 30px;
+            line-height: 30px;
+            background-color: #d2d2d2;
+            text-align: center;
+        }
+
+        .tag-bg-bad {
+            display: inline-block;
+            width: 100%;
+            height: 40px;
+            line-height: 40px;
+            background-color: #00F5FF;
+            text-align: center;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            mini.parse();
+            grid = mini.get("datagrid1");
+            //grid.load();
+            
+            init();
+            bindEvent();
+
+            search();
+            drawCell();
+        })
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml += '<a style="color:blue;" href="javascript:UserAllInfo(\'' + record.uid + '\')">全貌</a>';
+                    if (fn_user_s == "1") {
+                        e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                        e.cellHtml += '<a style="color:blue;" href="javascript:Add(\'' + record.id + '\')">修改</a>';
+                    }
+
+                }
+
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<img src="' + photo + '" class="photo-img" />';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                if (column.name == "name") {
+                    var r = record.name;
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="blue">' + r + '</span>';
+                }
+
+                if (column.name == "totalscore") {
+                    var r = record.totalscore;
+                    e.cellHtml = '<span class="red">' + r + '</span>';
+                }
+
+                for (var i = 0; i <= 9; i++) {
+                    var fieldName = "msg" + i.toString();
+                    if (column.name == fieldName) {
+                        var f = record[fieldName];
+                        var s = "";
+                        if (f > 0) {
+                            s = "tag-bg-bad";
+                        }
+                        else {
+                            s = "tag-bg-good";
+                        }
+
+                        e.cellHtml = '<span class="' + s + '">' + f + '</span>';
+                        //e.cellHtml += '<a href="/Admin1/Tie/?tie_state=-1&nick=' + record.nick + '"><span>' + f + '</span></a>';
+                    }
+                }
+
+            });
+        }
+
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        var fn_user_s = '@ViewData["fn_user_s"]';
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 110);
+
+            $("#name").val("朱静静");
+        }
+
+        function bindEvent() {
+        }
+
+        function search() {
+            var name = $("#name").val();
+            grid.load({
+                "name": name
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">账号使用</a></li>
+        </ul>
+    </div>
+
+    <form id="form1">
+        <div class="sys-content-border" style="padding:8px 3px;">
+            姓名:
+            <select id="name" style="height:24px;">
+                <option value="" selected="selected">全部</option>
+
+                @{
+                    List<string> list = ViewBag.listMan;
+                    string man = string.Empty;
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        man = list[i];
+                        <option value="@man">@man</option>
+                    }
+                }
+
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+            
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Admin1/GetSUserAccountData" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[20,50,100]" pagesize="50">
+            <div property="columns">
+                <div field="xh" width="20" headeralign="center" align="center" allowsort="false">序号</div>
+                <div field="uid" width="80" renderer="onGenderRenderer" align="left" headeralign="center">uid</div>
+                <div name="name" width="40" renderer="onGenderRenderer" align="left" headeralign="center">姓名</div>
+                <div name="photo" width="40" renderer="onGenderRenderer" align="center" headeralign="center">头像</div>
+                <div field="nick" width="40" headeralign="center" align="left" allowsort="false">昵称</div>
+                <div field="sex" width="40" headeralign="center" align="center" allowsort="false">性别</div>
+                <div name="totalscore" width="80" headeralign="center" align="left" allowsort="false">魅力值</div>
+
+                <div field="msg1" name="msg1" width="40" headeralign="center" align="center" allowsort="false">昨天</div>
+                <div field="msg2" name="msg2" width="40" headeralign="center" align="center" allowsort="false">前天</div>
+                <div field="msg3" name="msg3" width="40" headeralign="center" align="center" allowsort="false">3天</div>
+                <div field="msg4" name="msg4" width="40" headeralign="center" align="center" allowsort="false">4天</div>
+                <div field="msg5" name="msg5" width="40" headeralign="center" align="center" allowsort="false">5天</div>
+                <div field="msg6" name="msg6" width="40" headeralign="center" align="center" allowsort="false">6天</div>
+                <div field="msg7" name="msg7" width="40" headeralign="center" align="center" allowsort="false">7天</div>
+                <div field="msg8" name="msg8" width="40" headeralign="center" align="center" allowsort="false">8天</div>
+                <div field="msg9" name="msg9" width="40" headeralign="center" align="center" allowsort="false">9天</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

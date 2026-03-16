@@ -1,0 +1,198 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js?id=1"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        #container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 49%;
+            height: 100%;
+        }
+
+        #divContainer {
+            height: 100%;
+        }
+
+        #divContainer2 {
+            height: 100%;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        $(function () {
+            init();
+        })
+
+        function init() {
+            //设置高度
+            var parentHeight = $(window).height();
+            $("#container").height(parentHeight - 100);
+
+            var dtm_start = '@ViewData["dtm_start"]';
+            var score_left = '@ViewData["score_left"]';
+
+            var data = '@Html.Raw(ViewData["data"])';
+            var data_least = '@Html.Raw(ViewData["data_least"])';
+            data = JSON.parse(data);
+            if (data_least) {
+                data_least = JSON.parse(data_least);
+            } else {
+                data_least = {};
+            }
+
+
+            var other_score = data.s_total - (data.s_gift + data.s_msg + data.s_invite + data.s_plat + data.s_task + data.s_task_old + data.s_award);
+            var title_score = data.s_total || 0;
+            var scoreData = [
+                { "类别": "礼物/好友积分", "数量": data.s_gift },
+                { "类别": "消息收入", "数量": data.s_msg },
+                { "类别": "邀请收益", "数量": data.s_invite },
+                { "类别": "任务积分", "数量": data.s_task },
+                { "类别": "聊天5句话", "数量": data.s_task_old },
+                { "类别": "上榜/平台积分", "数量": data.s_award + data.s_plat },
+                { "类别": "其他积分", "数量": other_score}
+            ];
+            showPie_score("divContainer", scoreData, "类别", "数量", title_score);
+
+            var other_scoreLeast = data_least.s_total - (data_least.s_gift + data_least.s_msg + data_least.s_invite + data_least.s_plat + data_least.s_task + data_least.s_task_old + data_least.s_award);
+            var title_scoreLeast = data_least.s_total || 0;
+            var scoreLeastData = [
+                { "类别": "礼物/好友积分", "数量": data_least.s_gift },
+                { "类别": "消息收入", "数量": data_least.s_msg },
+                { "类别": "邀请收益", "数量": data_least.s_invite },
+                { "类别": "任务积分", "数量": data_least.s_task },
+                { "类别": "聊天5句话", "数量": data_least.s_task_old },
+                { "类别": "上榜/平台积分", "数量": data_least.s_award + data_least.s_plat },
+                { "类别": "其他积分", "数量": other_scoreLeast }
+            ];
+            showPie_scoreLeast("divContainer2", scoreLeastData, "类别", "数量", title_scoreLeast);
+        }
+
+    </script>
+
+    <script>
+
+        //显示饼图
+        function showPie_score(divContainer, data, titleField, valueField, sum) {
+            var arrColors = ["#2ac106", "#7ce962", "#F39A61", "#ff0000", "#F39A61", "#F39A61", "#ff0000"];
+            chart = new AmCharts.AmPieChart();
+            chart.colors = arrColors; //饼图颜色集合
+            chart.dataProvider = data;
+
+            chart.titleField = titleField;//"类别"; //：之前的提示内容
+            chart.valueField = valueField; //"次数"/"积分"; //饼块的组成
+            chart.outlineColor = "#FFFFFF";
+            chart.outlineAlpha = 1;
+            chart.outlineThickness = 2;
+            sum = separate_Num(sum);
+            var title = "总积分(" + sum + ")";
+            chart.addTitle(title);
+            chart.labelText = "[[value]]积分";
+            chart.balloonText = "[[title]]：<br><span style='font-size:14px'><b>[[value]]积分</b> ([[percents]]%)</span>"; //提示信息
+            chart.numberFormatter.precision = 0;
+            chart.depth3D = 0; //3d效果程度  0 , 15, 35
+            chart.angle = 0;
+            chart.labelRadius = 30; //提示内容线条长度 10 , 100
+            chart.innerRadius = 0; //内环大小  0， 20 ， 50
+            legend = new AmCharts.AmLegend();
+            legend.align = "center"; //图标 center, left , right
+            legend.valueText = "";
+            if (1 == 1) {//是否显示图标
+                chart.addLegend(legend);
+            }
+
+            chart.write(divContainer);
+        }
+
+        function showPie_scoreLeast(divContainer, data, titleField, valueField, sum) {
+            var arrColors = ["#2ac106", "#7ce962", "#F39A61", "#ff0000", "#F39A61", "#F39A61", "#ff0000"];
+            chart = new AmCharts.AmPieChart();
+            chart.colors = arrColors; //饼图颜色集合
+            chart.dataProvider = data;
+
+            chart.titleField = titleField;//"类别"; //：之前的提示内容
+            chart.valueField = valueField; //"次数"/"积分"; //饼块的组成
+            chart.outlineColor = "#FFFFFF";
+            chart.outlineAlpha = 1;
+
+            chart.outlineThickness = 2;
+            sum = separate_Num(sum);
+            var dtm = '@ViewData["dtm_start"]';
+            console.log(dtm);
+            var time = difftime(dtm);
+            var title = "最近[" + time +"]积分(" + sum + ")";
+            chart.addTitle(title);
+            chart.labelText = "[[value]]积分";
+            chart.balloonText = "[[title]]：<br><span style='font-size:14px'><b>[[value]]积分</b> ([[percents]]%)</span>"; //提示信息
+            chart.numberFormatter.precision = 0;
+            chart.depth3D = 0; //3d效果程度  0 , 15, 35
+            chart.angle = 0;
+            chart.labelRadius = 30; //提示内容线条长度 10 , 100
+            chart.innerRadius = 0; //内环大小  0， 20 ， 50
+            legend = new AmCharts.AmLegend();
+            legend.align = "center"; //图标 center, left , right
+            legend.valueText = "";
+            if (1 == 1) {//是否显示图标
+                chart.addLegend(legend);
+            }
+
+            chart.write(divContainer);
+        }
+
+        function difftime(dtm) {
+            var rtn;
+            var dtm_pre = new Date(dtm);
+            var dtm_now = new Date();
+            var diffTime = dtm_now - dtm_pre; // 时间差
+            var diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // 转换为天
+            var diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); // 转换为小时
+
+            if (diffDays === 0) {
+                rtn = diffHours + "小时";
+            } else {
+                rtn = diffDays + "天" + diffHours + "小时";
+            }
+
+            return rtn;
+        }
+
+    </script>
+</head>
+<body>
+    <div id="container">
+        <div class="item">
+            <div id="divContainer" style="width: 100%; border: solid 1px #dcdcdc"></div>
+        </div>
+        <div class="item">
+            <div id="divContainer2" style="width: 100%; border: solid 1px #dcdcdc"></div>
+        </div>
+    </div>
+</body>
+</html>
+
+

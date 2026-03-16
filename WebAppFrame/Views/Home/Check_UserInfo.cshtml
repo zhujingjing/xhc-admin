@@ -1,0 +1,325 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>信息审核</title>
+
+
+    <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <style>
+        .ub {
+            display: flex;
+        }
+
+        .ub-ver {
+            flex-direction: column;
+        }
+
+        .ub-as {
+            justify-content: flex-start;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac1 {
+            justify-content: space-around;
+        }
+
+        .ub-ac2 {
+            justify-content: space-between;
+        }
+
+        .ub-ac3 {
+            justify-content: space-evenly;
+        }
+
+        .ub-ae {
+            justify-content: flex-end;
+        }
+
+        .ub-ps {
+            align-items: flex-start;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        .state {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .time-txt {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .photo {
+            width: 5em;
+            height: 5em;
+            border-radius: 50%;
+        }
+
+        .arrow {
+            width: 10em;
+            height: 0.8em;
+        }
+
+        .photo2 {
+            width: 4em;
+            height: 4em;
+            border-radius: 50%;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .blue {
+            color: #32cd32;
+        }
+
+        .top2 {
+            background-color: #e92162;
+            padding: 0 6px;
+            height: 50px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1;
+        }
+
+            .top2 #return {
+                width: 2em;
+                height: 2em;
+                padding: 1em 3em 1em 0;
+            }
+
+            .top2 #refresh {
+                width: 2.7em;
+                height: 2.7em;
+                padding: 1em 1em 1em 3em;
+            }
+
+        body {
+            margin: 0;
+            font-family: PingFangSC-Regular, tahoma, arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            font-family: PingFangSC-Regular, tahoma, arial, sans-serif;
+            background-color: #F0F0F0;
+        }
+
+        #form1 {
+            padding: 8px;
+        }
+
+        .line {
+            border-top: 1px dashed #F0F0F0;
+            margin: 3px 0;
+        }
+          .operate {
+            margin-top: 10px;
+        }
+
+            .operate a {
+                border-radius: .3em;
+                background-color: #e92162;
+                color: #fff;
+                width: 70px;
+                text-align: center;
+                font-size: 15px;
+                text-decoration: none;
+                padding: 5px 0;
+                 margin-left:20px;
+            }
+
+        .operate2 {
+            margin-top: 10px;
+        }
+
+            .operate2 a {
+                border-radius: .3em;
+                background-color: #dfdfdf;
+                color: #fff;
+                width: 70px;
+                text-align: center;
+                font-size: 15px;
+                text-decoration: none;
+                padding: 5px 0;
+                 margin-left:20px;
+            }
+    </style>
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        $(function () {
+            $.ajax({
+                type: "get",
+                url: "/Admin1/Get_Update_UserInfo",
+                // data: { "id": id, "state": state },
+                success: function (data) {
+                    //console.log(data);
+                    var data = JSON.parse(data);
+                    var id, dtm_apply, check_state, photo, nick, sex, val_old, val_new, field_name, dtm_check;
+                    var h = '';
+                    for (var i = 0; i < data.length; i++) {
+                        id = data[i]["id"];
+                        dtm_apply = data[i]["dtm_apply"];
+                        check_state = data[i]["check_state"];
+                        photo = data[i]["photo"];
+                        nick = data[i]["nick"];
+                        sex = data[i]["sex"];
+                        val_old = data[i]["val_old"];
+                        field_name = data[i]["field_name"];
+                        dtm_check = data[i]["dtm_check"];
+                        val_new = data[i]["val_new"];
+                      
+                        photo = servUrl_AppData + '/photo/' + photo;
+                        var btn = '';
+                        
+                        var pic = servUrl_AppData + '/photo/' + val_new;
+                        if (field_name == "photo") {
+                            val_old = '<a href="javascript:Look_BIg_Photo(\'' + val_old + '\')"><img class="photo" src="' + val_old + '"/></a>'
+                        }
+                        if (field_name == "photo") {
+                            val_new = '<a href="javascript:Look_BIg_Photo(\'' + pic + '\')"><img class="photo" src="' + pic + '"/></a>'
+                        }
+                        if (check_state == "失败") {
+                            check_state = '<span class="red">' + check_state + '</span>'
+                             btn = '<div class="operate2 ub ub-pc ub-ae">\
+                                        <a href="javascript:Check(\'' + id + '\',1)">通过</a>\
+                                        <a href="javascript:Check(\'' + id + '\',0)">不通过</a>\
+                                    </div>';
+                        }
+                        if (check_state == "通过") {
+                            check_state = '<span class="blue">' + check_state + '</span>'
+                             btn = '<div class="operate2 ub ub-pc ub-ae">\
+                                        <a href="javascript:Check(\'' + id + '\',1)">通过</a>\
+                                        <a href="javascript:Check(\'' + id + '\',0)">不通过</a>\
+                                    </div>';
+                        }
+                        if (check_state == "待审核") {
+                            check_state = '<span class="blue">' + check_state + '</span>'
+                             btn = '<div class="operate ub ub-pc ub-ae">\
+                                        <a href="javascript:Check(\'' + id + '\',1)">通过</a>\
+                                        <a href="javascript:Check(\'' + id + '\',0)">不通过</a>\
+                                    </div>';
+                        }
+
+                        h += '<div style="background-color:#fff;border-radius:.5em; padding: 5px 10px;margin-bottom:15px;">\
+                                    <div class="ub ub-ac2">\
+                                        <span class="time-txt">' + dtm_apply + '</span>\
+                                        <span class="state">' + check_state + '</span>\
+                                    </div>\
+                                    <div class="line" style="margin-bottom:10px;"></div>\
+                                    <div class="ub ub-pc">\
+                                        <img class="photo" src="' + photo + '" />\
+                                            <span style="margin:0 15px;">' + nick + '</span>\
+                                            <span>('+sex+')</span>\
+                                    </div>\
+                                    <div class="ub ub-ac2" style="margin:10px">\
+                                        <div class="ub ub-ver ub-pc ub-ac">' + val_old + '</div>\
+                                        <div class="ub ub-ver ub-pc ub-ac2">\
+                                            <span style="color:#e92162">' + field_name + '</span>\
+                                            <img class="arrow" src="http://www.daozhenec.com/img/%E5%8F%B3%E7%AE%AD%E5%A4%B4.e607b529.png" />\
+                                            <span style="color:#888">' + dtm_check + '</span>\
+                                        </div>\
+                                        <div class="ub ub-ver ub-pc ub-ac">' + val_new + '</div>\
+                                    </div><div class="line" style="margin-bottom:10px;"></div>' + btn + '</div>'
+                    }
+                    $("#form1").html(h);
+
+                }
+            });
+
+            $("#return").bind("click", function () {
+                location.href = '/Home/Check_Survey';
+            });
+
+            $("#refresh").bind("click", function () {
+                location.reload();
+            });
+        });
+        function Check(id, state) {
+
+            var tag = confirm("确定要审核吗");
+            if (tag == false) {
+                return false;
+            }
+
+            $.ajax({
+                type: "get",
+                url: "/Admin1/Update_UserInfo",
+                data: { "id": id, "state": state },
+                success: function (data) {
+                    var data = JSON.parse(data);
+                    if (data.state == '1') {
+                    }
+                    location.reload();
+                }
+            });
+        }
+
+
+        function Look_BIg_Photo(pic) {
+            mini.open({
+                url: "/Admin1/Big_Photo/?pic=" + pic,
+                showMaxButton: false,
+                title: "查看大图",
+                width: 350,
+                height: 450,
+                ondestroy: function (action) {
+
+                }
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <div class="main">
+        <div class="top2 ub ub-pc ub-ac2">
+            <img id="return" src="http://wx2.xhchat.cn/img/%E8%BF%94%E5%9B%9E%E7%AE%AD%E5%A4%B4.93b021b8.png" />
+            <img id="refresh" src="~/Images/刷新.png" />
+        </div>
+        <div style="height:58px;"></div>
+        <form id="form1">
+            <div style="background-color:#fff;border-radius:.5em; padding: 5px 10px;margin-bottom:15px;">
+                <div class="ub ub-ac2">
+                    <span class="time-txt">2020-12-12 16:27:30</span>
+                    <span class="state">成功</span>
+                </div>
+                <div class="line" style="margin-bottom:10px;"></div>
+                <div class="ub ub-pc">
+                    <img class="photo" src="http://xhcapp.zhuochuangzb.com/photo/photo_define/a0f0f3bd-6c33-48eb-816e-4770c2273420.jpg" />
+                        <span style="margin:0 15px;">常山赵子龙</span>
+                        <span>(男生)</span>
+                </div>
+                <div class="ub ub-ac2" style="margin:10px">
+                    <div class="ub ub-ver ub-pc ub-ac">
+                        <img class="photo2" src="http://xhcapp.zhuochuangzb.com/photo/photo_girl/1001.jpg" />
+                    </div>
+                    <div class="ub ub-ver ub-pc ub-ac2">
+                        <span style="color:#e92162">photo</span>
+                        <img class="arrow" src="http://www.daozhenec.com/img/%E5%8F%B3%E7%AE%AD%E5%A4%B4.e607b529.png" />
+                        <span style="color:#888">2020-12-12 16:27:30</span>
+                    </div>
+                    <div class="ub ub-ver ub-pc ub-ac">
+                        <img class="photo2" src="http://xhcapp.zhuochuangzb.com/photo/photo_girl/1001.jpg" />
+                    </div>
+                </div>
+                <div class="operate ub ub-pc ub-ae">
+                    <a>通过</a>
+                    <a>不通过</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

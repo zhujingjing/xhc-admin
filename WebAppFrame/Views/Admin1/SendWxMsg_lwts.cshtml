@@ -1,0 +1,176 @@
+﻿
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/demo.css" rel="stylesheet" type="text/css" />
+    <style>
+        .ub {
+            display: flex;
+        }
+
+        .ub-ver {
+            flex-direction: column;
+        }
+
+        .ub-as {
+            justify-content: flex-start;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac1 {
+            justify-content: space-around;
+        }
+
+        .ub-ac2 {
+            justify-content: space-between;
+        }
+
+        .ub-ac3 {
+            justify-content: space-evenly;
+        }
+
+        .ub-ae {
+            justify-content: flex-end;
+        }
+
+        .ub-ps {
+            align-items: flex-start;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+
+        .ok {
+            background-color: RGB(62,175,224);
+        }
+
+        .no {
+            background-color: #f00;
+        }
+
+        .main {
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main2 {
+            border: 1px solid #dfdfdf;
+            padding: 15px;
+            width: 480px;
+        }
+
+        .block {
+            margin-top: 20px;
+        }
+
+        .item {
+            margin-top: 10px;
+        }
+
+            .item .sp1 {
+                display: inline-block;
+                color: #888;
+                width: 80px;
+            }
+
+            .item .sp2 {
+                color: #191552;
+            }
+
+        .btn_send {
+            background-color: #e92162;
+            color: #fff;
+            padding: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <form id="form1">
+            <div class="main2">
+                <div class="ub ub-ver" style="margin-bottom:10px;">
+                    <span style="margin-bottom:15px;font-size:19px; font-weight:bold;">实时交易提醒</span>
+                    <span style="color:#888">你的礼物投诉已审核，平台已返还<label id="amount"></label>金币</span>
+                </div>
+                <div class="block">
+                    <div class="item">
+                        <span class="sp1">交易时间：</span>
+                        <span id="dtm" class="sp2">2017年7月15日</span>
+                    </div>
+                    <div class="item">
+                        <span class="sp1">交易类型：</span>
+                        <span class="sp2">礼物投诉-返还金币</span>
+                    </div>
+                    <div class="item">
+                        <span class="sp1">交易金额：</span>
+                        <span id="amount2" class="sp2"></span>
+                    </div>
+                    <div class="item">
+                        <span class="sp1">备注：</span>
+                        <span style="color:#f00;">点击去领取！</span>
+                    </div>
+                </div>
+            </div>
+            <div id="btn_send" class="btn_send ub ub-pc ub-ac">发送</div>
+        </form>
+    </div>
+</body>
+</html>
+
+<script src="~/Scripts/jquery-1.8.2.min.js"></script>
+
+<script type="text/javascript">
+    var uid = "@ViewData["uid"]";
+    var amount = "@ViewData["amount"]";
+    var dtm = "@ViewData["dtm"]";
+
+    $(function () {
+        $("#amount").html(amount);
+        $("#amount2").html(amount+"金币");
+        $("#dtm").html(dtm);
+
+        $("#btn_send").bind("click", function () {
+            $("#btn_send").html("发送中···");
+            $("#btn_send").unbind();
+            doSendWxMsg();
+        });
+
+    });
+
+    function doSendWxMsg() {
+
+        var tag = "13";
+        var tradeDateTime = dtm;
+        var tradeType = "礼物投诉-返还金币";
+        var curAmount = amount + "金币";
+        var send = {
+            "coin":amount,
+            "tradeDateTime": tradeDateTime,
+            "tradeType": tradeType,
+            "curAmount": curAmount
+        };
+        var strData = JSON.stringify(send);
+        $.ajax({
+            type: "POST",
+            url: "/Admin1/DoSendWxMsg",
+            data: { "uid": uid, "tag": tag, "strData": strData },
+            success: function (data) {
+                $("#btn_send").html("发送成功");
+                alert(data);
+                CloseWindow("ok");
+            }
+        });
+    }
+
+    function CloseWindow(action) {
+        if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+        else window.close();
+    }
+</script>

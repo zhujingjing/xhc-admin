@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/demo.css" rel="stylesheet" type="text/css" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/public.js"></script>
+    <style>
+        .btn {
+            margin-top: 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 18px;
+            line-height: 30px;
+            bottom: 0;
+            border: 1px solid RGB(62,175,224);
+            border-radius: 5px;
+            width: 40%;
+            cursor: pointer;
+        }
+
+        .ok {
+            background-color: RGB(62,175,224);
+        }
+
+        .no {
+            background-color: #f00;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="">
+            <form id="form1">
+                <div style="height:40px; line-height:40px;">
+                    <select id="kill_hour" style="width:100%; height:28px; line-height:28px;">
+                        <option value="">请选择</option>
+                    </select>
+                </div>
+                <select id="kill_reason" style="width:100%; height:28px; line-height:28px;">
+                    <option value="">请选择</option>
+                </select>
+                
+                <input type="button" id="btnok" class="btn ok" value="封杀" />
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+
+<script type="text/javascript">
+    $(function () {
+        // 批量加载下拉框数据
+        var categories = ["kill_hours", "feng_hao_reason"];
+        loadBatchDropdownOptions(categories, function(data) {
+            // 更新下拉框选项
+            updateDropdown("kill_hour", data["kill_hours"], true);
+            updateDropdown("kill_reason", data["feng_hao_reason"], false);
+        });
+        
+        $("#btnok").bind("click", function () {
+            var uid = "@ViewData[\"uid\"]";
+            var kill_hour = $("#kill_hour").val();
+            var kill_reason = $("#kill_reason").val();
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/FengHao",
+                data: { "uid": uid, "hour": kill_hour, "reason": kill_reason },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data.state == "1") {
+                        //alert("封杀成功！");
+                        //CloseWindow("ok");
+                        docheck();
+                    }
+                }
+            });
+        });
+    });
+    function docheck() {
+        var id = '@ViewData["id"]';
+        $.ajax({
+            type: "get",
+            url: "/Admin1/Update_Check_Complain2",
+            data: { "id": id, "rst_check": "已封号", "rst": "成功" },
+            success: function (data) {
+                CloseWindow("ok");
+            }
+        });
+    }
+
+    function CloseWindow(action) {
+        if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+        else window.close();
+    }
+</script>

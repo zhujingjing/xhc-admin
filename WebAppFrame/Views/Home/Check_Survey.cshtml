@@ -1,0 +1,439 @@
+﻿
+
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>小火柴移动端后台</title>
+    <link href="~/Styles/m_public.css?id=3" rel="stylesheet" />
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <style>
+        html body {
+            width: 100%;
+        }
+        .ub {
+            display: flex;
+        }
+
+        .ub-ver {
+            flex-direction: column;
+        }
+
+        .ub-as {
+            justify-content: flex-start;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac1 {
+            justify-content: space-around;
+        }
+
+        .ub-ac2 {
+            justify-content: space-between;
+        }
+
+        .ub-ac3 {
+            justify-content: space-evenly;
+        }
+
+        .ub-ae {
+            justify-content: flex-end;
+        }
+
+        .ub-ps {
+            align-items: flex-start;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        .top {
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-weight: 100;
+            font-size: 14px;
+            font-family: '微软雅黑', Helvetica, Arial, sans-serif;
+        }
+
+        .item {
+            margin-top:10px;
+            padding: 10px;
+            border: 1px solid #dcdcdc;
+            border-radius:.5em;
+        }
+           .line{
+                 border-top:1px dashed #F0F0F0;
+                 margin:3px 0;
+             }
+        #form1 {
+            padding: 0 5px 5px 5px;
+        }
+
+        .item-parm {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 16px;
+            padding: 10px 0;
+        }
+
+        .desc {
+            color: #888;
+            font-family: "微软雅黑", Helvetica, Arial, sans-serif;
+        }
+
+        .parm-val {
+            font-weight: bold;
+            min-width: 10px;
+        }
+
+        .state {
+            display: inline-block;
+            border: solid 1px #fff;
+            width: 100px;
+            height: 35px;
+            border-radius: 5px;
+            background-color: #dcdcdc;
+        }
+
+        .state-green {
+            background-color: #4cff00;
+        }
+
+        .state-green2 {
+            background-color: #00ffff;
+        }
+
+        .state-yellow {
+            background-color: #ffd800;
+        }
+
+        .state-red {
+            background-color: #f00;
+        }
+
+        .state-purple {
+            background-color: #CC0099;
+        }
+
+        .ub {
+            display: flex;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac2 {
+            justify-content: space-around;
+        }
+
+        .ub-ac1 {
+            justify-content: space-between;
+        }
+        .function a{
+            padding:10px 0;
+            border-radius:.3em;
+            background-color:#e92162;
+            width:100px;
+            font-size:15px;
+            color:#fff;
+        }
+        .acc{
+            margin:25px 0;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        $(function () {
+            
+            init();
+          
+        })
+
+        function init() {
+          
+            $(".state").removeClass("state-green");
+            $(".state").removeClass("state-yellow");
+            $(".state").removeClass("state-red");
+
+            setTimeout(init_UserInfo, 100);
+
+            setTimeout(init_ScoreTx, 700);
+
+            setTimeout(init_Seek_people, 1000);
+
+            setTimeout(init_GiftTs, 1300);
+
+            setTimeout(init_FeedBack, 1900);
+
+            setTimeout(init_ComPlain, 2500);
+
+            setTimeout(init_Album, 3000);
+
+            click();
+        }
+
+
+
+
+        function init_UserInfo() {
+            //后台
+            $.ajax({
+                type: "get",
+                url: "/Admin1/PlatSummary_UserInfo",
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data.state == "1") {
+                        var val = data.msg;
+                        $("#palt_UserInfo").html(val);
+                        if (val > 0 && val <= 3) { $("#palt_UserInfo").next().addClass("state-yellow"); }
+                        else if (val > 3) { $("#palt_UserInfo").next().addClass("state-red"); }
+                        else { $("#palt_UserInfo").next().addClass("state-green"); }
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function init_ScoreTx() {
+            //后台
+            $.ajax({
+                type: "get",
+                url: "/Admin1/PlatSummary_ScoreTx",
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        var val = data.msg;
+                        $("#palt_ScoreTx").html(val);
+                        if (val > 0 && val <= 3) { $("#palt_ScoreTx").next().addClass("state-yellow"); }
+                        else if (val > 3) { $("#palt_ScoreTx").next().addClass("state-red"); }
+                        else { $("#palt_ScoreTx").next().addClass("state-green"); }
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function init_Seek_people() {
+            //后台
+            $.ajax({
+                type: "get",
+                url: "/Admin1/PlatSummary_Seek_people",
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        var val = data.msg;
+                        $("#palt_Seek_people").html(val);
+                        if (val > 0 && val <= 3) { $("#palt_Seek_people").next().addClass("state-yellow"); }
+                        else if (val > 3) { $("#palt_Seek_people").next().addClass("state-red"); }
+                        else { $("#palt_Seek_people").next().addClass("state-green"); }
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function init_GiftTs() {
+            //后台
+            $.ajax({
+                type: "get",
+                url: "/Admin1/PlatSummary_GiftTs",
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        var val = data.msg;
+                        $("#plat_GiftTs").html(val);
+                        if (val > 0 && val <= 3) { $("#plat_GiftTs").next().addClass("state-yellow"); }
+                        else if (val > 3) { $("#plat_GiftTs").next().addClass("state-red"); }
+                        else { $("#plat_GiftTs").next().addClass("state-green"); }
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function init_FeedBack() {
+            //后台
+            $.ajax({
+                type: "get",
+                url: "/Admin1/PlatSummary_FeedBack",
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        var val = data.msg;
+                        $("#plat_FeedBack").html(val);
+                        if (val > 0 && val <= 3) { $("#plat_FeedBack").next().addClass("state-yellow"); }
+                        else if (val > 3) { $("#plat_FeedBack").next().addClass("state-red"); }
+                        else { $("#plat_FeedBack").next().addClass("state-green"); }
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function init_ComPlain() {
+            //后台
+            $.ajax({
+                type: "get",
+                url: "/Admin1/PlatSummary_ComPlain",
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        var val = data.msg;
+                        $("#plat_ComPlain").html(val);
+                        if (val > 0 && val <= 3) { $("#plat_ComPlain").next().addClass("state-yellow");}
+                        else if (val > 3) { $("#plat_ComPlain").next().addClass("state-red");}
+                        else { $("#plat_ComPlain").next().addClass("state-green"); }
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function init_Album() {
+            //后台
+            $.ajax({
+                type: "get",
+                url: "/Admin1/PlatSummary_ALbum",
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        var val = data.msg;
+                        $("#plat_Album").html(val);
+                        if (val > 0 && val <= 3) { $("#plat_Album").next().addClass("state-yellow"); }
+                        else if (val > 3) { $("#plat_Album").next().addClass("state-red"); }
+                        else { $("#plat_Album").next().addClass("state-green"); }
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function click() {
+
+            $("#info_check").bind("click", function () {
+                location.href = '/Home/Check_UserInfo';
+            });
+            $("#score_tx").bind("click", function () {
+                location.href = '/Home/Score_Tx';
+            });
+            $("#people_tx").bind("click", function () {
+                location.href = '/Home/Seek_People';
+            });
+            $("#gift_tousu").bind("click", function () {
+                location.href = '/Home/Gift_TouSu';
+            });
+            $("#feedback").bind("click", function () {
+                location.href = '/Home/Check_User_FeedBack';
+            });
+            $("#complain").bind("click", function () {
+                location.href = '/Home/Check_User_Complain';
+            });
+            $("#album").bind("click", function () {
+                location.href = '/Home/Check_User_Album/0';
+            });
+        }
+      
+
+    </script>
+</head>
+<body>
+    <form id="form1">
+        <div class="item">
+            <div class="item-parm">
+                <span class="desc">信息审核:</span>&nbsp;&nbsp;
+                <span class="parm-val" id="palt_UserInfo"></span>&nbsp;&nbsp;
+                <span class="state" id="info_check">&nbsp;&nbsp;</span>
+            </div>
+            <div class="line"></div>
+            <div class="item-parm">
+                <span class="desc">提现审核:</span>&nbsp;&nbsp;
+                <span class="parm-val" id="palt_ScoreTx"></span>&nbsp;&nbsp;
+                <span class="state" id="score_tx">&nbsp;&nbsp;</span>
+            </div>
+            <div class="line"></div>
+            <div class="item-parm">
+                <span class="desc">寻&nbsp;&nbsp;人&nbsp;区:</span>&nbsp;&nbsp;
+                <span class="parm-val" id="palt_Seek_people"></span>&nbsp;&nbsp;
+                <span class="state" id="people_tx">&nbsp;&nbsp;</span>
+            </div>
+            <div class="line"></div>
+            <div class="item-parm">
+                <span class="desc">礼物投诉:</span>&nbsp;&nbsp;
+                <span class="parm-val" id="plat_GiftTs"></span>&nbsp;&nbsp;
+                <span class="state" id="gift_tousu">&nbsp;&nbsp;</span>
+            </div>
+            <div class="line"></div>
+            <div class="item-parm">
+                <span class="desc">用户反馈:</span>&nbsp;&nbsp;
+                <span class="parm-val" id="plat_FeedBack"></span>&nbsp;&nbsp;
+                <span class="state" id="feedback">&nbsp;&nbsp;</span>
+            </div>
+            <div class="line"></div>
+            <div class="item-parm">
+                <span class="desc">聊天举报:</span>&nbsp;&nbsp;
+                <span class="parm-val" id="plat_ComPlain"></span>&nbsp;&nbsp;
+                <span class="state" id="complain">&nbsp;&nbsp;</span>
+            </div>
+            <div class="line"></div>
+            <div class="item-parm">
+                <span class="desc">相册审核:</span>&nbsp;&nbsp;
+                <span class="parm-val" id="plat_Album"></span>&nbsp;&nbsp;
+                <span class="state" id="album">&nbsp;&nbsp;</span>
+            </div>
+        </div>
+
+        <div class="item">
+           <div class="function ub ub-pc ub-ac2">
+               <a class="ub ub-pc ub-ac" href="http://curmsg.zhuochuangzb.com/Home/MsgCur_Girl/zjj_20201010">封号监控</a>
+               <a class="ub ub-pc ub-ac" href="http://curmsg.zhuochuangzb.com/Home/MsgCur/zjj_20201010">消息监控</a>
+               <a class="ub ub-pc ub-ac" href="http://curmsg.zhuochuangzb.com/Home/Msg_History/zjj_20201010">封号历史</a>
+              
+           </div>
+            <div class="function acc ub ub-pc ub-ac2">
+                <a class="ub ub-pc ub-ac" href="http://xhcadmin.zhuochuangzb.com/Home/UserNew_Hour/xhc2019_zjj">小时流量</a>
+                <a class="ub ub-pc ub-ac" href="http://tie.zhuochuangzb.com/Home/SummaryTotalScore2/?user_name=">今日得分</a>
+                <a class="ub ub-pc ub-ac" href="/Home/Kill_UnDo">解封用户</a>
+            </div>
+            <div class="function ub ub-pc ub-ac2">
+                <a class="ub ub-pc ub-ac" href="/Home/List_Reward">上榜奖励</a>
+                <a class="ub ub-pc ub-ac" href="/Home/Chat_User">聊天用户</a>
+                <div class="ub ub-pc ub-ac" style="border:none;width:100px;"></div>
+            </div>
+        </div>
+        
+
+
+    </form>
+</body>
+</html>

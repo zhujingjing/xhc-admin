@@ -1,0 +1,527 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=5"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            height: 28px;
+            line-height: 28px;
+            font-size: 18px;
+            font-weight: bold;
+            color: red;
+        }
+
+        .blue {
+            height: 28px;
+            line-height: 28px;
+            font-size: 18px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .yellow {
+            height: 28px;
+            line-height: 28px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333388;
+        }
+
+        .orange {
+            height: 28px;
+            line-height: 28px;
+            font-size: 18px;
+            font-weight: bold;
+            color: orange;
+        }
+
+        .reward_mny {
+            height: 28px;
+            line-height: 28px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ee5a78;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            init();
+
+            mini.parse();
+            grid = mini.get("datagrid1");
+            //grid.load();
+
+            search2();
+
+            drawCell();
+
+
+            bindEvent();
+        })
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+
+                    if (show_pscore_oper == 1) {
+                        e.cellStyle = "text-align:center";
+                        e.cellHtml = '<a style="color:blue;" href="javascript:createScore(\'' + record.dtm + '\')">拉取</a>';
+                        e.cellHtml += '&nbsp;&nbsp;-&nbsp;&nbsp;';
+                        e.cellHtml += '<a style="color:blue;" href="javascript:updateScore(\'' + record.id + '\')">修改</a>';
+                        e.cellHtml += '&nbsp;&nbsp;-&nbsp;&nbsp;';
+                        e.cellHtml += '<a style="color:blue;" href="javascript:pScoreDtl(\'' + record.id + '\')">详情</a>';
+                    }
+                    else {
+                        e.cellStyle = "text-align:center";
+                        e.cellHtml = '<a style="color:blue;" href="javascript:pScoreDtl(\'' + record.id + '\')">详情</a>';
+                    }
+                }
+
+                if (column.name == "total") {
+                    var v = 0;
+                    if (record.total) {
+                        v = record.total;
+                    }
+                    var s = "color:red; font-size:21px; line-height:28px; font-weight:bold;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+
+                if (column.name == "rate") {
+                    var v = 0;
+                    if (record.total) {
+                        v = (record.s_gift * 1.0 / record.total * 100).toFixed(1);
+                    }
+                    var s = "color:green; font-size:18px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '%</span>';
+                }
+
+              
+                if (column.name == "s_msg") {
+                    var v = 0;
+                    if (record.s_msg) {
+                        v = record.s_msg;
+                    }
+                    var s = "color:blue; font-size:18px; line-height:28px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+                if (column.name == "s_blackq") {
+                    var v = 0;
+                    if (record.s_blackq) {
+                        v = record.s_blackq;
+                    }
+                    var s = "color:blue; font-size:18px; line-height:28px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+                if (column.name == "s_gift") {
+                    var v = 0;
+                    if (record.s_gift) {
+                        v = record.s_gift;
+                    }
+                    var s = "color:blue; font-size:18px; line-height:28px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+
+                if (column.name == "s_msg_r") {
+                    var v = 0;
+                    if (record.s_msg_r) {
+                        v = record.s_msg_r;
+                    }
+                    var s = "color:#FF00FF; font-size:18px; line-height:28px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+                if (column.name == "s_blackq_r") {
+                    var v = 0;
+                    if (record.s_blackq_r) {
+                        v = record.s_blackq_r;
+                    }
+                    var s = "color:#FF00FF; font-size:18px; line-height:28px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+                if (column.name == "s_gift_r") {
+                    var v = 0;
+                    if (record.s_gift_r) {
+                        v = record.s_gift_r;
+                    }
+                    var s = "color:#FF00FF; font-size:18px; line-height:28px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+
+                if (column.name == "c_msg_suc") {
+                    var v = 0;
+                    if (record.c_msg_suc) {
+                        v = record.c_msg_suc;
+                    }
+                    var s = "color:red; font-size:21px; line-height:18px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+
+                if (column.name == "c_blackq") {
+                    var v = 0;
+                    if (record.c_blackq) {
+                        v = record.c_blackq;
+                    }
+                    var s = "color:blue; font-size:18px; line-height:28px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+                if (column.name == "c_blackq_men") {
+                    var v = 0;
+                    if (record.c_blackq_men) {
+                        v = record.c_blackq_men;
+                    }
+                    var s = "color:blue; font-size:18px; line-height:28px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+
+                if (column.name == "s_other") {
+                    var v = 0;
+                    if (record.s_other) {
+                        v = record.s_other;
+                    }
+                    var s = "color:#FF00FF; font-size:18px; line-height:28px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+
+                if (column.name == "s_sub") {
+                    var v = 0;
+                    if (record.s_sub) {
+                        v = record.s_sub;
+                    }
+                    var s = "color:red; font-size:21px; line-height:18px;";
+                    e.cellHtml = '<span style="' + s + '">' + v + '</span>';
+                }
+
+            });
+        }
+
+        function onDrawSummaryCell(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+            //客户端汇总计算
+            if (e.field == "s_msg"
+                || e.field == "s_blackq"
+                || e.field == "s_gift"
+                || e.field == "c_blackq"
+                || e.field == "c_blackq_men"
+                ) {
+                e.cellStyle = "text-align:center";
+                e.cellHtml = '<span class="blue">' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "s_msg_r"
+                || e.field == "s_blackq_r"
+                || e.field == "s_gift_r"
+                || e.field == "s_other"
+                
+                ) {
+                e.cellStyle = "text-align:center";
+                e.cellHtml = '<span style="color:#FF00FF; font-size:18px; line-height:28px;">' + e.cellHtml + '</span>';
+            }
+
+            if (
+                e.field == "total"
+                //|| e.field == "c_msg_suc"
+                || e.field == "s_sub"
+                ) {
+                e.cellStyle = "text-align:center";
+                e.cellHtml = '<span class="red">' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "rate") {
+
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="color:green; font-size:18px;">' + e.cellHtml + '</span>';
+            }
+        }
+
+    </script>
+
+    <script>
+        var show_pscore_oper = '@ViewData["fn_user_s"]';
+        var month = '@ViewData["month"]';
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 110);
+
+            if (month.length == 1) {
+                month = "0" + month;
+            }
+            $("#month").val(month);
+
+            if (show_pscore_oper == 1) {
+                $("#btn_create").show();
+            }
+        }
+
+        function bindEvent() {
+        }
+
+        //生成绩效数据
+        function createScore(dtm) {
+            //loading();
+            mini.mask({
+                el: document.body,
+                cls: 'mini-mask-loading',
+                html: '正在生成...'
+            });
+            $.ajax({
+                type: "Get",
+                url: "/Admin1/CreatePScore/" + dtm,
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data.state == "1") {
+                        grid.reload();
+                        mini.unmask(document.body);
+                    }
+                    else {
+                        mini.alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function pScoreDtl(id) {
+            if (!id || id == 'null') {
+                mini.alert("该日期下的数据还未生成");
+                return false;
+            }
+
+
+
+            //mini.alert(id);
+            mini.open({
+                url: "/Admin1/PScore_Dtl/" + id,
+                showMaxButton: false,
+                title: "详情",
+                width: 600,
+                height: 620,
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        grid.reload();
+                    }
+                    else if (action == "cancel") {
+
+                    }
+                }
+            });
+        }
+
+        //修改绩效数据
+        function updateScore(id) {
+            if (!id || id == 'null') {
+                mini.alert("该日期下的数据不能修改");
+                return false;
+            }
+
+            //后台修改数据
+            //mini.alert(id);
+            mini.open({
+                url: "/Admin1/PScore_Update/" + id,
+                showMaxButton: false,
+                title: "完善绩效得分",
+                width: 600,
+                height: 520,
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        grid.reload();
+                    }
+                    else if (action == "cancel") {
+
+                    }
+                }
+            });
+        }
+
+        function loading() {
+            mini.mask({
+                el: document.body,
+                cls: 'mini-mask-loading',
+                html: '正在生成...'
+            });
+            setTimeout(function () {
+                mini.unmask(document.body);
+            }, 3000);
+        }
+
+        function search() {
+            var year = $("#year").val();
+            var month = $("#month").val();
+            var user_name = $("#user_name").val();
+
+            grid.load({
+                "year":year,
+                "month": month,
+                "user_name": user_name
+            });
+        }
+
+        function search2() {
+            var dtm = mini.get("dtm_2").getText();
+            var month = $("#month").val();
+            var user_name = $("#user_name").val();
+
+            grid.load({
+                "dtm": dtm,
+                "month": month,
+                "user_name": user_name
+            });
+        }
+
+        function search3(dtm) {
+            var month = $("#month").val();
+            var user_name = $("#user_name").val();
+
+            grid.load({
+                "dtm": dtm,
+                "month": month,
+                "user_name": user_name
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">绩效统计</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+            统计年份:
+            <select id="year" style="height:24px; text-align:center;">
+                <option value="2017">2017</option>
+                <option value="2018">2018</option>
+                <option value="2019">2019</option>
+                <option value="2020" selected>2020</option>
+                <option value="2021">2021</option>
+                <option value="2022">2022</option>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            统计月份:
+            <select id="month" style="height:24px; text-align:center;">
+                <option value="01">1</option>
+                <option value="02">2</option>
+                <option value="03">3</option>
+                <option value="04">4</option>
+                <option value="05">5</option>
+                <option value="06">6</option>
+                <option value="07">7</option>
+                <option value="08">8</option>
+                <option value="09">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            统计对象:
+            <select id="user_name" style="height:24px;">
+                <option value="" selected="selected">全部</option>
+
+                @{
+                    List<string> list = ViewBag.listMan;
+                    string man = string.Empty;
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        man = list[i];
+                        <option value="@man">@man</option>
+                    }
+                }
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_create" type="button" class="sys-btn" style="display:none; width:150px;" value="生成(@ViewData["dtm_y"])" onclick="createScore('@ViewData["dtm"]')" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            指定日期:<input id="dtm_2" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_searchDtm" type="button" class="sys-btn" value="查找" onclick="search2()" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_searchDtm3" type="button" class="sys-btn" value="昨天" onclick="search3('@ViewData["dtm_y"]')" />
+
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Admin1/GetPScoreData" idfield="id" allowresize="true" multiselect="true"
+             showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell"
+             sizelist="[20,50,100]" pagesize="50">
+            <div property="columns">
+
+                <div field="dtm" width="35" renderer="onGenderRenderer" align="center" headeralign="center">日期</div>
+                <div field="score_lv" width="20" renderer="onGenderRenderer" align="center" headeralign="center">等级</div>
+                <div field="name" width="30" renderer="onGenderRenderer" align="center" headeralign="center">用户</div>
+                
+                <div field="total" name="total" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">总分</div>
+                <div field="rate" name="rate" width="35" headeralign="center" align="right" allowsort="false" summarytype="avg">礼物比</div>
+                <div field="s_msg" name="s_msg" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">运营得分</div>
+                <div field="s_blackq" name="s_blackq" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">消黑圈得分</div>
+                <div field="s_gift" name="s_gift" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">礼物得分</div>
+
+               
+
+                <div field="c_msg"  width="30" headeralign="center" align="center" allowsort="false" >量1</div>
+                <div field="c_msg_suc" name="c_msg_suc" width="30" headeralign="center" align="center" allowsort="false" >量2</div>
+                <div field="c_blackq" name="c_blackq" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">消黑圈</div>
+                <div field="c_blackq_men" name="c_blackq_men" width="30" headeralign="center" align="center" allowsort="false" summarytype="sum">黑圈2</div>
+                <div field="s_other" name="s_other" width="20" headeralign="center" align="center" allowsort="false" summarytype="sum">其他分</div>
+                <div field="s_other_note" width="30" headeralign="center" align="center" allowsort="false" >其他说明</div>
+                <div field="s_sub" name="s_sub" width="20" headeralign="center" align="center" allowsort="false" summarytype="sum">扣分</div>
+                <div field="s_sub_note"  width="30" headeralign="center" align="center" allowsort="false" >扣分说明</div>
+
+                <div name="dtl" width="60" headeralign="center" align="center" allowsort="false">操作</div>
+                
+            </div>
+        </div>
+    </form>
+</body>
+</html>
+

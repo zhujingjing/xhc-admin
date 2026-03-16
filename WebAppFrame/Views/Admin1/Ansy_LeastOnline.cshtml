@@ -1,0 +1,180 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=6"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+        .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 160px;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .txt1 {
+            margin-left: 6px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .lb {
+            color: #666;
+            margin-left: 20px;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#datagrid1").height(parentHeight - 120);
+
+
+            mini.parse();
+            grid = mini.get("datagrid1");
+            drawCell();
+            search();
+            init();
+        })
+
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid + '\')"><img src="' + photo + '" class="photo-img" /></a>';
+                }
+
+                //发送统计
+                if (column.field == "send_msg_count") {
+                    var send_msg_count = record.send_msg_count;
+                    var send_msg_suc = record.send_msg_suc;
+                    var send_msg_fail = record.send_msg_fail;
+                    if (send_msg_count == null) { send_msg_count = 0 };
+                    if (send_msg_suc == null) { send_msg_suc = 0 };
+                    if (send_msg_fail == null) { send_msg_fail = 0 };
+
+                    e.cellHtml = '<span>' + send_msg_count + '( <span style="color: green;">' + send_msg_suc + '</span> - <span style="color: red;">' + send_msg_fail + '</span> )' + '</span>';
+                }
+
+                //接收统计
+                if (column.field == "rec_msg_count") {
+                    var rec_msg_count = record.rec_msg_count;
+                    var rec_msg_suc = record.rec_msg_suc;
+                    var rec_msg_fail = record.rec_msg_fail;
+                    if (rec_msg_count == null) { rec_msg_count = 0 };
+                    if (rec_msg_suc == null) { rec_msg_suc = 0 };
+                    if (rec_msg_fail == null) { rec_msg_fail = 0 };
+
+                    e.cellHtml = '<span>' + rec_msg_count + '( <span style="color: green;">' + rec_msg_suc + '</span> - <span style="color: red;">' + rec_msg_fail + '</span> )' + '</span>';
+                }
+
+            });
+        }
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function init() {
+        }
+
+        function search() {
+
+            var dtm = mini.get("dtm").getText();
+            grid.load({
+                "dtm": dtm
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">最近上线分析</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+            日期: <input id="dtm" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            from_uid:<input type="text" class="txt" id="from_uid" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            to_uid:<input type="text" class="txt" id="to_uid" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            排序:
+            <select id="sort" style="height:24px;">
+                <option value="" selected="selected">默认</option>
+                <option value="woman_start">女生开始</option>
+                <option value="man_start">男生开始</option>
+                <option value="woman_end">女生结束</option>
+                <option value="man_end">男生结束</option>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <span class="lb">女生开始:</span><span class="txt1" id="woman_startCount" style="color:blue">0</span>
+            <span class="lb">女生结束:</span><span class="txt1" id="woman_endCount" style="color:blue">0</span>
+            <span class="lb">男生开始:</span><span class="txt1" id="man_startCount" style="color:blue">0</span>
+            <span class="lb">男生结束:</span><span class="txt1" id="man_endCount" style="color:blue">0</span>
+            <span class="lb">过期会员:</span><span class="txt1" id="abnormal_count" style="color:red">0</span>
+            <span class="lb">翻倍奖励:</span><span class="txt1" id="double_count" style="color:red">0</span>
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top: 10px;"
+             url="/Admin1/GetLeastOnlineData" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[100,300,500,1000]" pagesize="100">
+            <div property="columns">
+                <div field="xh" width="10" headeralign="center" align="center" allowsort="false">序号</div>
+                <div field="dtm" width="30" headeralign="center" align="center" allowsort="false">最近时间</div>
+                <div name="photo" width="15" renderer="onGenderRenderer" align="center" headeralign="center">头像</div>
+                <div field="nick" width="20" headeralign="center" align="left" allowsort="false">昵称</div>
+                <div field="sex" width="10" headeralign="center" align="center" allowsort="false">性别</div>
+                <div field="deep" width="10" headeralign="center" align="center" allowsort="false">聊天人数</div>
+                <div field="send_msg_count" width="30" headeralign="center" align="right" allowsort="false">发送</div>
+                <div field="rec_msg_count" width="30" headeralign="center" align="right" allowsort="false">接收</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

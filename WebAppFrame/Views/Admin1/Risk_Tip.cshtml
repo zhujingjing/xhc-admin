@@ -1,0 +1,109 @@
+﻿
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/demo.css" rel="stylesheet" type="text/css" />
+    <style>
+        .btn {
+            margin-top: 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 18px;
+            line-height: 30px;
+            bottom: 0;
+            border: 1px solid RGB(62,175,224);
+            border-radius: 5px;
+            width: 40%;
+            cursor: pointer;
+        }
+
+        .ok {
+            background-color: RGB(62,175,224);
+        }
+
+        .no {
+            background-color: #f00;
+        }
+
+        .main {
+            margin-top: 100px;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        #form1 {
+            text-align: center;
+        }
+
+        .nan {
+            font-size: 18px;
+            color: #3eafe0;
+        }
+
+        .nv {
+            font-size: 18px;
+            color: #de61a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <form id="form1">
+            <select id="slt_txt" style="width:600px; height:28px; line-height:28px;">
+                <option value="" selected>---</option>
+                <option value="对方涉嫌性别异常【有男扮女装的风险】，请注意核实对方身份，以防诈骗">性别异常</option>
+                <option value="对方涉嫌打广告，请注意核实对方身份，保护自身财产安全，以防诈骗">打广告</option>
+                <option value="对方涉嫌打广告，但是也能好好聊天，请注意核实对方身份，以防诈骗">打广告【也聊天】</option>
+                <option value="该用户经多人投诉，涉嫌欺诈，聊天请注意辨别，请勿轻易添加微信扣扣等联系方式，更不要随便转账">欺诈</option>
+
+                <option value="对方涉嫌低俗恶俗，平台已进行多次警告，请注意谨慎聊天，及时避雷">低俗恶俗</option>
+                <option value="对方涉嫌低俗恶俗【而且抠门】，平台已进行多次警告，请注意谨慎聊天，及时避雷">低俗恶俗【抠门】</option>
+                <option value="对方涉嫌低俗恶俗【但是比较大方，愿意付出】，平台已进行多次警告，请注意谨慎聊天">低俗恶俗【大方】</option>
+
+            </select>
+            <br /><br />
+            <input type="text" id="risk_tip" style="width:600px; height:28px; line-height:28px;" />
+            <br /><br />
+            <input type="button" id="btn_ok" class="btn ok" value="确定" />
+        </form>
+    </div>
+</body>
+</html>
+
+<script src="~/Scripts/jquery-1.8.2.min.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+
+        $("#slt_txt").change(function () {
+            var txt = $("#slt_txt").val();
+            $("#risk_tip").val(txt);
+        });
+
+        $("#btn_ok").bind("click", function () {
+            var uid = "@ViewData["uid"]";
+            var risk_tip = $("#risk_tip").val();
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/Alter_Risk",
+                data: { "uid": uid, "risk_tip": risk_tip },
+                success: function (data) {
+                    var data = JSON.parse(data);
+                    if (data.state == '1') {
+                        alert("修改成功！")
+                        CloseWindow("ok");
+                    }
+                }
+            });
+
+        });
+
+    });
+
+
+    function CloseWindow(action) {
+        if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+        else window.close();
+    }
+</script>

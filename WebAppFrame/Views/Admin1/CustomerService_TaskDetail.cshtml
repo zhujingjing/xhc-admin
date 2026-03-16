@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>任务详情</title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+
+    <style>
+        .task-detail {
+            padding: 20px;
+        }
+
+        .detail-item {
+            margin-bottom: 15px;
+        }
+
+        .detail-label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+
+        .detail-value {
+            display: inline-block;
+        }
+
+        .task-actions {
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #dcdcdc;
+            border-radius: 4px;
+            background-color: #f5f5f5;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+
+        .btn-warning {
+            background-color: #ff9800;
+            color: white;
+            border-color: #ff9800;
+        }
+
+        .btn-warning:hover {
+            background-color: #f57c00;
+        }
+
+        .priority-high {
+            color: red;
+            font-weight: bold;
+        }
+
+        .priority-medium {
+            color: orange;
+            font-weight: bold;
+        }
+
+        .priority-low {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            color: red;
+            font-weight: bold;
+        }
+
+        .status-processing {
+            color: orange;
+            font-weight: bold;
+        }
+
+        .status-completed {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var taskId = '@ViewData["id"]';
+
+        $(function () {
+            loadTaskDetail();
+        })
+
+        function loadTaskDetail() {
+            // 这里将加载任务详细信息
+            // 暂时使用模拟数据
+            var taskData = {
+                id: taskId,
+                task_type: "提现审核",
+                task_name: "用户提现申请",
+                priority: "高",
+                status: "待处理",
+                create_time: "2026-03-15 10:00:00",
+                description: "用户张三申请提现100元，需要审核",
+                details: {
+                    user_id: "123456",
+                    user_name: "张三",
+                    amount: "100.00",
+                    bank: "中国银行",
+                    account: "6228 **** **** 1234",
+                    apply_time: "2026-03-15 09:30:00"
+                }
+            };
+
+            displayTaskDetail(taskData);
+        }
+
+        function displayTaskDetail(taskData) {
+            $("#task_type").text(taskData.task_type);
+            $("#task_name").text(taskData.task_name);
+            
+            var priorityCls = "priority-" + (taskData.priority == "高" ? "high" : taskData.priority == "中" ? "medium" : "low");
+            $("#priority").html('<span class="' + priorityCls + '">' + taskData.priority + '</span>');
+            
+            var statusCls = "status-" + (taskData.status == "待处理" ? "pending" : taskData.status == "处理中" ? "processing" : "completed");
+            $("#status").html('<span class="' + statusCls + '">' + taskData.status + '</span>');
+            
+            $("#create_time").text(taskData.create_time);
+            $("#description").text(taskData.description);
+
+            // 显示详细信息
+            if (taskData.details) {
+                var detailsHtml = "";
+                for (var key in taskData.details) {
+                    var label = key;
+                    switch (key) {
+                        case "user_id": label = "用户ID";
+                            break;
+                        case "user_name": label = "用户姓名";
+                            break;
+                        case "amount": label = "提现金额";
+                            break;
+                        case "bank": label = "银行";
+                            break;
+                        case "account": label = "账号";
+                            break;
+                        case "apply_time": label = "申请时间";
+                            break;
+                    }
+                    detailsHtml += '<div class="detail-item"><span class="detail-label">' + label + ':</span> <span class="detail-value">' + taskData.details[key] + '</span></div>';
+                }
+                $("#task_details").html(detailsHtml);
+            }
+        }
+
+        function completeTask() {
+            mini.confirm("确定要标记此任务为已完成吗？", "确认", function (action) {
+                if (action == "ok") {
+                    $.ajax({
+                        url: "/Admin1/UpdateTaskStatus",
+                        type: "post",
+                        data: { id: taskId, status: "已完成" },
+                        success: function (result) {
+                            var data = JSON.parse(result);
+                            if (data.State == "1") {
+                                mini.alert("任务已标记为完成", "成功", function () {
+                                    window.Close();
+                                });
+                            } else {
+                                mini.alert("操作失败：" + data.Msg);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function processTask() {
+            mini.confirm("确定要标记此任务为处理中吗？", "确认", function (action) {
+                if (action == "ok") {
+                    $.ajax({
+                        url: "/Admin1/UpdateTaskStatus",
+                        type: "post",
+                        data: { id: taskId, status: "处理中" },
+                        success: function (result) {
+                            var data = JSON.parse(result);
+                            if (data.State == "1") {
+                                mini.alert("任务已标记为处理中", "成功", function () {
+                                    loadTaskDetail();
+                                });
+                            } else {
+                                mini.alert("操作失败：" + data.Msg);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function closeWindow() {
+            window.Close();
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+        <div class="task-detail">
+            <h3>任务详情</h3>
+            
+            <div class="detail-item">
+                <span class="detail-label">任务类型:</span>
+                <span class="detail-value" id="task_type"></span>
+            </div>
+            
+            <div class="detail-item">
+                <span class="detail-label">任务名称:</span>
+                <span class="detail-value" id="task_name"></span>
+            </div>
+            
+            <div class="detail-item">
+                <span class="detail-label">优先级:</span>
+                <span class="detail-value" id="priority"></span>
+            </div>
+            
+            <div class="detail-item">
+                <span class="detail-label">状态:</span>
+                <span class="detail-value" id="status"></span>
+            </div>
+            
+            <div class="detail-item">
+                <span class="detail-label">创建时间:</span>
+                <span class="detail-value" id="create_time"></span>
+            </div>
+            
+            <div class="detail-item">
+                <span class="detail-label">任务描述:</span>
+                <span class="detail-value" id="description"></span>
+            </div>
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #dcdcdc;">
+                <h4>详细信息</h4>
+                <div id="task_details"></div>
+            </div>
+            
+            <div class="task-actions">
+                <input type="button" class="btn" value="关闭" onclick="closeWindow()" />
+                <input type="button" class="btn btn-warning" value="标记为处理中" onclick="processTask()" />
+                <input type="button" class="btn btn-primary" value="标记为完成" onclick="completeTask()" />
+            </div>
+        </div>
+    </form>
+</body>
+</html>

@@ -1,0 +1,94 @@
+﻿
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/demo.css" rel="stylesheet" type="text/css" />
+    <style>
+        .btn {
+            margin-top: 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 18px;
+            line-height: 30px;
+            bottom: 0;
+            border: 1px solid RGB(62,175,224);
+            border-radius: 5px;
+            width: 40%;
+            cursor: pointer;
+        }
+
+        .ok {
+            background-color: RGB(62,175,224);
+        }
+
+        .no {
+            background-color: #f00;
+        }
+
+        .main {
+            margin-top: 100px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #form1 {
+            text-align: center;
+        }
+
+        .nan {
+            font-size: 18px;
+            color: #3eafe0;
+        }
+
+        .nv {
+            font-size: 18px;
+            color: #de61a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <form id="form1">
+            <span>输入备注:</span>
+            <input type="text" id="remark" style="width:200px; height:28px; line-height:28px;" />
+            <br />
+            <input type="button" id="btn_ok" class="btn ok" value="修改" />
+        </form>
+    </div>
+</body>
+</html>
+
+<script src="~/Scripts/jquery-1.8.2.min.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+
+        $("#remark").val("@ViewData["remark"]");
+
+        $("#btn_ok").bind("click", function () {
+            var uid = "@ViewData["uid"]";
+            var remark = $("#remark").val();
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/Alter_Remark",
+                data: { "uid": uid, "remark": remark },
+                success: function (data) {
+                    var data = JSON.parse(data);
+                    if (data.state == '1') {
+                        alert("修改成功！")
+                        CloseWindow("ok");
+                    }
+                }
+            });
+
+        });
+
+    });
+
+
+    function CloseWindow(action) {
+        if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+        else window.close();
+    }
+</script>

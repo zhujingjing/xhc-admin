@@ -1,0 +1,239 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=6"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 180px;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 160px;
+        }
+
+        .gray {
+            color: #808080;
+        }
+
+        .blue {
+            color: blue;
+            font-size: 18px;
+        }
+
+        .red {
+            color: red;
+            font-size: 18px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#datagrid1").height(parentHeight - 90);
+
+            mini.parse();
+
+            grid = mini.get("datagrid1");
+
+            //grid.load();
+            search();
+
+            drawCell();
+
+            init();
+        })
+
+        function init() {
+            $("#conname").change(function () {
+                conname();
+            });
+        }
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+                    var nick = record.nick;
+                    var sex = record.sex;
+                    var color = "";
+                    if (sex == "男生") {
+                        color = "blue";
+                    } else {
+                        color = "red";
+                    }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid_from + '\',500,1300)"><img src="' + photo + '" class="photo-img" />';
+                    e.cellHtml += "<br/>";
+                    e.cellHtml += "<span style='color:" + color + "'>" + nick + "(" + sex + ")" + "</span></a>";
+                }
+
+                if (column.name == "dtm") {
+                    var dtm = record.dtm;
+                    if (dtm == null) { dtm = ''; }
+                    else { dtm = dtm.replace(' ', '<br/>'); }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="blue">' + dtm + '</span>';
+                }
+
+                if (column.name == "amount") {
+                    var amount = record.amount;
+                    var cls = 'red';
+                    e.cellStyle = "text-align:right";
+                    e.cellHtml = '<span class="' + cls + '" style="font-size:18px;">' + amount + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+                if (column.name == "type") {
+                    var type = record.type;
+                    var type_dtl = record.type_dtl;
+
+                    var cls = 'gray';
+                    if (type == "增加") {
+                        cls = 'blue';
+                    }
+                    if (type == "减少") {
+                        cls = 'red';
+                    }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '" style="font-size:18px;">' + type + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+
+            });
+        }
+
+        function search() {
+            var dtm = mini.get("dtm").getText();
+            var fz_tag = $("#fz_tag").val().trim();
+            var type_dtl = $("#conname").val();
+            if (!fz_tag) {
+                fz_tag = "agent";
+            }
+            grid.load({
+                "fz_tag": fz_tag,
+                "type_dtl": type_dtl,
+                "dtm":dtm
+            });
+        }
+
+        function conname() {
+            var type_dtl = $("#conname").val();
+            var dtm = mini.get("dtm").getText();
+            var fz_tag = $("#fz_tag").val().trim();
+            grid.load({
+                "fz_tag": fz_tag,
+                "type_dtl": type_dtl,
+                "dtm": dtm
+            });
+        }
+
+        function jump_date(num) {
+            var d = new Date(mini.get("dtm").getText());
+
+            d.setDate(d.getDate() + num);
+            var dtm = formatTime(d);
+
+
+            mini.get("dtm").setValue(dtm);
+
+            search();
+        }
+
+        function formatTime(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            return year + '-' + month + '-' + day;
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+
+        <div style="padding: 15px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+            日期:<input id="dtm" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            fz_tag:<input type="text" class="txt" id="fz_tag" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" style="background-color:forestgreen" value="前一天" onclick="jump_date(-1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" style="background-color:orange" value="后一天" onclick="jump_date(1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+            类型详情:<select id="conname" style="height:24px; width:120px;">
+                <option value="agent" selected="selected">默认</option>
+                <option value="收到礼物">礼物</option>
+                <option value="消息收入">私信</option>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+
+        </div>
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px;"
+             url="/Admin1/GetScoreList" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[20]" pagesize="20">
+            <div property="columns">
+
+                <div field="xh" width="20" headeralign="center" align="center" allowsort="false">序号</div>
+                <div name="dtm" width="40" renderer="onGenderRenderer" align="center" headeralign="center">时间</div>
+                <div name="photo" width="40" headeralign="center" align="center" allowsort="false">头像</div>
+                <div field="nick" width="40" headeralign="center" align="left" allowsort="false">昵称</div>
+                <div field="sex" width="30" headeralign="center" align="center" allowsort="false">性别</div>
+
+                <div name="amount" width="50" renderer="onGenderRenderer" align="center" headeralign="center">积分</div>
+                <div field="type" width="50" renderer="onGenderRenderer" align="center" headeralign="center">类型</div>
+                <div field="type_dtl" width="60" renderer="onGenderRenderer" align="left" headeralign="center">类型详情</div>
+                <div field="fz_tag" width="80" headeralign="center" align="left" allowsort="false">邀请码</div>
+                <div width="200" renderer="onGenderRenderer" align="center" headeralign="center">--</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

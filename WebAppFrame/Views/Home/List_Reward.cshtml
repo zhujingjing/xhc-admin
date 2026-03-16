@@ -1,0 +1,430 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>上榜奖励</title>
+
+
+    <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <script src="~/Scripts/laydate/laydate.js"></script>
+    <style>
+        .ub {
+            display: flex;
+        }
+
+        .ub-ver {
+            flex-direction: column;
+        }
+
+        .ub-as {
+            justify-content: flex-start;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac1 {
+            justify-content: space-around;
+        }
+
+        .ub-ac2 {
+            justify-content: space-between;
+        }
+
+        .ub-ac3 {
+            justify-content: space-evenly;
+        }
+
+        .ub-ae {
+            justify-content: flex-end;
+        }
+
+        .ub-ps {
+            align-items: flex-start;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        .ub-f1 {
+            flex-grow: 1;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        tr {
+            text-align: center;
+        }
+
+        th {
+            background-color: #f9fafd;
+            color: #333;
+            font-size: 2em;
+            padding: 11px;
+        }
+
+        table, th, td {
+            border: 1px solid #ebeef8;
+            padding: 11px 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .width {
+            max-width: 80px;
+        }
+
+        .photo {
+            width: 4em;
+            height: 4em;
+            border-radius: 50%;
+        }
+
+        .red {
+            color: red;
+            font-weight: bold;
+        }
+
+        .blue {
+            color: #32cd32;
+            font-weight: bold;
+        }
+
+
+        .top {
+            font-size: 15px;
+        }
+
+        .info {
+            border: .5px solid #dcdcdc;
+            padding: 5px 10px 12px 10px;
+            margin-bottom: 15px;
+            border-radius: .3em;
+            background-color: #fff;
+        }
+
+        img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .create a {
+            border-radius: .3em;
+            background-color: #e92162;
+            color: #fff;
+            text-align: center;
+            font-size: 15px;
+            text-decoration: none;
+            padding: 8px 10px;
+        }
+
+        .create2 {
+            margin-top: 10px;
+        }
+
+            .create2 a {
+                 border-radius: .3em;
+            background-color: #dfdfdf;
+            color: #fff;
+            text-align: center;
+            font-size: 15px;
+            text-decoration: none;
+            padding: 8px 10px;
+            }
+
+        .top2 {
+            background-color: #e92162;
+            padding: 0 6px;
+            height: 50px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1;
+        }
+
+            .top2 #return {
+                width: 2em;
+                height: 2em;
+                padding: 1em 3em 1em 0;
+            }
+
+            .top2 #refresh {
+                width: 2.7em;
+                height: 2.7em;
+                padding: 1em 1em 1em 3em;
+            }
+
+        body {
+            margin: 0;
+            font-family: PingFangSC-Regular, tahoma, arial, sans-serif;
+            background-color: #F0F0F0;
+        }
+
+
+        #form1 {
+            padding: 8px;
+        }
+
+        .time {
+            resize: none;
+            outline: none;
+            border-color: #dfdfdf;
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: #dfdfdf;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        .sys-btn {
+            height: 28px;
+            width: 80px;
+            line-height: 28px;
+            cursor: pointer;
+            color: white;
+            border-radius: 3px;
+            background-color: #3eafe0;
+            border: none;
+        }
+
+        .btn {
+            border-radius: .3em;
+            background-color: #e92162;
+            color: #fff;
+            text-align: center;
+            font-size: 15px;
+            text-decoration: none;
+            padding: 4px 30px;
+        }
+    </style>
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        $(function () {
+            laydate.render({
+                elem: '#time' //指定元素
+            });
+            loaddata($("#time").val());
+
+            $("#search").bind("click", function () {
+                loaddata($("#time").val());
+            });
+
+            $("#return").bind("click", function () {
+                location.href = '/Home/Check_Survey';
+            });
+
+            $("#refresh").bind("click", function () {
+                var dtm = $("#time").val();
+                location.href = "/Home/List_Reward/?dtm=" + dtm;
+            });
+
+
+        });
+
+        function loaddata(dtm) {
+            $.ajax({
+                type: "get",
+                url: "/Admin1/GetScoreReword_m/?dtm=" + dtm,
+                // data: { "id": id, "state": state },
+                success: function (data) {
+                    //console.log(data);
+                    data = JSON.parse(data);
+                    var uid, xh, photo, nick, sex, name, score_target, score_total, r_1, r_2;
+                    var h = '';
+                    var btn = '';
+                    for (var i = 0; i < data.length; i++) {
+                        uid = data[i]["uid"];
+                        photo = data[i]["photo"];
+                        nick = data[i]["nick"];
+                        sex = data[i]["sex"];
+                        name = data[i]["name"];
+                        xh = data[i]["xh"];
+                        score_total = data[i]["score_total"];
+                        score_target = data[i]["score_target"];
+                        r_1 = data[i]["r_1"];
+                        r_2 = data[i]["r_2"];
+
+                        photo = servUrl_AppData + '/photo/' + photo;
+
+                        if (r_1 == "") {
+                            r_1 = calculate_r(xh, score_target);
+                        }
+                        if (name == null) {
+                            name = '';
+                        }
+                        if (r_2 != "") {
+                            btn = '<div class="create2 ub ub-ae">\
+                                        <a href="javascript:create_r(\'' + uid + '\', ' + xh + ' , ' + score_target + ' )"> 生成奖励</a>\
+                                    </div>';
+                        } else {
+                            btn = '<div class="create ub ub-ae">\
+                                        <a href="javascript:create_r(\'' + uid + '\', ' + xh + ' , ' + score_target + ' )"> 生成奖励</a>\
+                                      </div>';
+                        }
+
+                        h += '<div style="background-color:#fff;padding:.8em;border-radius:5px;margin-bottom:15px;">\
+                                    <div class="ub ub-pc ub-ac2" style="margin-bottom:10px;">\
+                                      <div class="ub ub-pc">\
+                                        <img class="photo" src="' + photo + '" />\
+                                        <span style="margin-left:10px;">' + nick + '</span>\
+                                        <span style="margin-left:10px;">' + sex + '</span>\
+                                        <span style="margin-left:10px;">' + name + '</span>\
+                                      </div>' + btn + '</div>\
+                                    <table border="1">\
+                                        <thead>\
+                                            <tr>\
+                                                <th>序号</th>\
+                                                <th>总魅力</th>\
+                                                <th>当日魅力</th>\
+                                                <th>预计奖励</th>\
+                                                <th>实际奖励</th>\
+                                            </tr>\
+                                        </thead>\
+                                        <tbody id="con">\
+                                            <tr>\
+                                                <td style="text-align:center;">'+ xh + '</td>\
+                                                <td style="text-align:right;font-size:15px;font-weight: bold;color: blue;">' + score_total + '</td>\
+                                                <td style="text-align:right;font-size:15px;font-weight: bold;color: red;">' + score_target + '</td>\
+                                                <td style="text-align:right;font-size:15px;font-weight: bold;color: blue;">' + r_1 + '</td>\
+                                                <td style="text-align:right;font-size:15px;font-weight: bold;color: blue;">' + r_2 + '</td>\
+                                            </tr>\
+                                        </tbody>\
+                                    </table>\
+                                </div>';
+                    }
+                    $("#form1").html(h);
+                }
+
+            });
+
+        }
+        function calculate_r(xh, base) {
+            var r = 0;
+            switch (xh) {
+                case 1:
+                    r = Math.floor(base * 0.3);
+                    break;
+                case 2:
+                    r = Math.floor(base * 0.2);
+                    break;
+                case 3:
+                    r = Math.floor(base * 0.18);
+                    break;
+                case 4:
+                    r = Math.floor(base * 0.15);
+                    break;
+                case 5:
+                    r = Math.floor(base * 0.1);
+                    break;
+
+                case 6:
+                    r = Math.floor(base * 0.08);
+                    break;
+                case 7:
+                    r = Math.floor(base * 0.06);
+                    break;
+                case 8:
+                    r = Math.floor(base * 0.05);
+                    break;
+
+                default:
+                    r = 0;
+                    break;
+            }
+            return r;
+        }
+        function create_r(uid, xh, base) {
+            mini.mask({
+                el: document.body,
+                cls: 'mini-mask-loading',
+                html: '正在生成...'
+            });
+
+            var dtm = $("#time").val();
+            var r = calculate_r(xh, base);
+            //后台
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/Create_Rank_Reword",
+                data: { "dtm": dtm, "uid": uid, "r": r },
+                success: function (data) {
+                    //console.log(data);
+                    data = JSON.parse(data);
+
+                    mini.unmask(document.body);
+                    if (data.state == "1") {
+                        location.href = "/Home/List_Reward/?dtm=" + dtm;
+                    }
+                    else {
+                        mini.alert(data.msg);
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="main">
+
+        <div class="top2 ub ub-pc ub-ac2">
+            <img id="return" src="http://wx2.xhchat.cn/img/%E8%BF%94%E5%9B%9E%E7%AE%AD%E5%A4%B4.93b021b8.png" />
+            <img id="refresh" src="~/Images/刷新.png" />
+        </div>
+        <div style="height:42px;"></div>
+
+        <div style="background-color:#fff;padding:1.2em .8em .6em .8em;">
+            <div class="sys-content-border ub ub-pc" style="padding:8px 3px;">
+                <input type="text" format="yyyy-MM-dd" class="time ub-f1" value="@ViewData["dtm"]" id="time">&nbsp;&nbsp;
+                <div id="search" class="btn">查找</div>
+            </div>
+        </div>
+
+        <form id="form1">
+            <div style="background-color:#fff;padding:.8em;border-radius:5px;margin-bottom:15px;">
+                <div class="ub ub-pc ub-ac2" style="margin-bottom:10px;">
+                    <div class="ub ub-pc">
+                        <img class="photo" src="http://xhcapp.zhuochuangzb.com/photo/photo_girl/2580.jpg" />
+                        <span style="margin-left:10px;">大小姐</span>
+                        <span style="margin-left:10px;">女生</span>
+                        <span style="margin-left:10px;">lxq</span>
+                    </div>
+
+
+                    <div class="create ub ub-ae">
+                        <a>生成奖励</a>
+                    </div>
+                </div>
+
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>总魅力</th>
+                            <th>当日魅力</th>
+                            <th>预计奖励</th>
+                            <th>实际奖励</th>
+                        </tr>
+                    </thead>
+                    <tbody id="con">
+                        <tr>
+                            <td style="text-align:right">35,900</td>
+                            <td style="text-align:right">23,400</td>
+                            <td style="text-align:right">11,800</td>
+                            <td style="text-align:right">167,606</td>
+                            <td style="text-align:right">185,606</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </form>
+
+    </div>
+</body>
+</html>

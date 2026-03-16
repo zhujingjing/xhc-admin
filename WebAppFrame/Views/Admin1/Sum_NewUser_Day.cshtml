@@ -1,0 +1,162 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#divContainer").height(parentHeight - 130);
+
+            init();
+        })
+
+        function init() {
+            var data = '@Html.Raw(ViewData["data"])';
+            var data_kill = '@Html.Raw(ViewData["data_kill"])';
+            data = JSON.parse(data);
+            data_kill = JSON.parse(data_kill);
+
+            //2020-08-16 开始过滤广告
+            var date_start = new Date("2020-08-16");
+            var data_com;
+            var dtm;
+            for (var i = 0; i < data.length; i++) {
+                data_com = new Date(data[i].dtm);
+                if (data_com >= date_start) {
+                    console.log(data[i].dtm + '-过滤了广告:' + data_kill[i]["数量"]);
+                    data[i]["数量"] -= data_kill[i]["数量"];
+                    data[i]["数量2"] -= data_kill[i]["数量"];
+                }
+            }
+
+            //线图
+            showLine546(data);
+        }
+
+        function search() {
+            var start = mini.get("start").getText();
+            var end = mini.get("end").getText();
+            var url = "/Admin1/Sum_NewUser_Day/?start=" + start + "&end=" + end;
+            window.location.href = url;
+        }
+
+    </script>
+
+    <script>
+        function showLine546(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+            chart.startDuration = 1;
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            // 图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8; //大小
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF"; //线条颜色 "00FF00" "0000FF"
+            graph.valueField = "数量"; //纵轴显示内容
+            graph.title = "新增注册用户";
+            graph.balloonText = "[[category]]新增注册用户<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+
+
+            if (true) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";//
+                graph.valueField = "数量2"; //纵轴显示内容
+                graph.title = "新增注册用户(过滤渠道商)";
+                graph.balloonText = "[[category]]新增注册用户(过滤渠道商)<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">用户新增统计（天）</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+        <div style="padding:10px; margin-bottom:5px; border: solid 1px #dcdcdc;">
+            开始日期:<input id="start" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["start"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            截止日期<input id="end" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["end"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input type="button" value="加载数据" class="sys-btn" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+
+        <div id="divContainer" style="width: 100%; border: solid 1px #dcdcdc"></div>
+
+    </form>
+</body>
+</html>
+
+

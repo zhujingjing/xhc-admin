@@ -1,0 +1,349 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=5"></script>
+
+    <style>
+        
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .blue {
+            font-size: 18px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .yellow {
+            font-size: 18px;
+            font-weight: bold;
+            color: yellow;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid, grid2;
+        $(function () {
+            mini.parse();
+            grid = mini.get("datagrid1");
+            grid2 = mini.get("datagrid2");
+            //grid.load();
+            search();
+            drawCell();
+
+            init();
+            bindEvent();
+        })
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:user_dtl(\'' + record.uid + '\')">---</a>';
+                }
+            });
+
+            grid2.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:user_dtl(\'' + record.uid + '\')">---</a>';
+                }
+            });
+        }
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 120 - 280);
+            $("#datagrid2").height(280);
+            $("#divContainer").height(parentHeight - 120);
+        }
+
+        function bindEvent() {
+        }
+
+        function init_line(name, dtm) {
+
+            $.ajax({
+                type: "Get",
+                url: "/Admin1/GetMsgSummaryData/?name=" + name + "&dtm=" + dtm,
+                success: function (data) {
+                    
+                    data = JSON.parse(data);
+                    //线图
+                    showLine555(data, "divContainer");
+                }
+            });
+
+            $.ajax({
+                type: "Get",
+                url: "/Admin1/GetMsgSummaryData2/?name=" + name + "&dtm=" + dtm,
+                success: function (data) {
+                    console.log(data);
+                    data = JSON.parse(data);
+                    //线图
+                    showLine555(data, "divContainer_total");
+
+                    //各个小时的数据展示
+                    show_eachHour(data);
+                }
+            });
+        }
+
+        function show_eachHour(data) {
+
+            var item_data = [];
+            for (var i = 8; i <= 23; i++) {
+                for (var ii = 0; ii < 60; ii++) {
+                    item_data.push(data[(i-8) * 60 + ii]);
+                }
+                
+                showLine555(item_data, "divContainer_" + i);
+                item_data = [];
+            }
+        }
+
+        function search() {
+
+            var name = $("#name").val();
+            var dtm = mini.get("dtm").getText();
+
+            grid.load({
+                "dtm": dtm,
+                "name": name
+            });
+
+            grid2.load({
+                "dtm": dtm,
+                "name": name
+            });
+
+            init_line(name, dtm);
+
+        }
+
+        function onDrawSummaryCell(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+            //客户端汇总计算
+            if (e.field == "c1" || e.field == "c2") {
+                e.cellStyle = "text-align:center";
+                e.cellHtml = '<span class="blue">' + e.cellHtml + '</span>';
+            }
+        }
+
+    </script>
+
+    <script>
+        function showLine555(data, con_id) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+            chart.startDuration = 1;
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            // 图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8; //大小
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF"; //线条颜色 "00FF00" "0000FF"
+            graph.valueField = "c2"; //纵轴显示内容
+            graph.title = "量1";
+            graph.balloonText = "[[category]]量1<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+
+
+            if (false) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";//
+                graph.valueField = "tie_ads"; //纵轴显示内容
+                graph.title = "标记广告";
+                graph.balloonText = "[[category]]标记广告<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write(con_id);
+        };
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">走势统计</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+            日期: <input id="dtm" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            统计对象
+            <select id="name" style="height:24px;">
+                <option value="" selected="selected">全部</option>
+            
+            @{
+                List<string> list = ViewBag.listMan;
+                string tie_man = string.Empty;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    tie_man = list[i];
+                    <option value="@tie_man">@tie_man</option>
+                }
+            }    
+
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />
+        </div>
+
+        <table class="tbl">
+            <tr>
+                <td style="width:30%;">
+                    <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+                         url="/Admin1/GetMsgSum_Inner" idfield="id" allowresize="true" multiselect="true"
+                         showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell"
+                         sizelist="[20,50,100]" pagesize="50">
+                        <div property="columns">
+                            <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+                            <div field="dtm" width="100" renderer="onGenderRenderer" align="center" headeralign="center">时间</div>
+                            <div field="c1" width="90" renderer="onGenderRenderer" align="center" summarytype="sum" headeralign="center">量1</div>
+                            <div field="c2" width="90" headeralign="center" align="center" summarytype="sum" allowsort="false">量2</div>
+                        </div>
+                    </div>
+
+                </td>
+                <td style="width:70%;" rowspan="2">
+                    <div id="divContainer" style="border:1px solid #dcdcdc; width:100%;"> </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="width:30%;">
+                    <div id="datagrid2" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+                         url="/Admin1/GetMsgSum_Inner2" idfield="id" allowresize="true" multiselect="true"
+                         sizelist="[20,50,100]" pagesize="100">
+                        <div property="columns">
+                            <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+                            <div field="dtm" width="100" renderer="onGenderRenderer" align="center" headeralign="center">时间</div>
+                            <div field="name" width="90" renderer="onGenderRenderer" align="center"  headeralign="center">用户</div>
+                            <div field="c2" width="90" headeralign="center" align="center" allowsort="false">量2</div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        
+        <div style="height:30px; line-height:30px; font-size:18px;">总体消息统计</div>
+        <div id="divContainer_total" style="border:1px solid #dcdcdc; width:100%;height:400px;"></div>
+
+        @{
+
+            for (int i = 8; i <=23 ; i++)
+            { <div style="height:30px; line-height:30px; font-size:18px;">@i 点消息统计</div>
+            <div id="divContainer_@i.ToString()" style="width: 100%; height:400px; border: solid 1px #dcdcdc"></div>
+            }
+        }
+        
+    </form>
+</body>
+</html>

@@ -1,0 +1,287 @@
+﻿
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title></title>
+    <script src="/Scripts/jquery.min.js"></script>
+    <script src="/Scripts/Global.js"></script>
+    <link href="/Styles/public.css" rel="stylesheet" />
+    <script src="/Scripts/public.js"></script>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=10"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 160px;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .blue {
+            font-size: 14px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .yellow {
+            font-size: 18px;
+            font-weight: bold;
+            color: yellow;
+        }
+
+        .ub {
+            display: flex;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac2 {
+            justify-content: space-around;
+        }
+
+        .ub-ac1 {
+            justify-content: space-between;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#datagrid1").height(parentHeight - 70);
+
+            mini.parse();
+            grid = mini.get("datagrid1");
+            //grid.load();
+
+            search();
+            drawCell();
+
+            init();
+
+        })
+
+        function init() {
+
+        }
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                if (column.name == "photo") {
+                    if (record.photo !== null) {
+                        var photo = servUrl_AppData + '/photo/' + record.photo;
+                        e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid + '\',500,1300)"><img src="' + photo + '" class="photo-img" />';
+                    } else {
+                        e.cellHtml = '<div style="height: 40px;"></div>';
+                    }
+
+                }
+
+                if (column.field == "c1") {
+                    var c1 = record.c1;
+                    e.cellHtml = '<span >' + c1 + '</span>';
+                    if (c1 > 0 ) {
+                        e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:blue; font-size:18px; font-weight:bold;">' + c1 + '</span>';
+                    }
+                    
+                }
+
+                if (column.field == "c2") {
+                    var c2 = record.c2;
+                    e.cellHtml = '<span >' + c2 + '</span>';
+                    if (c2 > 0) {
+                        e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:blue; font-size:18px; font-weight:bold;">' + c2 + '</span>';
+                    }
+
+                }
+
+                if (column.name == "remark") {
+                    var remark = record.remark;
+                    if (remark == null) {
+                        remark = "";
+                    }
+                    e.cellHtml = '<span>' + remark + '</span>';
+                }
+
+                if (column.field == "c_dtm") {
+                    var c_dtm = record.c_dtm;
+                    e.cellHtml = '<span >' + c_dtm + '</span>';
+                    if (c_dtm > 0) {
+                        e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:blue; font-size:18px; font-weight:bold;">' + c_dtm + '</span>';
+                    }
+                }
+
+                if (column.field == "score_dtm") {
+                    var score_dtm = (record.score_dtm / 1000).toFixed(2);
+                    e.cellHtml = '<span>￥' + score_dtm + '</span>';
+                    if (score_dtm > 0) {
+                        e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">￥' + score_dtm + '</span>';
+                    }
+                }
+
+                if (column.name == "score_pay") {
+                    var score_pay = (record.score_pay / 1000).toFixed(2);
+                    e.cellHtml = '<span>￥' + score_pay + '</span>';
+                    if (score_pay > 0) {
+                        e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">￥' + score_pay + '</span>';
+                    }
+                }
+                if (column.name == "score_gift") {
+                    var score_gift = (record.score_gift / 1000).toFixed(2);
+                    e.cellHtml = '<span>￥' + score_gift + '</span>';
+                    if (score_gift > 0) {
+                        e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">￥' + score_gift + '</span>';
+                    }
+                }
+                if (column.name == "score_msg") {
+                    var score_msg = (record.score_msg / 1000).toFixed(2);
+                    e.cellHtml = '<span>￥' + score_msg + '</span>';
+                    if (score_msg > 0) {
+                        e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">￥' + score_msg + '</span>';
+                    }
+                }
+                if (column.name == "score_invite") {
+                    var score_invite = (record.score_invite / 1000).toFixed(2);
+                    e.cellHtml = '<span>￥' + score_invite + '</span>';
+                    if (score_invite > 0) {
+                        e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">￥' + score_invite + '</span>';
+                    }
+                }
+
+            });
+        }
+
+
+
+    </script>
+
+    <script>
+
+        function search() {
+            var dtm = mini.get("dtm").getText();
+            var sort = $("#sort").val();
+            console.log(sort);
+            grid.load({
+                "dtm": dtm,
+                "sort": sort
+            });
+        }
+
+        function jump_date(num) {
+            var d = new Date(mini.get("dtm").getText());
+
+            d.setDate(d.getDate() + num);
+            var dtm = formatTime(d);
+
+
+            mini.get("dtm").setValue(dtm);
+
+            search();
+        }
+
+        function formatTime(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            return year + '-' + month + '-' + day;
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+        <div class="sys-content-border" style="padding:8px 3px;">
+            日期: <input id="dtm" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            排序:<select id="sort" style="height:24px; width:120px;">
+                <option value="" selected="selected">默认</option>
+                <option value="c_dtm desc">当天邀请</option>
+                <option value="score_dtm desc">当天收益</option>
+                <option value="c1 desc">累计邀请</option>
+                <option value="score_invite desc">累计收益</option>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" style="background-color:forestgreen" value="前一天" onclick="jump_date(-1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" style="background-color:orange" value="后一天" onclick="jump_date(1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Agent/GetAdminSumAllData" idfield="id" allowresize="true" multiselect="true"
+             showsummaryrow="true"
+             sizelist="[50,100,500]" pagesize="100">
+            <div property="columns">
+                <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+                <div field="fz_tag" width="100" headeralign="center" align="left" allowsort="false">fz_tag</div>
+                <div name="photo" width="50" headeralign="center" align="center" allowsort="false">头像</div>
+                <div field="nick" width="50" headeralign="center" align="left" allowsort="false">昵称</div>
+                <div field="sex" width="30" headeralign="center" align="center" allowsort="false">性别</div>
+                <div field="score_total" width="30" headeralign="center" align="right" allowsort="false">总积分</div>
+                <div field="score" width="30" headeralign="center" align="right" allowsort="false">积分</div>
+                <div field="coin_total" width="30" headeralign="center" align="right" allowsort="false">总金币</div>
+                <div field="coin" width="30" headeralign="center" align="right" allowsort="false">金币</div>
+
+                <div field="c1" width="50" headeralign="center" align="center" allowsort="false">累计邀请</div>
+                <div field="c2" width="50" headeralign="center" align="center" allowsort="false">完成注册</div>
+                <div width="20" headeralign="center" align="center" allowsort="false">--</div>
+
+                <div name="remark" width="60" headeralign="center" align="center" allowsort="false">备注</div>
+                
+
+                <div field="dtm" width="50" headeralign="center" align="center" allowsort="false">日期</div>
+                <div field="c_dtm" width="50" headeralign="center" align="center" allowsort="false">当天邀请</div>
+                <div field="score_dtm" width="50" headeralign="center" align="center" allowsort="false">当天收益</div>
+
+                <div width="20" headeralign="center" align="center" allowsort="false">--</div>
+
+                <div name="score_invite" field="score_invite" width="60" headeralign="center" align="right" allowsort="false">累计收益</div>
+                <div name="score_pay" field="score_pay" width="60" headeralign="center" align="right" allowsort="false">支付收益</div>
+                <div name="score_gift" field="score_gift" width="60" headeralign="center" align="right" allowsort="false">礼物收益</div>
+                <div name="score_msg" field="score_msg" width="60" headeralign="center" align="right" allowsort="false">私信收益</div>
+                
+                <div width="50" headeralign="center" align="center" allowsort="false">--</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

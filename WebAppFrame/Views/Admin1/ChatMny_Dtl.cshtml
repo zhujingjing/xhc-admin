@@ -1,0 +1,334 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js?id=2"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=9"></script>
+
+    <style>
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .txt1 {
+            margin-left: 6px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .lb {
+            color: #666;
+            margin-left: 20px;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#datagrid1").height(parentHeight - 70);
+
+
+            mini.parse();
+            grid = mini.get("datagrid1");
+            search();
+            drawCell();
+
+            init();
+        })
+
+        var woman_startCount = 0;
+        var woman_endCount = 0;
+        var man_startCount = 0;
+        var man_endCount = 0;
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //当前用户
+                if (column.name == "from_photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.from_photo;
+                    var nick = record.from_nick;
+                    var sex = record.from_sex;
+
+                    //计算开始标识
+                    var dtm_send_start = record.send_dtm_start;
+                    var dtm_rec_start = record.rec_dtm_start;
+                    dtm_send_start = new Date(dtm_send_start).getTime();
+                    dtm_rec_start = new Date(dtm_rec_start).getTime();
+                    var tag_start = "";
+                    if (dtm_send_start < dtm_rec_start) {
+                        woman_startCount++;
+                        tag_start = "from";
+                    }
+
+                    //计算结束标识
+                    var dtm_send_end = record.send_dtm_end;
+                    var dtm_rec_end = record.rec_dtm_end;
+                    dtm_send_end = new Date(dtm_send_end).getTime();
+                    dtm_rec_end = new Date(dtm_rec_end).getTime();
+                    var tag_end = "";
+                    if (dtm_send_end < dtm_rec_end) {
+                        woman_endCount++;
+                        tag_end = "from"
+                    }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = `
+                                <div style="display: flex;">
+                                    <a href="javascript:UserAllInfo('${record.from_uid}')">
+                                        <img src="${photo}" class="photo-img" style="width: 50px; height: 50px; border-radius: 50%;" />
+                                    </a>
+                                    <div style="margin-left: 10px; text-align: left; flex-grow: 1;">
+                                        <div class="user-name">${nick.length > 4 ? nick.substring(0, 4) + '..' : nick} (${sex})</div>
+                                        <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                            ${tag_start === "from" ? '<div style="padding: 2px 3px; margin-right:5px;border: 1px solid green; color: green;">开始</div>' : ''}
+                                            <div style="flex-grow: 1;"></div>
+                                            ${tag_end === "from" ? '<div style="padding: 2px 3px;border: 1px solid red; color: red;">结束</div>' : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+
+                    $("#woman_startCount").html(woman_startCount);
+                    $("#woman_endCount").html(woman_endCount);
+                }
+
+
+                //对方
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+                    var nick = record.nick;
+                    var sex = record.sex;
+
+                    //计算开始标识
+                    var dtm_send_start = record.send_dtm_start;
+                    var dtm_rec_start = record.rec_dtm_start;
+                    dtm_send_start = new Date(dtm_send_start).getTime();
+                    dtm_rec_start = new Date(dtm_rec_start).getTime();
+                    var tag_start = "";
+                    if (dtm_send_start > dtm_rec_start) {
+                        man_startCount++;
+                        tag_start = "to";
+                    }
+
+                    //计算结束标识
+                    var dtm_send_end = record.send_dtm_end;
+                    var dtm_rec_end = record.rec_dtm_end;
+                    dtm_send_end = new Date(dtm_send_end).getTime();
+                    dtm_rec_end = new Date(dtm_rec_end).getTime();
+                    var tag_end = "";
+                    if (dtm_send_end > dtm_rec_end) {
+                        man_endCount++;
+                        tag_end = "to"
+                    }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = `
+                                <div style="display: flex;">
+                                    <a href="javascript:UserAllInfo('${record.uid}')">
+                                        <img src="${photo}" class="photo-img" style="width: 50px; height: 50px; border-radius: 50%;" />
+                                    </a>
+                                    <div style="margin-left: 10px; text-align: left; flex-grow: 1;">
+                                        <div class="user-name">${nick.length > 4 ? nick.substring(0, 4) + '..' : nick} (${sex})</div>
+                                        <div class="user-gender" style="display: flex; margin-top: 5px;">
+                                            ${tag_start === "to" ? '<div style="padding: 2px 3px; margin-right:5px;border: 1px solid green; color: green;">开始</div>' : ''}
+                                            <div style="flex-grow: 1;"></div>
+                                            ${tag_end === "to" ? '<div style="padding: 2px 3px;border: 1px solid red; color: red;">结束</div>' : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                    $("#man_startCount").html(man_startCount);
+                    $("#man_endCount").html(man_endCount);
+                }
+
+                if (column.name == "msg_socre") {
+                    var msg_count = record.msg_count;
+                    e.cellHtml = '<span style="font-size:18px;">' + record.msg_socre + '</span>';
+                    if (msg_count > 5) {
+                        e.cellHtml = '<span style="font-size:18px;color:red;">' + record.msg_socre + '</span>';
+                    }
+                }
+
+                if (column.field == "msg_count") {
+                    var msg_count = record.msg_count;
+                    e.cellHtml = '<span>' + record.msg_count + '</span>';
+                    if (msg_count > 5) {
+                        e.cellHtml = '<span style="color:red;">' + record.msg_count + '</span>';
+                    }
+                }
+
+                if (column.field == "msg_coin") {
+                    var msg_coin = record.msg_coin;
+                    var msg_socre = record.msg_socre;
+                    if (msg_socre > msg_coin) {
+                        e.rowStyle = 'background-color:#fcc;';
+                    }
+                    if (msg_socre - msg_coin > 300) {
+                        e.rowStyle = 'background-color:#F08080;';
+                    }
+                    e.cellHtml = '<span>' + msg_coin + '</span>';
+                }
+
+                if (column.field == "sendRec_msg_count") {
+                    var send_msg_count = record.send_msg_count;
+                    var rec_msg_count = record.rec_msg_count;
+                    e.cellHtml = '<span>' + send_msg_count + '-' + rec_msg_count + '</span>';
+                }
+
+                if (column.field == "dtm_start") {
+                    var dtm = record.dtm_start;
+                    if (dtm == null) { dtm = ''; }
+                    dtm = dtm.replace(' ', '<br/>');
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + dtm + '</span>';
+                }
+
+
+                //接收统计
+                if (column.field == "rec_msg_count") {
+                    var rec_msg_count = record.rec_msg_count;
+                    var rec_msg_suc = record.rec_msg_suc;
+                    var rec_msg_fail = record.rec_msg_fail;
+                    if (rec_msg_count == null) { rec_msg_count = 0 };
+                    if (rec_msg_suc == null) { rec_msg_suc = 0 };
+                    if (rec_msg_fail == null) { rec_msg_fail = 0 };
+
+                    e.cellHtml = '<span>' + rec_msg_count + '</span>';
+                }
+
+
+                if (column.field == "send_dtm_start") {
+                    var dtm = record.send_dtm_start;
+                    if (dtm == null) { dtm = ''; }
+                    dtm = dtm.replace(' ', '<br/>');
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + dtm + '</span>';
+                }
+
+                if (column.field == "send_dtm_end") {
+                    var dtm = record.send_dtm_end;
+                    if (dtm == null) { dtm = ''; }
+                    dtm = dtm.replace(' ', '<br/>');
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + dtm + '</span>';
+                }
+
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:left";
+                    e.cellHtml = '<a style="font-size:16px;color:blue;" href="javascript:ChartAB(\'' + record.dtm_start + '\',\'' + record.uid + '\' ,\'' + record.from_uid + '\')"> <span>详情</span> </a>';
+                }
+
+                //会话周期
+                if (column.name == "chat_cycle") {
+                    var dtm_send_start = new Date(record.send_dtm_start).getTime();
+                    var dtm_rec_start = new Date(record.rec_dtm_start).getTime();
+                    var dtm_send_end = new Date(record.send_dtm_end).getTime();
+                    var dtm_rec_end = new Date(record.rec_dtm_end).getTime();
+
+                    var maxTime = Math.max(dtm_send_start, dtm_rec_start, dtm_send_end, dtm_rec_end);
+                    var minTime = Math.min(dtm_send_start, dtm_rec_start, dtm_send_end, dtm_rec_end);
+                    var totalSeconds = (maxTime - minTime) / 1000;
+
+                    var hours = Math.floor(totalSeconds / 3600);
+                    var minutes = Math.floor((totalSeconds % 3600) / 60);
+                    var seconds = totalSeconds % 60;
+
+                    var time;
+                    if (hours > 0) {
+                        time = `${hours}小时 `;
+                    } else if (minutes > 0) {
+                        time = `${minutes}′ ${seconds}″`;
+                    } else {
+                        time = `${seconds}″`;
+                    }
+
+                    e.cellHtml = '<span>' + time + '</span>';
+                }
+
+            });
+        }
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function init() {
+        }
+
+        function search() {
+            var uid = '@ViewData["uid"]';
+            var dtm = '@ViewData["dtm"]';
+            grid.load({
+                "from_uid": uid,
+                "dtm": dtm,
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+            <span class="lb">女生开始:</span><span class="txt1" id="woman_startCount" style="color:blue">0</span>
+            <span class="lb">女生结束:</span><span class="txt1" id="woman_endCount" style="color:blue">0</span>
+            <span class="lb">男生开始:</span><span class="txt1" id="man_startCount" style="color:blue">0</span>
+            <span class="lb">男生结束:</span><span class="txt1" id="man_endCount" style="color:blue">0</span>
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top: 10px;"
+             url="/Admin1/GetChatMynSumDtl" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[100,300,500,1000]" pagesize="100">
+            <div property="columns">
+                <div field="xh" width="10" headeralign="center" align="center" allowsort="false">序号</div>
+                <div field="dtm_start" width="30" headeralign="center" align="center" allowsort="false">时间</div>
+                
+                <div name="from_photo" width="50" renderer="onGenderRenderer" align="center" headeralign="center">用户</div>
+                <div field="to_vip" width="20" headeralign="center" align="right" allowsort="false">对方会员</div>
+                <div name="photo" width="50" renderer="onGenderRenderer" align="center" headeralign="center">对方</div>
+                <div name="chat_cycle" width="30" renderer="onGenderRenderer" align="left" headeralign="center">会话周期</div>
+                <div name="msg_socre" field="msg_socre" width="20" headeralign="center" align="right" allowsort="false">消息收入</div>
+                <div field="msg_count" width="15" headeralign="center" align="right" allowsort="false">积分次数</div>
+               
+                <div field="msg_count_coin" width="20" headeralign="center" align="right" allowsort="false">金币次数</div>
+                <div field="msg_coin" width="15" headeralign="center" align="right" allowsort="false">消息支出</div>
+                <div field="" width="20" headeralign="center" align="center" allowsort="false">-</div>
+                <div field="sendRec_msg_count" width="20" headeralign="center" align="right" allowsort="false">发送/接收</div>
+               
+                <div field="from_vip" width="20" headeralign="center" align="right" allowsort="false">用户会员</div>
+                
+
+                <div name="dtl" width="80" headeralign="left" align="left" allowsort="false">详情</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

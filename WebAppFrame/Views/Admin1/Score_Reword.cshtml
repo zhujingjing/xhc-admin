@@ -1,0 +1,332 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js?id=1"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=5"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            font-size: 22px;
+            font-weight: bold;
+            color: red;
+            height: 38px;
+            line-height: 38px;
+        }
+
+        .blue {
+            font-size: 18px;
+            font-weight: bold;
+            color: blue;
+            height: 38px;
+            line-height: 38px;
+        }
+
+        .yellow {
+            font-size: 18px;
+            font-weight: bold;
+            color: yellow;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 100px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-left: 3px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            mini.parse();
+            grid = mini.get("datagrid1");
+            //grid.load();
+
+            search();
+
+            drawCell();
+
+            init();
+            bindEvent();
+        })
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+                    //e.cellStyle = "text-align:center";
+                    e.cellHtml += '&nbsp;&nbsp;&nbsp;&nbsp;';
+                    e.cellHtml += '<a style="color:blue;" href="javascript:create_r(\'' + record.uid + '\', ' + record.xh + ' , ' + record.score_target + ' )"> 生成奖励</a>';
+                    e.cellHtml += '&nbsp;&nbsp;&nbsp;&nbsp;';
+                    e.cellHtml += '<a style="color:blue;" href="javascript:sendWxMsg(\'' + record.uid + '\','  + record.r_2 + ')">发送微信消息</a>';
+                }
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid + '\')"><img src="' + photo + '" class="photo-img" /></a>';
+
+                }
+
+                if (column.name == "score_total") {
+                    var r = record.score_total;
+                    r = separate_Num(r);
+                    e.cellHtml = '<span class="blue">' + r + '</span>';
+                }
+                if (column.name == "score_target") {
+                    var r = record.score_target;
+                    r = separate_Num(r);
+                    e.cellHtml = '<span class="red">' + r + '</span>';
+                }
+                if (column.name == "r_1") {
+                    var r = 0;
+                    var base = record.score_target;
+                    var xh = record.xh;
+                    r = calculate_r(xh, base);
+                    r = separate_Num(r);
+                    e.cellHtml = '<span class="blue">' + r + '</span>';
+                }
+                if (column.name == "r_2") {
+                    var r = record.r_2;
+                    r = separate_Num(r);
+                    e.cellHtml = '<span class="red">' + r + '</span>';
+                }
+                
+            });
+        }
+
+        function calculate_r(xh, base) {
+            var r = 0;
+            switch (xh) {
+                case 1:
+                    r = Math.floor(base * 0.3);
+                    break;
+                case 2:
+                    r = Math.floor(base * 0.2);
+                    break;
+                case 3:
+                    r = Math.floor(base * 0.18);
+                    break;
+                case 4:
+                    r = Math.floor(base * 0.15);
+                    break;
+                case 5:
+                    r = Math.floor(base * 0.1);
+                    break;
+
+                case 6:
+                    r = Math.floor(base * 0.08);
+                    break;
+                case 7:
+                    r = Math.floor(base * 0.06);
+                    break;
+                case 8:
+                    r = Math.floor(base * 0.05);
+                    break;
+
+                default:
+                    r = 0;
+                    break;
+            }
+            return r;
+        }
+
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 120);
+        }
+
+        function bindEvent() {
+        }
+
+        function search() {
+            var dtm = mini.get("dtm").getText();
+            grid.load({
+                "dtm": dtm
+            });
+        }
+
+        function jump_date(num) {
+            var d = new Date(mini.get("dtm").getText());
+
+            d.setDate(d.getDate() + num);
+            var dtm = formatTime(d);
+
+
+            mini.get("dtm").setValue(dtm);
+
+            search();
+        }
+
+        function formatTime(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            return year + '-' + month + '-' + day;
+        }
+
+        function create_r(uid, xh, base) {
+            mini.mask({
+                el: document.body,
+                cls: 'mini-mask-loading',
+                html: '正在生成...'
+            });
+
+            var dtm = mini.get("dtm").getText();
+            var r = calculate_r(xh, base);
+            //后台
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/Create_Rank_Reword",
+                data: { "dtm": dtm, "uid": uid, "r": r},
+                success: function (data) {
+                    data = JSON.parse(data);
+
+                    mini.unmask(document.body);
+                    if (data.state == "1") {
+                        grid.reload();
+                    }
+                    else {
+                        mini.alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function sendWxMsg(uid,s) {
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            var parentWidth = $(window.parent.document).find("#rightFrame").width();
+            var dtm = mini.get("dtm").getText();
+           
+            mini.open({
+                url: "/Admin1/SendWxMsg_Sbjl/?uid=" + uid + "&s="+s+"&dtm="+dtm,
+                showMaxButton: false,
+                title: "发送微信通知",
+                width: 600,
+                height: 400,
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                    }
+                    else if (action == "cancel") {
+
+                    }
+                }
+            });
+        }
+
+        function onDrawSummaryCell(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+
+            //客户端汇总计算
+            if (e.field == "score_target") {
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span class="red">' + deal_Num(e.cellHtml) + '</span>';
+            }
+            if (e.field == "r_2") {
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span class="red">' + deal_Num(e.cellHtml) + '</span>';
+            }
+        }
+        function deal_Num(v) {
+            v = v + "";
+            var len = v.length;
+            if (v.length > 3) {
+                var pre = v.substring(0, len - 3);
+                var last3 = v.substring(len - 3);
+                var newV = pre + ',' + last3;
+                return newV;
+            }
+
+            return v;
+        }
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">上榜奖励</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+            日期: <input id="dtm" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" style="background-color:forestgreen" value="前一天" onclick="jump_date(-1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" style="background-color:orange" value="后一天" onclick="jump_date(1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Admin1/GetScoreReword" idfield="id" allowresize="true" multiselect="true"
+             showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell"
+             sizelist="[20]" pagesize="20">
+            <div property="columns">
+                <div field="xh" width="20" headeralign="center" align="center" allowsort="false">序号</div>
+                <div name="photo" width="40" renderer="onGenderRenderer" align="center" headeralign="center">头像</div>
+                <div field="nick" width="40" headeralign="center" align="center" allowsort="false">昵称</div>
+                
+                <div field="name" width="40" headeralign="center" align="center" allowsort="false">签约用户</div>
+                <div field="score_total" name="score_total" width="40" headeralign="center" align="right" >总魅力值</div>
+                <div field="score_target" name="score_target" width="40" headeralign="center" align="right" summarytype="sum">当日魅力值</div>
+                <div field="r_1" name="r_1" width="40" headeralign="center" align="right" >预计奖励值</div>
+                <div field="r_2" name="r_2" width="40" headeralign="center" align="right" summarytype="sum">实际奖励值</div>
+
+                <div name="dtl" width="150" headeralign="center" align="left" allowsort="false">--</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

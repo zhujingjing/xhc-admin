@@ -1,0 +1,333 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=8"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+        }
+
+        .url-img {
+            width: 120px;
+            height: 120px;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .red {
+            font-size: 18px;
+            color: #f00;
+        }
+
+        .blue {
+            font-size: 14px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .yellow {
+            font-size: 18px;
+            font-weight: bold;
+            color: yellow;
+        }
+
+        .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 160px;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 99;
+        }
+
+        .img-album {
+            width: auto;
+            height: 80%;
+        }
+
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            mini.parse();
+            grid = mini.get("datagrid1");
+            grid.load();
+            drawCell();
+            init();
+        });
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //处理头像
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid + '\')"><img src="' + photo + '" class="photo-img-big" /></a>';
+                }
+                if (column.name == "url") {
+                    var url = servUrl_AppData + '/photo/' + record.url;
+                    e.cellHtml = '<a class="ub ub-ac ub-pc" href="javascript:dtl(\'' + url + '\')"><div style="background-image: url(' + url + ')" class="url-img"/></div></a>';
+                }
+                if (column.field == "create_time") {
+                    var create_time = record.create_time;
+                    create_time = create_time.replace(" ", "<br/>");
+                    e.cellHtml = '<span>' + create_time + '</span>';
+                }
+                if (column.field == "sort_time") {
+                    var sort_time = record.sort_time;
+                    sort_time = sort_time.replace(" ", "<br/>");
+                    e.cellHtml = '<span>' + sort_time + '</span>';
+                }
+                if (column.field == "check_state") {
+                    var state = record.check_state;
+                    var txt = '待审核';
+                    var cls = 'gray';
+                    if (state == 1) {
+                        txt = '通过';
+                        cls = 'blue';
+                    }
+                    else if (state == 2) {
+                        txt = '失败';
+                        cls = 'red';
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + txt + '</span>';
+                }
+                //审核周期
+                if (column.name == "check_cycle") {
+                    var dtm = record.create_time;
+                    var dtm_check = record.check_time;
+                    var diff_time = "";
+                    if (dtm_check == null) {
+                        diff_time = "";
+                    } else {
+                        dtm = new Date(dtm).getTime();
+                        dtm_check = new Date(dtm_check).getTime();
+                        diff_time = dtm_check - dtm;
+                        var audit_cycle_days = Math.floor(diff_time / (1000 * 60));
+                        if (audit_cycle_days < 1) {
+                            var second = diff_time / 1000;
+                            e.cellStyle = "text-align:center";
+                            e.cellHtml = '<span class="blue">' + second + '秒</span>';
+                        }
+                        if (audit_cycle_days >= 1 && audit_cycle_days < 60) {
+                            e.cellStyle = "text-align:center";
+                            e.cellHtml = '<span style="font-size: 14px;color:blue;">' + audit_cycle_days + '分钟</span>';
+                        }
+                        if (audit_cycle_days >= 60 && audit_cycle_days < 60 * 24) {
+                            audit_cycle_days = Math.floor(diff_time / (1000 * 60 * 60));
+                            e.cellStyle = "text-align:center";
+                            e.cellHtml = '<span style="color:red;font-size:14px;">' + audit_cycle_days + '小时</span>';
+                        }
+                        if (audit_cycle_days >= 60 * 24) {
+                            audit_cycle_days = Math.floor(diff_time / (1000 * 60 * 60 * 24));
+                            e.cellStyle = "text-align:center";
+                            e.cellHtml = '<span style="color:red;font-size:14px;font-weight: bold;">' + audit_cycle_days + '天</span>';
+                        }
+                    }
+
+                }
+                //用户删除
+                if (column.field == "is_delete") {
+                    var state = record.is_delete;
+                    var txt = '';
+                    var cls = 'gray';
+                    if (state == 1) {
+                        txt = '删除';
+                        cls = 'red';
+                    }
+                    else if (state == 0) {
+                        txt = '正常';
+                        cls = 'blue';
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + txt + '</span>';
+                }
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:left";
+                    e.cellHtml += '<a style="color:blue;margin-left:8px;" href="javascript:check(\'' + record.id + '\', 1)">通过</a>';
+                    e.cellHtml += '&nbsp;&nbsp;&nbsp;&nbsp;';
+                    e.cellHtml += '<a style="color:blue;" href="javascript:check(\'' + record.id + '\', 2)">不通过</a>';
+                }
+            });
+        }
+
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#datagrid1").height(parentHeight - 80);
+        }
+
+        function search() {
+            var c_type = $("#c_type").val();
+            var sort = $("#sort").val();
+            var is_delete = $("#is_delete").val();
+            var dtm_start = mini.get("dtm_start").getText();
+            var dtm_end = mini.get("dtm_end").getText();
+            var publish_uid = $("#publish_uid").val();
+
+            grid.load({
+                "start": dtm_start,
+                "end": dtm_end,
+                "c_type": c_type,
+                "is_delete": is_delete,
+                "sort": sort,
+                "publish_uid": publish_uid
+            });
+        }
+
+        function check(id, state) {
+            $.ajax({
+                type: "get",
+                url: "/Check/Check_Album",
+                data: { "id": id, "state": state },
+                success: function (data) {
+                    var data = JSON.parse(data);
+                    if (data.state == '1') {
+                        grid.reload();
+                    }
+                }
+            });
+        }
+
+        function dtl(url) {
+            document.getElementById("img-album").src = url;
+            document.getElementById("popup").style.display = 'flex';
+            document.getElementById("popup").style.justifyContent = 'center';
+            document.getElementById("popup").style.alignItems = 'center';
+        }
+        //关闭照片
+        function closePopup() {
+            document.getElementById("popup").style.display = 'none';
+        }
+
+        function del() {
+            var tag = confirm("确定要删除吗");
+            if (tag == false) {
+                return false;
+            }
+
+            var selectedData = mini.get("datagrid1").getSelecteds();
+            var selectedId = selectedData.map(item => item.id);
+            selectedId = selectedId.join(",");
+            $.ajax({
+                type: "post",
+                url: "/Check/DeletePhotos",
+                data: { "ids": selectedId},
+                success: function (data) {
+                    var data = JSON.parse(data);
+                    if (data.state == '1') {
+                        grid.reload();
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="popup" class="popup ub ub-pc ub-ac" onclick="closePopup()">
+        <img id="img-album" class="img-album" src="" />
+    </div>
+    <form id="form1">
+        <div class="sys-content-border" style="padding:8px 3px;">
+            起始时间: <input id="dtm_start" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["start"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            截止时间: <input id="dtm_end" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["end"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            状态:
+            <select id="c_type" style="height:24px;">
+                <option value="" selected="selected">全部</option>
+                <option value="0">未审核</option>
+                <option value="1">通过</option>
+                <option value="2">失败</option>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+            用户删除:
+            <select id="is_delete" style="height:24px;">
+                <option value="" selected="selected">全部</option>
+                <option value="0">未删除</option>
+                <option value="1">已删除</option>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+            排序:
+            <select id="sort" style="height:24px;">
+                <option value="create_time desc" selected="selected">默认</option>
+                <option value="sort_time desc">刷新时间</option>
+                <option value="create_time desc">发布时间</option>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+            uid:<input type="text" class="txt" id="publish_uid" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_delete" type="button" class="sys-btn" value="删除" onclick="del()" />
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Check/GetAlbumData" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[10,50,100]" pagesize="10">
+            <div property="columns">
+                <div type="checkcolumn" width="10" headeralign="center" align="center"></div>
+                <div field="xh" width="20" headeralign="center" align="center" allowsort="false">序号</div>
+                <div field="uid" width="50" headeralign="center" align="center" allowsort="false">uid</div>
+                <div name="photo" field="photo" width="30" headeralign="center" align="center" allowsort="false">头像</div>
+                <div field="nick" width="40" headeralign="center" align="center" allowsort="false">昵称</div>
+                <div field="sex" width="30" headeralign="center" align="center" allowsort="false">性别</div>
+                <div field="create_time" width="40" renderer="onGenderRenderer" align="center" headeralign="center">上传时间</div>
+                <div name="url" width="40" headeralign="center" align="center" allowsort="false">照片</div>
+                <div field="check_cycle" name="check_cycle" width="20" headeralign="center" align="center" allowsort="false">审核周期</div>
+                <div field="check_state" name="state" width="35" headeralign="center" align="center" allowsort="false">审核状态</div>
+                <div name="dtl" width="100" headeralign="center" align="left" allowsort="false">操作</div>
+                <div field="is_delete" width="45" headeralign="center" align="center" allowsort="false">用户删除</div>
+                <div field="check_time" width="45" headeralign="center" align="center" allowsort="false">审核时间</div>
+                <div field="sort_time" width="45" renderer="onGenderRenderer" align="center" headeralign="center">置顶时间</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

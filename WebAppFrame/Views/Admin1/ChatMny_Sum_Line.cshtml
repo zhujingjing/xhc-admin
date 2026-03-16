@@ -1,0 +1,259 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .blue {
+            display: inline-block;
+            color: blue;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .red {
+            display: inline-block;
+            color: red;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 180px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .tag-a {
+            color: blue;
+            font-size: 16px;
+        }
+
+        a:visited {
+            color: red;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#divContainer").height(parentHeight - 60);
+            init();
+        })
+
+        function search(){
+            var dtm = mini.get("dtm").getText();
+            var url = "/Admin1/ChatMny_Sum_Line?" + "dtm=" + dtm;
+            window.location.href = url;
+        }
+
+        function init() {
+            var data = '@Html.Raw(ViewData["data"])';
+            var data_yest = '@Html.Raw(ViewData["data_yest"])';
+            var data_pre2 = '@Html.Raw(ViewData["data_pre2"])';
+
+            data = JSON.parse(data);
+            data_yest = JSON.parse(data_yest);
+            data_pre2 = JSON.parse(data_pre2);
+
+            var data_new = [];
+            var total_today = 0;
+            var total_yesterday = 0;
+            var total_pre2 = 0;
+
+            
+            for (var i = 0; i < 24; i++) {
+                var item = {};
+                if (i < 9) {
+                    item.dtm = "0" + (i + 1);
+                    var data_today = data.find(d => d.dtm.endsWith("0" + i))?.chat_score || 0;
+                    var data_yest_val = data_yest.find(d => d.dtm.endsWith("0" + i))?.chat_score || 0;
+                    var data_pre2_val = data_pre2.find(d => d.dtm.endsWith("0" + i))?.chat_score || 0;
+                } else {
+                    item.dtm = "" + (i + 1);
+                    var data_today = data.find(d => d.dtm.endsWith("" + i))?.chat_score || 0;
+                    var data_yest_val = data_yest.find(d => d.dtm.endsWith("" + i))?.chat_score || 0;
+                    var data_pre2_val = data_pre2.find(d => d.dtm.endsWith("" + i))?.chat_score || 0;
+                }
+
+                total_today += data_today;
+                total_yesterday += data_yest_val;
+                total_pre2 += data_pre2_val;
+
+                item.today = total_today;
+                item.yesterday = total_yesterday;
+                item.pre2 = total_pre2;
+                item.today_hours = data_today;
+                
+                data_new.push(item);
+            }
+            //线图
+            showLine546(data_new);
+        }
+
+        function jump_date(num) {
+            var d = new Date(mini.get("dtm").getText());
+
+            d.setDate(d.getDate() + num);
+            var dtm = formatTime(d);
+
+
+            mini.get("dtm").setValue(dtm);
+
+            search();
+        }
+
+        function formatTime(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            return year + '-' + month + '-' + day;
+        }
+
+    </script>
+    <script>
+        function showLine546(data) {
+            var dtm = '@ViewData["dtm"]';
+            var dtm_1 = '@ViewData["dtm_1"]';
+            var dtm_2 = '@ViewData["dtm_2"]';
+
+            var today = dtm.substr(5, 5).replace("/", "月") + "号";
+            var yest = dtm_1.substr(5, 5).replace("-", "月") + "号";
+            var pre2 = dtm_2.substr(5, 5).replace("-", "月") + "号";
+
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            //图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8;
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF";
+            graph.valueField = "today";
+            graph.title = today + "积分";
+            graph.balloonText = today+ "截止到[[category]]点累计聊天积分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";
+                graph.valueField = "yesterday"; //纵轴显示内容
+                graph.title = yest + "积分";
+                graph.balloonText = yest + "截止到[[category]]点累计聊天积分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#666";
+                graph.valueField = "pre2"; //纵轴显示内容
+                graph.title = pre2 + "积分";
+                graph.balloonText = pre2 + "截止到[[category]]点累计聊天积分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            //当天每小时
+            if (true) {
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";
+                graph.bulletSize = 8;
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#0000FF";
+                graph.valueField = "today_hours"; //纵轴显示内容
+                graph.title = today + "积分";
+                graph.balloonText = today + "[[category]]点聊天积分<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+
+</head>
+<body>
+    <div class="sys-content-border" style="padding:8px 3px;">
+        日期: <input id="dtm" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+        <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="button" class="sys-btn" style="background-color:forestgreen" value="前一天" onclick="jump_date(-1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="button" class="sys-btn" style="background-color:orange" value="后一天" onclick="jump_date(1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+    <div id="divContainer" style="width: 99%; border: solid 1px #dcdcdc">
+
+    </div>
+</body>
+</html>
+
+

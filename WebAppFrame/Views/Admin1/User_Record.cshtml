@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <title>用户记录</title>
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <script src="~/Scripts/public.js"></script>
+    <link href="~/Styles/Style_chart.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style type="text/css">
+        body {
+            font-family: tahoma, arial, sans-serif;
+            font-size: 12px;
+            margin: 5px;
+        }
+        .font-bold {
+            font-weight: bold;
+        }
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .size-x {
+            font-size: 14px;
+            color: red;
+        }
+        .size-xx {
+            font-size: 14px;
+            font-weight: bold;
+            color: red;
+        }
+        .size-xxx {
+            font-size: 18px;
+            font-weight: bold;
+            color: red;
+        }
+        .gray {
+            color: red;
+        }
+        .msg-rece {
+            display: flexbox;
+            border: solid 1px red;
+            padding: 8px;
+            color: white;
+            background-color: black;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .lb {
+            color: #666;
+            margin-left: 20px;
+        }
+        .txt {
+            margin-left: 6px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .right {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .left {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        .off {
+            position: fixed;
+            bottom: 30px;
+            right: 80px;
+            padding: 5px 10px;
+            background-color: #e92162;
+            color: #fff;
+            border-radius: 5px;
+            width: 400px;
+            text-align: center;
+        }
+        .msg-more {
+            text-align: center;
+            color: blue;
+            cursor: pointer;
+        }
+        .message-text {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        .fg-line {
+            text-align: center;
+            color: #808080;
+            background: #dcdcdc;
+        }
+    </style>
+    <script type="text/javascript">
+        var grid1, grid2;
+        var uid = "@ViewData["uid"]";
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent).height();
+            $("#datagrid1,#datagrid2,#chat_dtl").height(parentHeight - 160);
+
+            mini.parse();
+
+            grid1 = mini.get("datagrid1");
+            grid2 = mini.get("datagrid2");
+
+            drawCell();
+
+            init();
+
+            // 加载来源下拉框
+            loadDropdownOptions("chat_check_list_source", "source");
+
+            // 加载用户记录表格数据
+            queryRecords();
+            // 加载右侧表格数据
+            search();
+        })
+
+        function init() {
+            // 计算30天前的日期
+            var today = new Date();
+            var thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+            mini.get("startDate").setValue(thirtyDaysAgo);
+            mini.get("endDate").setValue(new Date());
+        }
+
+        function drawCell() {
+            grid1.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //消息条数
+                if (column.name == "tiaoshu") {
+                    var txt = record.tiaoshu;
+                    var color = '';
+                    if (txt > 0) {
+                        color = "size-xx";
+                        e.cellStyle = 'background-color:blue;';
+                    }
+                    e.cellHtml = '<span class="' + color + '">' + txt + '</span>';
+                }
+
+                if (column.name == "tiaoshu_receive") {
+                    var txt = record.tiaoshu_receive;
+                    var color = '';
+                    if (txt > 0) {
+                        color = "size-xx";
+                        e.cellStyle = 'background-color:blue;';
+                    }
+                    e.cellHtml = '<span class="' + color + '">' + txt + '</span>';
+                }
+
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:dtl(\'' + record.uid_from + '\', \'' + record.uid_to + '\')">详情</a>';
+                }
+            });
+
+            mini.get("datagrid2").on("drawcell", function (e) {
+                var record = e.record;
+                var field = e.field;
+                var value = e.value;
+
+                if (field == "xh") {
+                    e.cellHtml = (e.rowIndex + 1).toString();
+                }
+                
+                // 评价字段样式处理
+                if (field == "evaluation") {
+                    var color = '';
+                    if (value == "很好" || value == "好") {
+                        color = "blue";
+                    } else if (value == "一般") {
+                        color = "black";
+                    } else if (value == "差" || value == "很差") {
+                        color = "red";
+                    }
+                    e.cellHtml = '<span style="color: ' + color + ';">' + (value || '') + '</span>';
+                }
+            });
+        }
+
+        function search() {
+            var dtm = "@ViewData["dtm"]";
+
+            var days = $("#days").val();
+            grid1.load({
+                "start": dtm,
+                "days": days
+            });
+        }
+
+        function formatTime(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            return year + '-' + month + '-' + day;
+        }
+
+        // 格式化时间戳
+        function formatTimestamp(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            var hours = date.getHours(), hours = hours < 10 ? '0' + hours : hours;
+            var minutes = date.getMinutes(), minutes = minutes < 10 ? '0' + minutes : minutes;
+            var seconds = date.getSeconds(), seconds = seconds < 10 ? '0' + seconds : seconds;
+            return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+        }
+
+        // 格式化日期显示
+        function formatDate(e) {
+            var value = e.value;
+            if (value) {
+                if (typeof value === 'string') {
+                    // 如果是字符串，直接返回前10位（yyyy-MM-dd）
+                    return value.substr(0, 10);
+                } else if (value instanceof Date) {
+                    // 如果是Date对象，格式化为yyyy-MM-dd
+                    var year = value.getFullYear();
+                    var month = value.getMonth() + 1, month = month < 10 ? '0' + month : month;
+                    var day = value.getDate(), day = day < 10 ? '0' + day : day;
+                    return year + '-' + month + '-' + day;
+                }
+            }
+            return value;
+        }
+
+        function onDrawSummaryCell(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+            //客户端统计
+            if (e.field == "tiaoshu" || e.field == "tiaoshu_receive") {
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:12px 0; font-size:18px;color:red; font-weight: bold;">' + e.cellHtml + '</span>';
+            }
+
+        }
+
+        // 渲染操作按钮
+        function onActionRenderer(e) {
+            var record = e.record;
+            var id = record.id;
+            return '<a href="javascript:editRecord(\'' + id + '\')">修改</a> | <a href="javascript:deleteRecord(\'' + id + '\')">删除</a>';
+        }
+
+        // 新增记录
+        function addRecord() {
+            var url = "/Admin1/User_Record_Add?uid=" + uid;
+            mini.open({
+                url: url,
+                title: "新增用户记录",
+                width: 800,
+                height: 700,
+                onload: function () {
+                    var iframe = this.getIFrameEl();
+                },
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        queryRecords();
+                    }
+                }
+            });
+        }
+
+        // 查询记录
+        function queryRecords() {
+            var startDate = mini.get("startDate").getValue();
+            var endDate = mini.get("endDate").getValue();
+            var source = $("#source").val();
+
+            // 确保日期格式正确
+            if (startDate instanceof Date) {
+                startDate = startDate.toISOString().split('T')[0];
+            }
+            if (endDate instanceof Date) {
+                endDate = endDate.toISOString().split('T')[0];
+            }
+
+            grid2.load({
+                pageIndex: 1,
+                pageSize: 200,
+                uid: uid,
+                startDate: startDate,
+                endDate: endDate,
+                source: source
+            });
+        }
+
+        // 修改记录
+        function editRecord(id) {
+            var url = "/Admin1/User_Record_Add?uid=" + uid + "&id=" + id;
+            mini.open({
+                url: url,
+                title: "修改用户记录",
+                width: 800,
+                height: 600,
+                onload: function () {
+                    var iframe = this.getIFrameEl();
+                },
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        queryRecords();
+                    }
+                }
+            });
+        }
+
+        // 删除记录
+        function deleteRecord(id) {
+            if (confirm('确定要删除这条记录吗？')) {
+                $.ajax({
+                    url: "/Admin1/DeleteUserRecord",
+                    type: "POST",
+                    data: { id: id },
+                    dataType: "json",
+                    success: function (result) {
+                        try {
+                            // 同时支持大写和小写字段名
+                            var state = result.state || result.State;
+                            var msg = result.msg || result.Msg || "未知错误";
+
+                            if (state == "1" || state == 1) {
+                                alert("删除成功");
+                                queryRecords();
+                            } else {
+                                alert("删除失败: " + msg);
+                            }
+                        } catch (e) {
+                            alert("解析返回结果失败: " + e.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("请求错误: " + error);
+                    }
+                });
+            }
+        }
+
+        // 行点击事件
+        function onRowClick(e) {
+            var record = e.record;
+            var dtm = record.dtm;
+            
+            // 加载聊天记录
+            $.ajax({
+                type: "GET",
+                url: "/Admin1/GetChartA_B",
+                data: { "start": dtm + " 00:00:00", "end": dtm + " 23:59:59", "from": uid_from, "to": uid_to },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    $("#contMsg").empty();
+                    show_msg(data);
+                }
+            });
+        }
+    </script>
+
+    <script type="text/javascript">
+        var photo_from = "";
+        var photo_to = "";
+
+        var uid_from = "@ViewData["xhc_admin_uid"]";
+        var uid_to = "@ViewData["uid"]";
+
+        var pre_time = '@ViewData["dtm"]';
+        var after_time = '@ViewData["dtm"]';
+
+        function show_msg(data) {
+            for (var i = 0; i < data.length; i++) {
+                //跳过探测消息
+                if (data[i].type == "sys_probe") {
+                    continue;
+                }
+                if (data[i].uid_from == uid_to) {
+                    appendHistory("3", data[i], 1);
+                }
+                if (data[i].uid_from == uid_from) {
+                    appendHistory("2", data[i], 1);
+                }
+
+            }
+        }
+
+        function appendHistory(txtType, data, pos) {
+            var txt = data.txt;
+            var msg_type = data.type;
+            if (msg_type == "gif" || msg_type == "emoji" || msg_type == "gift") {
+                txt = "<img src='" + txt + "' style='width:100px;' />";
+            }
+            if (msg_type == "pic") {
+                txt = "<span style='color: blue;' onclick='show_pic(\"" + txt + "\")'>【图片】查看</span>";
+            }
+            if (msg_type.startsWith('check')) {
+                msg = JSON.parse(data.txt);
+                txt = msg.txt;
+            }
+
+            if (data.type == "sys_kill") {
+                var kill_info = JSON.parse(txt);
+                txt = "封号信息:" + kill_info.kill_time / (1000 * 60 * 60) + "小时,原因:" + kill_info.kill_ause;
+            }
+            if (data.type == "sys_warn") {
+                txt = "警告信息:" + txt / 1000 + "秒";
+            }
+
+            var id = '';
+            var htmlTxt = '';
+            var iwidth;
+
+            var font_wt = "";
+            var time_ss = "";
+
+            if (pos == 1) {
+                var timestamp = parseInt(data.dtm.match(/\d+/)[0], 10);
+                var dtm = new Date(timestamp);
+                time_ss = formatTimestamp(dtm);
+            }
+            if (pos == -1) {
+                time_ss = data.dtm;
+                if (data.dtm.startsWith('/Date')) {
+                    var timestamp = parseInt(data.dtm.match(/\d+/)[0], 10);
+                    var dtm = new Date(timestamp);
+                    time_ss = formatTimestamp(dtm);
+                }
+                //time_ss = data.dtm.substr(10, 10); //data.dtm.replace(" ", "<br/>");
+            }
+            time_ss = time_ss.substr(10, 10);
+
+            switch (txtType) {
+                //自己说话
+                case "2":
+                    id = Math.floor(Math.random() * 100000);
+
+                    htmlTxt = '<div id="m' + id + '" class="message right" style="max-width: 45rem;"><div class="" style="">' + time_ss + '</div> <div class="message-text' + font_wt + '" style="max-width: 30rem;">' + txt + '</div></div>';
+                    if (pos == 1) {
+                        $("#contMsg").append(htmlTxt);
+                    }
+                    if (pos == -1) {
+                        $("#contMsg").prepend(htmlTxt);
+                    }
+
+                    iwidth = $("#m" + id + " .message-text").width() + 60;
+                    $("#m" + id + " .readSign").css({ "right": iwidth.toString() + "px", "visibility": "visible" });
+                    break;
+                    //对方说话
+                case "3":
+                    id = Math.floor(Math.random() * 100000);
+                    if (msg_type.startsWith('check')) {
+                        htmlTxt = '<div id="m' + id + '" class="message left" style="max-width: 45rem;">  <div class="message-text' + font_wt + '" style="border-radius: 0;border-right: 2px solid red; margin-right: 10px;">' + txt + '</div><div class="" style="">' + time_ss + '</div></div>';
+                    } else {
+                        htmlTxt = '<div id="m' + id + '" class="message left" style="max-width: 45rem;">  <div class="message-text' + font_wt + '" style="max-width: 30rem; margin-right: 10px;" >' + txt + '</div><div class="" style="">' + time_ss + '</div></div>';
+                    }
+
+                    if (pos == 1) {
+                        $("#contMsg").append(htmlTxt);
+                    }
+                    if (pos == -1) {
+                        $("#contMsg").prepend(htmlTxt);
+                    }
+                    break;
+
+            }
+        }
+
+        //前一天
+        function history_msg_front() {
+            //后台
+            var start = pre_time;
+            var time = get_dtm(start,"front");
+            //alert(time);
+            pre_time = time;
+            $.ajax({
+                type: "GET",
+                url: "/Admin1/GetChartA_B",
+                data: { "start": time + " 00:00:00", "end": time +" 23:59:59", "from": uid_from, "to": uid_to },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    dtl_history(data, uid_to, uid_from, -1);
+                    //添加一个分隔线
+                    var htmlTxt = '<div class="fg-line">' + time.substr(0, 10) + '</div>';
+                    $("#contMsg").prepend(htmlTxt);
+                }
+            });
+
+        }
+
+        //后一天
+        function history_msg_after() {
+            //后台
+            var start = after_time;
+            var time = get_dtm(start, "after");
+            //alert(time);
+            after_time = time;
+            $.ajax({
+                type: "GET",
+                url: "/Admin1/GetChartA_B",
+                data: { "start": time + " 00:00:00", "end": time + " 23:59:59", "from": uid_from, "to": uid_to },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    //添加一个分隔线
+                    var htmlTxt = '<div class="fg-line">' + time.substr(0, 10) + '</div>';
+                    $("#contMsg").append(htmlTxt);
+                    var reversedData = data.reverse(); //处理后一天消息倒序
+                    dtl_history(reversedData, uid_to, uid_from, 1);
+
+                }
+            });
+        }
+
+        function dtl_history(data, uid_to, uid_from, pos) {
+            for (var i = data.length - 1; i >= 0; i--) {
+                if (data[i].type == "sys_probe") {
+                    continue;
+                }
+                if (data[i].uid_from == uid_to) {
+                    appendHistory("3", data[i], pos);
+                }
+                if (data[i].uid_from == uid_from) {
+                    appendHistory("2", data[i], pos);
+                }
+            }
+        }
+
+        function get_dtm(dtm, type) {
+            var [datePart, timePart] = dtm.split(" ");
+            var dateParts = datePart.split("-");
+            var year = parseInt(dateParts[0], 10);
+            var month = parseInt(dateParts[1], 10) - 1; // 月份从0开始
+            var day = parseInt(dateParts[2], 10);
+            var date = new Date(year, month, day);
+            date.setDate(date.getDate());
+            if (type == "after") {
+                date.setDate(date.getDate() + 2);
+            }
+            var newDate = date.toISOString().split("T")[0];
+            return newDate;
+        }
+
+    </script>
+
+    <script>
+
+        function show_pic(url) {
+            document.getElementById("img-album").src = url;
+            document.getElementById("popup").style.display = 'flex';
+        }
+        function closePopup() {
+            document.getElementById("popup").style.display = 'none';
+            document.getElementById("alert_json").style.display = 'none';
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+
+        <div style="padding: 15px 5px; margin-bottom: 5px; border: solid 1px #dcdcdc; display:flex; align-items: center;">
+            <div style="display: flex; align-items: center; margin-right: 20px;">
+                <span>起始日期：</span>
+                <input id="startDate" class="mini-datepicker" format="yyyy-MM-dd" style="width:120px;" />&nbsp;&nbsp;
+                <span>截止日期：</span>
+                <input id="endDate" class="mini-datepicker" format="yyyy-MM-dd" style="width:120px;" />&nbsp;&nbsp;
+                <span>来源：</span>
+                <select id="source" class="mini-combobox" style="width:120px;">
+                    <option value="">全部</option>
+                </select>&nbsp;&nbsp;
+                <input id="btn_query" type="button" class="sys-btn" value="查询" onclick="queryRecords()" style="background-color: #E3F2FD; color: #1976D2;" />
+            </div>
+            <div style="display: flex; align-items: center; margin-right: 20px;">
+                统计天数:
+                <select id="days" style="height:24px; width:100px">
+                    <option value="7" selected="selected">7天</option>
+                    <option value="15">15天</option>
+                    <option value="30">30天</option>
+                </select>
+            </div>
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_add" type="button" class="sys-btn" value="新增" onclick="addRecord()" style="background-color: #E8F5E9; color: #388E3C; margin-left: 20px;" />
+        </div>
+
+        <table>
+            <tr>
+                <td style="display: flex; justify-content: space-between;">
+                    <div id="datagrid2" class="mini-datagrid" style="width:45%;"                         url="/Admin1/GetUserRecords" idfield="id" allowresize="true"
+                         showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell"
+                         sizelist="[50,100,200]" pagesize="200">
+                        <div property="columns">
+                            <div field="xh" name="xh" width="30" headeralign="center" align="center" allowsort="false">序号</div>
+                            <div field="record_date" width="80" align="center" headeralign="center" renderer="formatDate">日期</div>
+                            <div field="evaluation" width="40" headeralign="center" align="center">评价</div>
+                            <div field="summary" width="280" headeralign="center" align="left">简述</div>
+                            <div field="details" width="120" headeralign="center" align="left">详情</div>
+                            <div field="processing_result" width="80" headeralign="center" align="left">处理结果</div>
+                            <div field="source" width="80" headeralign="center" align="left">来源</div>
+                            <div field="remark" width="80" headeralign="center" align="left">备注</div>
+                            <div field="action" width="100" headeralign="center" align="center" renderer="onActionRenderer">操作</div>
+                            <div field="create_time" width="80" align="center" headeralign="center" renderer="formatDate">创建时间</div>
+                            
+                        </div>
+                    </div>
+
+                    <div style="width:3px;border:0px solid red;">&nbsp;</div>
+
+                    <div id="datagrid1" class="mini-datagrid" style="width:20%;"                         url="/Admin1/GetChart_Plat_Dtl/@ViewData["uid"]" idfield="id" allowresize="true"
+                         showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell" onrowclick="onRowClick"
+                         sizelist="[50,100,200]" pagesize="200">
+                        <div property="columns">
+                            <div field="xh" name="xh" width="30" headeralign="center" align="center" allowsort="false">序号</div>
+                            <div field="dtm" width="70" align="center" headeralign="center">日期</div>
+                            <div field="tiaoshu_receive" name="tiaoshu_receive" width="50" headeralign="center" align="right" allowsort="center" summarytype="sum">接收量</div>
+                            <div field="tiaoshu" name="tiaoshu" width="50" headeralign="center" align="right" allowsort="center" summarytype="sum">发送量</div>
+
+                        </div>
+                    </div>
+
+                    <div style="width:3px;border:0px solid red;">&nbsp;</div>
+
+                    <div style="width: 35%;">
+                        <div id="chat_dtl">
+                            <div class="content-inner" style="height:100%; margin-top: 0; transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1); transition-duration: 0ms; transform: translate(0px, 0px) translateZ(0px);">
+                                <div id="btn_msg_more" class="msg-more" style="display:none;" onclick="history_msg_front()">--- 前一天 ---</div>
+                                <div id="contMsg" class="messages"></div>
+                                <div id="btn_msg_more_after" class="msg-more" style="display:none;" onclick="history_msg_after()">--- 后一天 ---</div>
+                            </div>
+                        </div>
+
+                        <div id="popup" class="ub ub-pc ub-ac" style="display: none; justify-content:center; align-items:center; position: fixed; top: 0; right: 0; width: 33%; height: 100%; background-color: rgba(0, 0, 0, 0.9); z-index: 99;" onclick="closePopup()">
+                            <img id="img-album" style="width: 80%; height: auto;" src="" />
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+    </form>
+</body>
+</html>

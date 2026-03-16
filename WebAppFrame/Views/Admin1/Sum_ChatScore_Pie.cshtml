@@ -1,0 +1,138 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        #container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 49%;
+            height: 100%;
+        }
+        .tit {
+            font-size: 16px;
+            font-weight:bold;
+        }
+        #divContainer {
+            height: 100%;
+        }
+        #divContainer2 {
+            height: 100%;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        $(function () {
+            init();
+        })
+
+        function init() {
+            //设置高度
+            var parentHeight = $(window).height();
+            $("#container").height(parentHeight - 100);
+
+            var params = new URLSearchParams(window.location.search);
+            var dtm = params.get('dtm');
+            $("#tit_count").html(dtm + "号-聊天人数组成");
+            $("#tit_score").html(dtm + "号-聊天积分组成");
+
+            var sum_10 = params.get('sum_10');
+            var sum_5_9 = params.get('sum_5_9');
+            var sum_5 = params.get('sum_5');
+
+            var sum_score_10 = params.get('sum_score_10');
+            var sum_score_5_9 = params.get('sum_score_5_9');
+            var sum_score_5 = params.get('sum_score_5');
+            var charData = [
+                { "类别": "10次及以上", "人数": sum_10 },
+                { "类别": "5-9次", "人数": sum_5_9 },
+                { "类别": "5次以下", "人数": sum_5 }
+            ];
+            console.log(charData);
+            showPie("divContainer", charData, "类别", "人数");
+
+            var scoreData = [
+                { "类别": "10次及以上", "积分": sum_score_10 },
+                { "类别": "5-9次", "积分": sum_score_5_9 },
+                { "类别": "5次以下", "积分": sum_score_5 }
+            ];
+
+            showPie("divContainer2", scoreData, "类别", "积分");
+
+        }
+
+    </script>
+
+    <script>
+
+        //显示饼图
+        function showPie(divContainer, data, titleField, valueField) {
+            var arrColors = ["#2ac106", "#7ce962", "#b1efa2"];
+            chart = new AmCharts.AmPieChart();
+            chart.colors = arrColors; //饼图颜色集合
+            chart.dataProvider = data;
+            chart.titleField = titleField;//"类别"; //：之前的提示内容
+            chart.valueField = valueField; //"次数"/"积分"; //饼块的组成
+            chart.outlineColor = "#FFFFFF";
+            chart.outlineAlpha = 1;
+            chart.outlineThickness = 2;
+            if (valueField == "人数") {
+                chart.balloonText = "人数：<br><span style='font-size:14px'><b>[[value]]</b> ([[percents]]%)</span>"; //提示信息
+            }
+            if (valueField == "积分") {
+                chart.balloonText = "积分：<br><span style='font-size:14px'><b>[[value]]</b> ([[percents]]%)</span>"; //提示信息
+            }
+            chart.numberFormatter.precision = 0;
+            chart.depth3D = 0; //3d效果程度  0 , 15, 35
+            chart.angle = 0;
+            chart.labelRadius = 30; //提示内容线条长度 10 , 100
+            chart.innerRadius = 0; //内环大小  0， 20 ， 50
+            legend = new AmCharts.AmLegend();
+            legend.align = "center"; //图标 center, left , right
+            legend.valueText = "";
+            if (1 == 1) {//是否显示图标
+                chart.addLegend(legend);
+            }
+
+            chart.write(divContainer);
+        }
+    </script>
+</head>
+<body>
+    <div id="container">
+        <div class="item">
+            <span id="tit_count" class="tit"></span>
+            <div id="divContainer" style="width: 100%; border: solid 1px #dcdcdc"></div>
+        </div>
+        <div class="item">
+            <span id="tit_score" class="tit"></span>
+            <div id="divContainer2" style="width: 100%; border: solid 1px #dcdcdc"></div>
+        </div>
+
+    </div>
+</body>
+</html>
+
+

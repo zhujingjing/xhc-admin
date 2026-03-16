@@ -1,0 +1,189 @@
+﻿
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title></title>
+    <script src="/Scripts/jquery.min.js"></script>
+    <script src="/Scripts/Global.js"></script>
+    <link href="/Styles/public.css" rel="stylesheet" />
+    <script src="/Scripts/public.js"></script>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=10"></script>
+
+    <style>
+        .item {
+            display: flex;
+            flex-direction: column;
+            padding: 5px 0;
+            margin-right: 20px;
+            background-color: #FF9502;
+        }
+
+        .num {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 180px;
+            height: 60px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .tips {
+            display: flex;
+            justify-content: center;
+            height: 30px;
+            font-size: 12px;
+            color: #888;
+            color: #fff;
+        }
+        .ub{
+            display:flex;
+        }
+        .ub-pc{
+          align-items:center;
+        }
+        .ub-ac{
+            justify-content:center;
+        }
+        .ub-ac2{
+            justify-content:space-around;
+        }
+        .ub-ac1{
+            justify-content:space-between;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var count=0;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 120);
+
+            init();
+
+            init_count();
+
+            setInterval(init, 1000);
+
+            //判断是否移动端
+            if (/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+                $("div.ub").removeClass("ub");
+            }
+
+        })
+
+        function init() {
+            var left_time = parseInt($("#tag_frush").html()) - 1;
+            if (left_time > 0) {
+                $("#tag_frush").html(left_time);
+                return false;
+            }
+
+            $("#tag_frush").html("600");
+
+        }
+
+        function init_count() {
+            var checkInfo = "@ViewData["checkInfo"]";
+            var checkTx = "@ViewData["checkTx"]";
+            var checkSeekPeople = "@ViewData["checkSeekPeople"]";
+            var checkGifts = "@ViewData["checkGifts"]";
+            var checkFeedBack = "@ViewData["checkFeedBack"]";
+            var checkComPlain = "@ViewData["checkComPlain"]";
+            var checkAlbum = "@ViewData["checkAlbum"]";
+
+            $("#checkInfo").html(checkInfo);
+            $("#checkTx").html(checkTx);
+            $("#checkSeekPeople").html(checkSeekPeople);
+            $("#checkGifts").html(checkGifts);
+            $("#checkFeedBack").html(checkFeedBack);
+            $("#checkComPlain").html(checkComPlain);
+            $("#checkAlbum").html(checkAlbum);
+
+            if (checkInfo > 0) {
+                $("#checkInfo").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkTx > 0) {
+                $("#checkTx").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkSeekPeople > 0) {
+                $("#checkSeekPeople").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkGifts > 0) {
+                $("#checkGifts").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkFeedBack > 0) {
+                $("#checkFeedBack").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkComPlain > 0) {
+                $("#checkComPlain").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkAlbum > 0) {
+                $("#checkAlbum").closest("li.item").css("background-color", "#FF9502");
+            }
+        }
+
+        function goto(item) {
+            window.parent.on_tab(event,item);
+        }
+
+        function refresh() {
+            location.reload();
+        }
+
+    </script>
+</head>
+<body>
+    <div class="place" onclick="refresh()">
+        <ul class="placeul">
+            <li ><span style="color:#999; font-weight:100; font-size:14px;"><span>刷新倒计时:</span><span id="tag_frush">1</span>s</span></li>
+        </ul>
+    </div>
+  
+    <form id="form1">
+        <ul id="desc" style="display:flex;  margin-bottom: 5px;">
+            <li class="item" style="background-color: #00BBFF;" onclick="goto('信息审核',)">
+                <div class="num" id="checkInfo"></div>
+                <div class="tips">信息审核</div>
+            </li>
+            <li class="item" style="background-color: #00BBFF;" onclick="goto('提现审核')">
+                <div class="num" id="checkTx"></div>
+                <div class="tips">提现审核</div>
+            </li>
+            <li class="item" style="background-color: #00BBFF;" onclick="goto('寻人区')">
+                <div class="num" id="checkSeekPeople"></div>
+                <div class="tips">寻人区</div>
+            </li>
+            <li class="item" style="background-color: #00BBFF;" onclick="goto('礼物投诉')">
+                <div class="num" id="checkGifts"></div>
+                <div class="tips">礼物投诉</div>
+            </li>
+            <li class="item" style="background-color: #00BBFF;" onclick="goto('用户反馈')">
+                <div class="num" id="checkFeedBack"></div>
+                <div class="tips">用户反馈</div>
+            </li>
+            <li class="item" style="background-color: #00BBFF;" onclick="goto('聊天举报')">
+                <div class="num" id="checkComPlain"></div>
+                <div class="tips">聊天举报</div>
+            </li>
+            <li class="item" style="background-color: #00BBFF;" onclick="goto('相册审核')">
+                <div class="num" id="checkAlbum"></div>
+                <div class="tips">相册审核</div>
+            </li>
+        </ul>
+
+       
+    </form>
+</body>
+</html>

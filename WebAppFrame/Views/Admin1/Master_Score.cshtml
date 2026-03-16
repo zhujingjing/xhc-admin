@@ -1,0 +1,222 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=6"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 180px;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .blue {
+            font-size: 14px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .yellow {
+            font-size: 18px;
+            font-weight: bold;
+            color: yellow;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            mini.parse();
+            grid = mini.get("datagrid1");
+            grid.load();
+            //search();
+            drawCell();
+
+            init();
+
+        })
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+                    
+                //详情
+                if (column.name == "dtl") {
+                    var s_yest = record.s_yest;
+                    var s_reward1 = s_yest * 0.1;
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml += '<a style="color:blue;" href="javascript:sendWxMsg(\'' + record.uid_2 + '\',' + s_reward1 + ')">发送微信消息</a>';
+                }
+
+                if (column.name == "photo_1") {
+                    var photo_1 = servUrl_AppData + '/photo/' + record.photo_1;
+                    var nick_1 = record.nick_1;
+                    var remark_1 = record.remark_1;
+                    var sex_1 = record.sex_1;
+                    var color = "";
+                    if (sex_1 == "男生") {
+                        color = "blue";
+                    } else {
+                        color = "red";
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid_1 + '\')"><img src="' + photo_1 + '" class="photo-img" />';
+                    e.cellHtml += "<br/>";
+                    e.cellHtml += "<span>" + nick_1 + "<label style='color:red;'>(" + remark_1 + ")</label>---<label style='color:" + color + "'>(" + sex_1 + ")</label></span></a>";
+                }
+                
+
+                if (column.name == "photo_2") {
+                    var photo_2 = servUrl_AppData + '/photo/' + record.photo_2;
+                    var nick_2 = record.nick_2;
+                    var sex_2 = record.sex_2;
+                    var remark_2 = record.remark_2;
+                    var color = "";
+                    if (sex_2 == "男生") {
+                        color = "blue";
+                    } else {
+                        color = "red";
+                    }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid_2 + '\')"><img src="' + photo_2 + '" class="photo-img" />';
+                    e.cellHtml += "<br/>";
+                    e.cellHtml += "<span>" + nick_2 + "<label style='color:red;'>(" + remark_2 + ")</label>---<label style='color:" + color + "'>(" + sex_2 + ")</label></span></a>";
+                }
+                if (column.name == "s_reward1") {
+                    var s_yest = record.s_yest;
+                    var s_reward1 = s_yest * 0.1;
+                    e.cellStyle = "text-align:right";
+                    e.cellHtml = '<span style="color:blue; font-size:22px;font-weight: bold;">' + s_reward1 + '</span>';
+                }
+
+                if (column.name == "s_today") {
+                    var s_today = record.s_today;
+                    e.cellStyle = "text-align:right";
+                    e.cellHtml = '<span style="color:red; font-size:22px;font-weight: bold;">' + s_today + '</span>';
+                }
+
+
+                if (column.name == "s_yest") {
+                    var s_yest = record.s_yest;
+                    e.cellStyle = "text-align:right";
+                    e.cellHtml = '<span style="color:blue; font-size:22px;">' + s_yest + '</span>';
+                }
+                if (column.name == "s_reward2") {
+                    var s_reward2 = record.s_reward2;
+                    e.cellStyle = "text-align:right";
+                    e.cellHtml = '<span style="color:red; font-size:22px;">' + s_reward2 + '</span>';
+                }
+
+
+            });
+        }
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+       
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 61);
+        }
+
+        function sendWxMsg(uid, s) {
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            var parentWidth = $(window.parent.document).find("#rightFrame").width();
+            var dtm = '@ViewData["dtm"]';
+
+            mini.open({
+                url: "/Admin1/SendWxMsg_stjf/?uid=" + uid + "&s=" + s + "&dtm=" + dtm,
+                showMaxButton: false,
+                title: "发送微信通知",
+                width: 600,
+                height: 400,
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                    }
+                    else if (action == "cancel") {
+
+                    }
+                }
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">师徒积分</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Admin1/GetMasterScoreData" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[20,50,100]" pagesize="50">
+            <div property="columns">
+                <div field="xh" width="20" headeralign="center" align="center" allowsort="false">序号</div>
+                <div name="photo_1" width="50" renderer="onGenderRenderer" align="center" headeralign="center">徒弟头像</div>
+                <div field="s_today" name="s_today" width="40" headeralign="center" align="left" allowsort="false">今日积分</div>
+                <div field="s_yest" name="s_yest" width="40" headeralign="center" align="left" allowsort="false">昨日积分</div>
+                <div name="photo_2" width="60" headeralign="center" align="left" allowsort="false">师父头像</div>
+                <div field="s_reward1" name="s_reward1" width="30" headeralign="center" align="left" allowsort="false">师父收益</div>
+                <div field="s_reward2" name="s_reward2" width="30" headeralign="center" align="left" allowsort="false">领取值</div>
+                <div name="dtl" width="30" headeralign="center" align="left" allowsort="false">操作</div>
+                <div field="---" width="100" headeralign="center" align="left" allowsort="false">---</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

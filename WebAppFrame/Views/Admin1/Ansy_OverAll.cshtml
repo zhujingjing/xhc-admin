@@ -1,0 +1,273 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js?id=2"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=7"></script>
+
+    <style>
+        .over-all {
+            padding: 0 10px;
+        }
+        .tit {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        .item {
+            display: flex;
+            flex-direction: column;
+            padding: 5px 0;
+            margin-right: 20px;
+            background-color: #FF9502;
+        }
+
+        .num {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 180px;
+            height: 60px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .tips {
+            display: flex;
+            justify-content: center;
+            height: 30px;
+            font-size: 12px;
+            color: #888;
+            color: #fff;
+        }
+
+        .ub {
+            display: flex;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac2 {
+            justify-content: space-around;
+        }
+
+        .ub-ac1 {
+            justify-content: space-between;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        var grid;
+        $(function () {
+            mini.parse();
+            init();
+            init_count();
+        })
+
+        function init_count() {
+            var checkInfo = 10;
+            var checkTx = 10;
+            var checkSeekPeople = 10;
+            var checkGifts = 10;
+            var checkFeedBack = 10;
+            var checkComPlain = 10;
+            var checkAlbum = 10;
+
+            $("#checkInfo").html(checkInfo);
+            $("#checkTx").html(checkTx);
+            $("#checkSeekPeople").html(checkSeekPeople);
+            $("#checkGifts").html(checkGifts);
+            $("#checkFeedBack").html(checkFeedBack);
+            $("#checkComPlain").html(checkComPlain);
+            $("#checkAlbum").html(checkAlbum);
+
+            if (checkInfo > 0) {
+                $("#checkInfo").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkTx > 0) {
+                $("#checkTx").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkSeekPeople > 0) {
+                $("#checkSeekPeople").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkGifts > 0) {
+                $("#checkGifts").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkFeedBack > 0) {
+                $("#checkFeedBack").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkComPlain > 0) {
+                $("#checkComPlain").closest("li.item").css("background-color", "#FF9502");
+            }
+            if (checkAlbum > 0) {
+                $("#checkAlbum").closest("li.item").css("background-color", "#FF9502");
+            }
+        }
+
+    </script>
+
+    <script>
+        function init() {
+        }
+
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">总体分析</a></li>
+        </ul>
+    </div>
+    <ul class="over-all">
+        <li>
+            <div class="tit">订单</div>
+            <ul id="desc" style="display:flex;  margin-bottom: 5px;">
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkInfo"></div>
+                    <div class="tips">订单1</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkTx"></div>
+                    <div class="tips">订单2</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkSeekPeople"></div>
+                    <div class="tips">订单3</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkGifts"></div>
+                    <div class="tips">订单4</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkFeedBack"></div>
+                    <div class="tips">订单5</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkComPlain"></div>
+                    <div class="tips">订单6</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkAlbum"></div>
+                    <div class="tips">订单7</div>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <div class="tit">流量</div>
+            <ul id="desc" style="display:flex;  margin-bottom: 5px;">
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkInfo"></div>
+                    <div class="tips">流量1</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkTx"></div>
+                    <div class="tips">流量2</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkSeekPeople"></div>
+                    <div class="tips">流量3</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkGifts"></div>
+                    <div class="tips">流量4</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkFeedBack"></div>
+                    <div class="tips">流量5</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkComPlain"></div>
+                    <div class="tips">流量6</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkAlbum"></div>
+                    <div class="tips">流量7</div>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <div class="tit">日活</div>
+            <ul id="desc" style="display:flex;  margin-bottom: 5px;">
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkInfo"></div>
+                    <div class="tips">日活1</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkTx"></div>
+                    <div class="tips">日活2</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkSeekPeople"></div>
+                    <div class="tips">日活3</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkGifts"></div>
+                    <div class="tips">日活4</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkFeedBack"></div>
+                    <div class="tips">日活5</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkComPlain"></div>
+                    <div class="tips">日活6</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkAlbum"></div>
+                    <div class="tips">日活7</div>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <div class="tit">消息</div>
+            <ul id="desc" style="display:flex;  margin-bottom: 5px;">
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkInfo"></div>
+                    <div class="tips">消息1</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkTx"></div>
+                    <div class="tips">消息2</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkSeekPeople"></div>
+                    <div class="tips">消息3</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkGifts"></div>
+                    <div class="tips">消息4</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkFeedBack"></div>
+                    <div class="tips">消息5</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkComPlain"></div>
+                    <div class="tips">消息6</div>
+                </li>
+                <li class="item" style="background-color: #00BBFF;">
+                    <div class="num" id="checkAlbum"></div>
+                    <div class="tips">消息7</div>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</body>
+</html>

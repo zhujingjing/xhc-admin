@@ -1,0 +1,366 @@
+
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js?id=1"></script>
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+
+    <style>
+    html body{
+        padding 0;
+        margin:0;
+    }
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .gray {
+            color: #f30f86;
+        }
+
+        .blue {
+            color: blue;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .mny {
+            display: inline-block;
+            width: 120px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            border-radius: 8px;
+            margin: 5px;
+            padding: 8px 5px;
+            height: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #dcdcdc;
+            transition: all 0.3s ease;
+        }
+
+        .mny:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .watit {
+            color: gray;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            var width = $("#desc").width();
+            $("#datagrid1").height(parentHeight - 150);
+            $("#datagrid2").height(parentHeight - 150);
+
+            mini.parse();
+
+            grid = mini.get("datagrid1");
+            grid.load();
+            drawCell();
+
+            var grid2 = mini.get("datagrid2");
+            grid2.load();
+            drawCell2();
+
+            init();
+            deal_Num("score_total");
+            deal_Num("score_canuse");
+            deal_Num("score_used");
+        })
+
+        function init() {
+
+        }
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:center";
+
+                    e.cellHtml = '---';
+                }
+
+                if (column.name == "uid") {
+                    var uid_inner = record.uid_inner;
+                    if (uid_inner) {
+                        e.rowStyle = 'color:red;font-weight:bold';
+                    }
+
+                }
+
+                if (column.name == "apply_date") {
+                    var dtm = record.apply_date;
+                    dtm = dtm.replace(" ", "<br/>");
+                    e.cellHtml = '<span style="color:blue;">' + dtm + '</span>';
+
+                    var diff_hour = record.diff_hour;
+                    if (diff_hour) {
+                        e.cellHtml += '<br/><span style="color:red; font-weight:bold;">' + diff_hour + '小时</span>';
+                    }
+                }
+
+                if (column.name == "wx_account") {
+                    var dtm = record.wx_account;
+                    e.cellHtml = '<span style="">' + dtm + '</span>';
+                }
+                if (column.name == "remark") {
+                    var remark = record.remark;
+                    e.cellHtml = '<span style="color:red;font-weight:bold;">' + remark + '</span>';
+                }
+
+
+
+
+                if (column.name == "state") {
+                    var state = record.state;
+                    var txt = '待审核';
+                    var cls = 'gray';
+                    if (state == "成功") {
+                        txt = '成功';
+                        cls = 'blue';
+                    }
+                    else if (state == "失败") {
+                        txt = '失败';
+                        cls = 'red';
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + txt + '</span>';
+
+                }
+
+                if (column.name == "tx_mny") {
+                    e.cellHtml = '<span >￥' + record.tx_mny + '</span>';
+                }
+                if (column.name == "fee") {
+                    e.cellHtml = '<span>￥' + record.fee + '</span>';
+                }
+                if (column.name == "pay_mny") {
+                    e.cellHtml = '<span class="red">￥' + record.pay_mny + '</span>';
+                }
+                if (column.name == "pay_mny_0") {
+                    var txt = record.tx_mny - record.fee;
+                    e.cellHtml = '<span class="blue">￥' + txt.toFixed(2) + '</span>';
+                }
+
+
+                if (column.name == "account") {
+                    var account = record.account;
+                    var txt = '';
+                    if (account.length == 11) {
+                        txt = account.substr(0, 4);
+                        txt += '-';
+                        txt += account.substr(4, 4);
+                        txt += '-';
+                        txt += account.substr(8, 3);
+                    }
+                    else {
+                        txt = account;
+                    }
+                    e.cellHtml = '<span class="red" style="font-size:18px;">' + txt + '</span>';
+                }
+
+
+
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+                    var nick = record.nick;
+                    var sex = record.sex;
+                    var color = "";
+                    if (sex == "男生") {
+                        color = "blue";
+                    } else {
+                        color = "red";
+                    }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<img src="' + photo + '" class="photo-img" />';
+                    e.cellHtml += "<br/>";
+                    e.cellHtml += "<span style='color:" + color + "'>" + nick + "(" + sex + ")" + "</span>";
+                }
+
+                if (column.field == "score_tx") {
+                    var score_tx = record.score_tx;
+                    var item = separate_Num(score_tx);
+                    e.cellHtml = '<span>' + item + '</span>'
+                }
+
+                if (column.field == "score_left") {
+                    var score_left = record.score_left;
+                    var item = separate_Num(score_left);
+                    e.cellHtml = '<span>' + item + '</span>'
+                }
+            });
+        }
+
+        function onDrawSummaryCell(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+            //客户端汇总计算
+            if (e.field == "tx_mny") {
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:15px 0; font-size:18px;">￥' + e.cellHtml + '</span>';
+            }
+          
+            if (e.field == "pay_mny") {
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="color:red ;font-size:18px;">￥' + e.cellHtml + '</span>';
+            }
+        }
+
+        function drawCell2() {
+            var grid2 = mini.get("datagrid2");
+            grid2.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                if (column.name == "pay_mny") {
+                    var mny = record.pay_mny;
+                    if (mny == null) { mny = '0'; }
+
+                    e.cellStyle = "text-align:right";
+                    e.cellHtml = '<span class="red">￥' + mny + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                if (column.name == "dtm_pay") {
+                    var dtm = record.dtm_pay;
+                    if (dtm == null) { dtm = ''; }
+                    else { dtm = dtm.replace(' ', '<br/>'); }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="blue">' + dtm + '</span>';
+                }
+                if (column.name == "dtm_create") {
+                    var dtm = record.dtm_create;
+                    if (dtm == null) { dtm = ''; }
+                    dtm = dtm.replace(' ', '<br/>');
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + dtm + '</span>';
+                }
+            });
+        }
+
+        function onDrawSummaryCell2(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+            //客户端汇总计算
+            if (e.field == "pay_mny") {
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:12px 0; font-size:18px;color:red; font-weight: bold;">￥' + e.cellHtml + '</span>';
+            }
+        }
+        function deal_Num(id) {
+            var v = $("#" + id).html().trim();
+            var len = v.length;
+            if (v.length > 3) {
+                var pre = v.substring(0, len - 3);
+                var last3 = v.substring(len - 3);
+                var newV = pre + ',' + last3;
+                $("#" + id).html(newV);
+            }
+        }
+    </script>
+
+</head>
+<body>
+    <form id="form1">
+        <div id="desc" style=" margin-bottom: 5px;">
+            <span class="mny">天数:<br /><span class="blue">@ViewData["register_days"]</span></span>
+            <span class="mny">得分:<br /><span class="blue">@ViewData["p_score"]</span></span>
+   
+            <span class="mny">总提现:<br /><span class="red">￥@ViewData["tx_total"]</span></span>
+            <span class="mny">待提现:<br /><span class="red">￥@ViewData["tx_ing"]</span></span>
+            <span class="mny">可兑换:<br /><span class="red">￥@ViewData["tx_can"]</span></span>
+
+            <span class="mny">总积分:<br /><span id="score_total" class="blue">@ViewData["score_total"]</span></span>
+            <span class="mny">可兑换:<br /><span id="score_canuse" class="blue">@ViewData["score_canuse"]</span></span>
+            <span class="mny">已兑换:<br /><span id="score_used" class="blue">@ViewData["score_used"]</span></span>
+
+            <span class="mny">总金币:<br /><span class="gray">@ViewData["coin_total"]</span></span>
+            <span class="mny">可用:<br /><span class="gray">@ViewData["coin_canuse"]</span></span>
+            <span class="mny">已用:<br /><span class="gray">@ViewData["coin_used"]</span></span>
+
+        </div>
+
+        <div style="display: flex; width: 100%;">
+            <!-- 提现列表 -->
+            <div style="flex: 1; margin-right: 10px;">
+                <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px;" url="/Admin1/GetScoreTxList/@ViewData["id"]" idfield="id" allowresize="true" multiselect="true" showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell" sizelist="[20,50,100]" pagesize="100">
+                    <div property="columns">
+                        <div field="xh" width="30" headeralign="center" align="center" allowsort="false">序号</div>
+                        <div name="apply_date" width="90" renderer="onGenderRenderer" align="center" headeralign="center">申请时间</div>
+                        <div name="wx_account" width="60" headeralign="center" align="left" allowsort="false">微信账号</div>
+                        <div field="tel" width="60" headeralign="center" align="center" allowsort="false">手机号码</div>
+                        <div name="tx_mny" field="tx_mny" width="70" renderer="onGenderRenderer" align="right" headeralign="center" summarytype="sum">申请金额</div>
+                        <div name="fee" width="50" renderer="onGenderRenderer" align="right" headeralign="center">手续费</div>
+                        <div name="pay_mny_0" field="pay_mny_0" width="70" renderer="onGenderRenderer" align="right" headeralign="center">应发金额</div>
+                        <div name="pay_mny" field="pay_mny"  width="60" renderer="onGenderRenderer" align="right" headeralign="center" summarytype="sum">实发金额</div>
+                        <div field="score_tx" id="score_tx" width="50" renderer="onGenderRenderer" align="right" headeralign="center">兑换积分</div>
+                        <div field="score_left" id="score_left" width="70" renderer="onGenderRenderer" align="right" headeralign="center">剩余积分</div>
+                        <div name="state" width="60" headeralign="center" align="center" allowsort="false">审核状态</div>
+                        <div field="brife" width="100" renderer="onGenderRenderer" align="left" headeralign="center">审核原因</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 支付列表 -->
+            <div style="flex: 1; margin-left: 10px;">
+                <div id="datagrid2" class="mini-datagrid" style="width:100%;height:600px;" url="/Admin1/GetOrderData/@ViewData["id"]" idfield="id" allowresize="true" multiselect="true" showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell2" sizelist="[50,100,500]" pagesize="500">
+                    <div property="columns">
+                        <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+                        <div field="order_no" width="120" renderer="onGenderRenderer" align="left" headeralign="center">订单编号</div>
+                        <div field="order_name" width="70" headeralign="center" align="left" allowsort="false">订单名称</div>
+                        <div field="pay_mny" name="pay_mny" width="60" headeralign="center" align="right" allowsort="false" summarytype="sum">支付金额</div>
+                        <div name="dtm_pay" width="70" headeralign="center" align="center" allowsort="false">支付时间</div>
+                        <div field="order_type" width="60" headeralign="center" align="center" allowsort="false">订单类别</div>
+                        <div field="order_mny" width="60" headeralign="center" align="right" allowsort="false">订单金额</div>
+                        <div name="dtm_create" width="70" headeralign="center" align="center" allowsort="false">下单时间</div>
+                        <div field="order_from" width="100" headeralign="center" align="center" allowsort="false">订单来源</div>
+                        <div field="comment2" width="60" headeralign="center" align="center" allowsort="false">备注</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

@@ -1,0 +1,315 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=10" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=5"></script>
+
+    <style lang="scss">
+        /*-----弹性盒子部分---开始-----*/
+        .ub {
+            display: flex;
+        }
+
+        .ub-ver {
+            flex-direction: column;
+        }
+
+        .ub-as {
+            justify-content: flex-start;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac1 {
+            justify-content: space-around;
+        }
+
+        .ub-ac2 {
+            justify-content: space-between;
+        }
+
+        .ub-ac3 {
+            justify-content: space-evenly;
+        }
+
+        .ub-ae {
+            justify-content: flex-end;
+        }
+
+        .ub-ps {
+            align-items: flex-start;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        .flexWrap {
+            flex-wrap: wrap;
+        }
+
+        .ub-pc1 {
+            align-items: stretch;
+        }
+
+        .ub-pe {
+            align-items: flex-end;
+        }
+
+
+        .ub-f1 {
+            flex-grow: 1;
+        }
+
+        .ub-f2 {
+            flex-grow: 2;
+        }
+
+        .ub-f3 {
+            flex-grow: 3;
+        }
+
+        .ub-f4 {
+            flex-grow: 4;
+        }
+        /*-----弹性盒子部分---结束-----*/
+        .container {
+            width: 100%;
+            display: flex;
+        }
+
+        .index_info {
+            margin: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #title {
+            margin: 10px;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #desc {
+            margin: 10px;
+            font-size: 16px;
+            color: #666;
+        }
+
+        #time {
+            margin: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .item {
+            position: relative;
+            padding: 8px 0;
+            margin-bottom: 32px;
+            width: 100%;
+            min-height: 64px;
+            background-color: #fff;
+            border-radius: 8px;
+
+            .corner-triangle {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 0;
+                height: 0;
+                border-top: 56px solid red;
+                border-right: 59.2px solid transparent;
+                border-radius: 8px;
+            }
+            /* 三角形内的文字 */
+            .triangle-text {
+                position: absolute;
+                top: -48px;
+                left: 6.4px;
+                transform: rotate(-45deg);
+                color: #fff;
+                font-size: 14.4px;
+                font-weight: bold;
+                white-space: nowrap;
+            }
+
+            .vip-img {
+                margin-left: 40px;
+                width: 56px;
+                height: 56px;
+            }
+
+            .content {
+                margin-left: 8px;
+                height: 64px;
+                white-space: nowrap;
+
+                .sp1 {
+                    font-size: 14.4px;
+                    color: #666;
+
+                    a {
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #333;
+                    }
+                }
+
+                .sp2 {
+                    font-size: 12px;
+                    color: #666;
+
+                    a {
+                        font-weight: bold;
+                        color: red;
+                    }
+                }
+
+                .sp3 {
+                    font-size: 12px;
+                    color: #666;
+                }
+            }
+
+            .other {
+                width: 100px;
+            }
+        }
+        .alert_json {
+            display: none;
+            position: fixed;
+            margin: auto;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 550px;
+            height: 700px;
+            background-color: #E3E6E8;
+            border: 1px solid #999999;
+            z-index: 99;
+        }
+
+        .close {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            height: 30px;
+        }
+
+        .close span {
+            font-size: 14px;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            init();
+        })
+    </script>
+
+    <script>
+        var data = '@Html.Raw(ViewData["data"])';
+        function init() {
+            data = JSON.parse(data);
+            $("#act_title").html(data.act_title);
+            $("#title").html(data.title);
+            $("#desc").html(data.desc);
+            $("#time").html(data.time);
+
+            var h = "";
+            for (var i = 0; i < data.data.length; i++) {
+                var item = data.data[i];
+                h += `
+                      <li class="item ub ub-pc" >
+                                <div class="corner-triangle">
+                                    <span class="triangle-text">${ item.name }</span>
+                                </div>
+                                <img class="vip-img" src="/Images/会员.png" />
+                                <div class="content ub ub-ver ub-ac2">
+                                    <span class="sp1"><a>${item.act_name}</a> 原价${item.mny_old}元</span>
+                                    <span class="sp2"><a>￥${item.mny}元</a> (节省${ Math.ceil(item.mny_old - item.mny) }元)</span>
+                                    <span class="sp3">附赠${item.coin}</span>
+                                </div>
+                                <div class="other ub ub-ac ub-pc"><span>lv:${item.lv}</span></div>
+                      </li>
+
+              `;
+            }
+            $("#blk").html(h);
+        }
+
+        function SetOnLine() {
+            var tag = confirm("确定要更新吗，这会影响到正式系统的节日支付数据");
+            if (tag) {
+                //后台
+                //后台
+                $.ajax({
+                    type: "Get",
+                    url: "/Home/SetOnline_Mem_Fest",
+                    success: function (data) {
+                        if (data == "True") {
+                            alert("更新成功");
+                        }
+                    }
+                });
+            }
+        }
+        function show_json(data) {
+            var json_data = JSON.stringify(data);
+            document.getElementById("alert_json").style.display = 'flex';
+            document.getElementById("alert_json").style.flexDirection = 'column';
+            document.getElementById("alert_json").style.justifyContent = 'center';
+            $("#json_data").html(json_data);
+        }
+
+        function closePopup() {
+            document.getElementById("alert_json").style.display = 'none';
+        }
+    </script>
+</head>
+<body>
+    <div id="alert_json" class="alert_json">
+        <div class="close">
+            <span>json数据</span>
+            <span style="font-size: 16px;" onclick="closePopup()">关闭</span>
+        </div>
+        <textarea id="json_data" style="height: 95%; background: white; resize: none;padding:3px;"></textarea>
+    </div>
+
+    <form id="form1">
+        <div class="tools">
+            <ul class="toolbar">
+                <li class="click" onclick="SetOnLine()"><span><img src="/Images/frame/ico04.png" /></span>上线</li>
+                <li style="margin-left:10px;" class="click" onclick="show_json(data)"><span><img src="/Images/frame/ico02.png" /></span>数据</li>
+            </ul>
+        </div>
+        <div class="index_info">首页滚动数据:<div id="act_title"></div></div>
+        <div id="title"></div>
+        <div id="desc"></div>
+        <div id="time"></div>
+
+        <div class="container ub ub-ver">
+            <div id="blk"></div>
+        </div>
+
+
+    </form>
+</body>
+</html>
+

@@ -1,0 +1,127 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/demo.css" rel="stylesheet" type="text/css" />
+    <style>
+        .btn {
+            margin-top: 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 18px;
+            line-height: 30px;
+            bottom: 0;
+            border: 1px solid RGB(62,175,224);
+            border-radius: 5px;
+            width:30%;
+            cursor: pointer;
+            height:40px;
+        }
+
+        .ok {
+            background-color: RGB(62,175,224);
+        }
+
+        .no {
+            background-color: #f00;
+        }
+
+        #form1 {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding:10px 30px;
+        }
+
+        .check {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            padding: 6px 8px;
+            height: 80px;
+            margin-top: 10px;
+            line-height: 20px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            border: solid 1px #dcdcdc;
+            height: 150px;
+            font-size: 18px;
+            resize: none;
+            outline:none;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="">
+            <form id="form1">
+                <select id="slt_txt" style="width:100%; height:28px; line-height:28px;">
+                    <option value="根据提供的投诉证据，无法证明存在【所描述的行为】，后续投诉，请提供更准确的（更多的）截图证明；此处理意见已通知到礼物双方" selected>根据提供的投诉证据，无法证明存在【所描述的行为】，后续投诉，请提供更准确的（更多的）截图证明；此处理意见已通知到礼物双方</option>
+                    <option value="投诉已核实，收礼物方确实存在【所描述的行为】，平台已做公正处理，扣除礼物收取方【1000】积分，返还礼物发送方【1000】金币">投诉已核实，收礼物方确实存在【所描述的行为】，平台已做公正处理，扣除礼物收取方【1000】积分，返还礼物发送方【1000】金币</option>
+                    <option value="感谢你的投诉反馈，我们已将【1000】金币返还给你，请注意查收，具体位置：我的-》我的金币-》账单。同时对被投诉方做出严重警告处理，最后再次感谢你的投诉反馈。">感谢你的投诉反馈，我们已将【1000】金币返还给你，请注意查收，具体位置：我的-》我的金币-》账单。同时对被投诉方做出严重警告处理，最后再次感谢你的投诉反馈。</option>
+                </select>
+
+                <textarea id="reason"></textarea>
+                <div class="check">
+                    <input type="button" id="btnok" class="btn ok" value="通过" />
+                    <input type="button" id="btnno" class="btn no" value="不通过" />
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+
+<script src="~/Scripts/jquery-1.8.2.min.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+
+        $("#slt_txt").change(function () {
+            var txt = $("#slt_txt").val();
+            $("#reason").text(txt);
+        });
+
+        var txt = $("#slt_txt").val();
+        $("#reason").text(txt);
+    });
+
+
+
+    $("#btnok").bind("click", function () {
+        doCheck('通过');
+    })
+
+    $("#btnno").bind("click", function () {
+        doCheck('失败');
+    })
+
+    function doCheck(rst) {
+        var id = '@ViewData["id"]';
+        var rst_check = $("#reason").val();
+        $.ajax({
+            type: "get",
+            url: "/Check/Update_Gift_Check",
+            data: { "id": id, "rst_check": rst_check, "rst": rst },
+            success: function (data) {
+                var data = JSON.parse(data);
+                if (data.state == "1") {
+                    alert("审核成功");
+                } else {
+                    alert("审核失败");
+                }
+                CloseWindow("ok");
+            }
+        });
+    }
+
+
+
+    function CloseWindow(action) {
+        if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+        else window.close();
+    }
+</script>

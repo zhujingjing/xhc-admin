@@ -1,0 +1,245 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js?id=1"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=6"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 160px;
+        }
+
+        .txt1 {
+            margin-left: 6px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .lb {
+            color: #666;
+            margin-left: 20px;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .blue {
+            font-size: 14px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .yellow {
+            font-size: 18px;
+            font-weight: bold;
+            color: yellow;
+        }
+        .rank-block {
+            display:flex;
+            padding: 10px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var arr_diff_sum = {};
+        var grid;
+        $(function () {
+            mini.parse();
+            grid = mini.get("datagrid1");
+            
+            search();
+            drawCell();
+
+            init();
+        })
+
+        function drawCell() {
+            
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                if (column.field == "diff") {
+                    var { uid_to, diff } = record;
+                    if (arr_diff_sum[uid_to]) {
+                        arr_diff_sum[uid_to] += diff; // 累加 diff
+                    } else {
+                        arr_diff_sum[uid_to] = diff; // 初始化 diff
+                    }
+                    
+                    var arrayData = Object.entries(arr_diff_sum).map(([uid, value]) => ({ uid, value }));
+                    var list = document.getElementById('rank');
+                    list.innerHTML = '';
+                    arrayData.forEach(item => {
+                        var listItem = document.createElement('li');
+                        listItem.textContent = `uid: ${item.uid} ----> 总差值: ${item.value}`;
+                        listItem.style.marginTop = '10px';
+                        list.appendChild(listItem);
+                    });
+                    
+                }
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:left";
+                    e.cellHtml = '<a style="font-size:16px;color:blue;" href="javascript:Dtl(\'' + record.uid_from + '\',\'' + record.uid_to + '\')"> <span>---详情---</span> </a>';
+                }
+            });
+        }
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 130);
+            $("#rank-block").height(parentHeight - 150);
+        }
+
+        function search() {
+            arr_diff_sum = {};
+            var dtm = mini.get("dtm").getText();
+            grid.load({
+                "dtm": dtm
+            });
+        }
+
+
+        function Dtl(uid_from, uid_to) {
+            var dtm = mini.get("dtm").getText();
+            var url = "/Admin1/Chat_Mny_AbnormalDtl/?uid_from=" + uid_from + "&uid_to=" + uid_to + "&dtm=" + dtm;
+            mini.open({
+                url: url,
+                showMaxButton: false,
+                title: "详情",
+                width: $(window).width(),
+                height: $(window).height(),
+                ondestroy: function (action) {
+                    //grid.reload();
+                }
+            });
+        }
+
+        function jump_date(num) {
+            var d = new Date(mini.get("dtm").getText());
+
+            d.setDate(d.getDate() + num);
+            var dtm = formatTime(d);
+
+
+            mini.get("dtm").setValue(dtm);
+
+            search();
+        }
+
+        function formatTime(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            return year + '-' + month + '-' + day;
+        }
+
+        function onDrawSummaryCell(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+            //客户端汇总计算
+            if (e.field == "diff") {
+                e.cellHtml = separate_Num(e.cellHtml);
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "coin") {
+                e.cellHtml = separate_Num(e.cellHtml);
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "score") {
+                e.cellHtml = separate_Num(e.cellHtml);
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">' + e.cellHtml + '</span>';
+            }
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+            日期: <input id="dtm" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" style="background-color:forestgreen" value="前一天" onclick="jump_date(-1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" style="background-color:orange" value="后一天" onclick="jump_date(1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+
+        <div style="display: flex;">
+            <div id="datagrid1" class="mini-datagrid" style="width:49%;height:600px; margin-top:5px;"
+                 url="/Admin1/GetChatMnyAbnormalData" idfield="id" allowresize="true" multiselect="true"
+                 showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell"
+                 sizelist="[100,200]" pagesize="100">
+                <div property="columns">
+                    <div field="xh" width="10" headeralign="center" align="center" allowsort="false">序号</div>
+                    <div field="uid_from" width="20" headeralign="center" align="right" allowsort="false">uid_from</div>
+                    <div field="uid_to" width="20" headeralign="center" align="right" allowsort="false">uid_to</div>
+                    <div field="score" width="10" headeralign="center" align="right" allowsort="false" summarytype="sum">收入积分</div>
+                    <div field="coin" width="10" headeralign="center" align="right" allowsort="false" summarytype="sum">支付金币</div>
+                    <div field="diff" width="10" headeralign="center" align="right" allowsort="false" summarytype="sum">差值</div>
+                    <div name="dtl" width="10" headeralign="left" align="left" allowsort="false">详情</div>
+                </div>
+            </div>
+            <div id="rank-block" class="rank-block" style="width: 49%; margin-top: 5px; overflow-x: auto;">
+                <span id="rank"></span>
+            </div>
+
+        </div>
+    </form>
+</body>
+</html>

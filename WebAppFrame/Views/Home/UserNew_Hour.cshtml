@@ -1,0 +1,369 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>小时新增流量</title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/m_public.css?id=12" rel="stylesheet" />
+    <link href="~/Scripts/calendar.css" rel="stylesheet" />
+    <script src="~/Scripts/calendar.js"></script>
+    <style>
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .blue {
+            color: blue;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .mny {
+            margin: 0 3px;
+            display: inline-block;
+            height: 28px;
+            line-height: 28px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+    <style>
+        .ub {
+            display: flex;
+        }
+
+        .ub-ver {
+            flex-direction: column;
+        }
+
+        .ub-as {
+            justify-content: flex-start;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac1 {
+            justify-content: space-around;
+        }
+
+        .ub-ac2 {
+            justify-content: space-between;
+        }
+
+        .ub-ac3 {
+            justify-content: space-evenly;
+        }
+
+        .ub-ae {
+            justify-content: flex-end;
+        }
+
+        .ub-ps {
+            align-items: flex-start;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        html, body {
+            background-color: #fff;
+            overflow-y: scroll;
+        }
+
+        .chart-nav {
+            width: 100%;
+            background-color: #e91e63;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 900;
+        }
+
+        .nav-top {
+            height: 2.5em;
+        }
+
+            .nav-top a {
+                font-size: 1.6em;
+                color: #fff;
+                font-weight: 400;
+            }
+
+        .item {
+            min-height: 3em;
+        }
+
+        .item-title {
+            padding: 0 .5em;
+            line-height: 3em;
+            font-size: 1em;
+        }
+
+        .spider {
+            width: 100%;
+            height: 1px;
+            background-color: #dfdfdf;
+        }
+
+        .txt {
+            height: 2.4em;
+            line-height: 2.4em;
+            border: none;
+            outline: none;
+            width: 100%;
+        }
+
+        .desc-note p {
+            line-height: 2em;
+            word-wrap: break-word;
+            text-indent: 25px;
+        }
+
+        #content {
+            height: 10em;
+            border: 1px solid #dfdfdf;
+            width: 100%;
+            margin-top: 5px;
+            padding: 5px;
+            border-radius: 5px;
+            line-height: 2em;
+            font-size: 1em;
+        }
+
+        .item-desc {
+            min-width: 6em;
+            color: #808080;
+        }
+
+        #btn_submit {
+            background-color: #ff4f72;
+            height: 3.6em;
+            border-radius: .4em;
+        }
+
+            #btn_submit a {
+                font-size: 1.6em;
+                font-weight: 600;
+                color: #fff;
+            }
+
+        .btn-up {
+            width: 4em;
+            height: 2em;
+            border: 1px solid #fff;
+            border-radius: .4em;
+            color: #f00;
+            background-color: #fff;
+            font-weight: bold;
+            text-align: center;
+            line-height: 2em;
+            font-size: .8em;
+            margin-left: .5em;
+        }
+
+        .red {
+            color: #f00;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .cls-ls {
+            display: inline-block;
+            margin-left: 5px;
+            width: 2em;
+            height: 1.6em;
+            line-height: 1.6em;
+            text-align: center;
+            background-color: #f00;
+            color: #fff;
+            font-size: .6em;
+            padding: .2em .5em;
+            border-radius: .4em;
+        }
+
+        .gray {
+            color: #dfdfdf;
+        }
+
+        .blue {
+            color: #0252e2;
+        }
+         .top {
+            background-color: #e92162;
+            padding: 0 6px;
+             height:40px;
+        }
+
+            .top #return {
+                width: 1.5em;
+                height: 1.5em;
+                padding: .7em 3em .7em 0;
+            }
+             .top #refresh {
+                width: 2em;
+                height: 2em;
+               padding: .7em 0 .7em 3em;
+            }
+    </style>
+
+    <script type="text/javascript">
+
+        $(function () {
+            //设置表格的高度
+
+            $("#divContainer").height(400);
+            init();
+
+            $("#return").bind("click", function () {
+                location.href = '/Home/Check_Survey';
+            });
+
+            $("#refresh").bind("click", function () {
+                location.reload();
+            });
+        })
+
+        function init() {
+            var data = '@Html.Raw(ViewData["data"])';
+            var data_com = '@Html.Raw(ViewData["data_com"])';
+            data = JSON.parse(data);
+            data_com = JSON.parse(data_com);
+            var data_new = [];
+            for (var i = 0; i < data.length; i++) {
+                var item = {};
+                item.dtm = data[i].dtm;
+                item.数量 = data[i].数量;
+                item.数量_对比 = data_com[i].数量;
+
+                data_new.push(item);
+
+            }
+            //线图
+            showLine546(data_new);
+        }
+
+        function doChange() {
+            var dtmChose = $("#_date").val();
+            window.location.href = "/Home/UserNew_Hour/@ViewData["id_key"]" + "?dtm=" + dtmChose;
+        }
+
+</script>
+
+    <script>
+        function showLine546(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+            chart.startDuration = 1;
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            // 图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8; //大小
+            graph.bulletBorderColor = "#FFFFFF";
+
+            graph.lineColor = "#0000FF"; //线条颜色 "00FF00" "0000FF"
+            graph.valueField = "数量"; //纵轴显示内容
+            graph.title = "新增注册用户";
+            graph.balloonText = "[[category]]新增注册用户<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+            if (true) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";//
+                graph.valueField = "数量_对比"; //纵轴显示内容
+                graph.title = "对比";
+                graph.balloonText = "[[category]]对比<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+</head>
+<body>
+    <form id="form1">
+
+        <div class="top ub ub-pc ub-ac2">
+            <img id="return" src="http://wx2.xhchat.cn/img/%E8%BF%94%E5%9B%9E%E7%AE%AD%E5%A4%B4.93b021b8.png" />
+            <img id="refresh" src="~/Images/刷新.png" />
+        </div>
+
+        <div style="padding:5px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+            <div style="border-bottom: solid 1px #dcdcdc;">
+                <input type="text" class="txt" onclick="laydate()" value="@ViewData["dtm"]" style="width:98%; height:3em; line-height:3em; text-align:center;" id="_date" placeholder="点击选择日期" readonly />
+            </div>
+
+            <div style="text-align:center;">
+                <span class="mny">当前小时:<span class="red"> @ViewData["cur_hour_count"]</span></span>
+                <span class="mny">日总流量:<span class="red"> @ViewData["today_count"]</span></span>
+                <br />
+            </div>
+        </div>
+
+        <div id="divContainer" style="width: 100%; border: solid 1px #dcdcdc">
+        </div>
+    </form>
+</body>
+</html>
+
+

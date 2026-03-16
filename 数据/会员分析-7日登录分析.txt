@@ -1,0 +1,22 @@
+--当前会员分析（最近上线，到期时间，最近7天登录情况）
+select u.uid, u.photo, u.sex,  
+       u.coin_total, u.coin, u.score_total, u.score,
+       u.create_time, u.least_time,
+       u.member, u.vip_endtime,
+       ISNULL(s1.c_login, 0) as login_1,
+       ISNULL(s2.c_login, 0) as login_2,
+       ISNULL(s3.c_login, 0) as login_3,
+       ISNULL(s4.c_login, 0) as login_4,
+       ISNULL(s5.c_login, 0) as login_5,
+       ISNULL(s6.c_login, 0) as login_6,
+       ISNULL(s7.c_login, 0) as login_7
+       
+from dbo.[user] u
+left join (select * from dbo.sum_user where dtm = '2024-10-23 00:00:00') s1 on (u.uid = s1.uid)
+left join (select * from dbo.sum_user where dtm = '2024-10-22 00:00:00') s2 on (u.uid = s2.uid)
+left join (select * from dbo.sum_user where dtm = '2024-10-21 00:00:00') s3 on (u.uid = s3.uid)
+left join (select * from dbo.sum_user where dtm = '2024-10-20 00:00:00') s4 on (u.uid = s4.uid)
+left join (select * from dbo.sum_user where dtm = '2024-10-19 00:00:00') s5 on (u.uid = s5.uid)
+left join (select * from dbo.sum_user where dtm = '2024-10-18 00:00:00') s6 on (u.uid = s6.uid)
+left join (select * from dbo.sum_user where dtm = '2024-10-17 00:00:00') s7 on (u.uid = s7.uid)
+where u.member <> '' 

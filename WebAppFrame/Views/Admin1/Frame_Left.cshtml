@@ -1,0 +1,299 @@
+﻿﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>无标题文档</title>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <style>
+        .red {
+            color: red;
+        }
+
+        .blue {
+            color: blue;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            //导航切换
+            $(".menuson li").click(function () {
+                $(".menuson li.active").removeClass("active")
+                $(this).addClass("active");
+            });
+
+            $('.title').click(function () {
+                var $ul = $(this).next('ul');
+                $('dd').find('ul').slideUp();
+                if ($ul.is(':visible')) {
+                    $(this).next('ul').slideUp();
+                } else {
+                    $(this).next('ul').slideDown();
+                }
+            });
+
+
+        })
+    </script>
+</head>
+<body style="background:#f0f9fd;">
+    <input type="hidden" id="sys_user_type" value="@ViewData["sys_user_type"]" />
+    <input type="hidden" id="sys_user_id" value="@ViewData["sys_user_id"]" />
+    <input type="hidden" id="sys_user_name" value="@ViewData["sys_user_name"]" />
+    <input type="hidden" id="xxxx" value="xxxx" />
+    <div class="lefttop"><span></span>控制台</div>
+
+    <dl class="leftmenu" id="admin1">
+        @{
+            if (ViewData["sys_user_type"].ToString() == "平台管理员")
+            {
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico01.png" width="16" height="16" /></span>核心功能
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("OrderList", "Admin1", new { id = "" })" target="rightFrame">订单管理</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Sum_NewUser_Hour", "Admin1", new { id = "" })" target="rightFrame">小时流量</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Sum_NewUser_Day", "Admin1", new { id = "" })" target="rightFrame">日流量</a><i></i></li>
+                        <li><cite></cite><a href="http://curmsg.zhuochuangzb.com/Home/MsgCur_Girl/zjj_20201010?wx_msg=0" target="rightFrame">封号监控</a><i></i></li>
+                        <li><cite></cite><a href="http://curmsg.zhuochuangzb.com/Home/Msg_History/zjj_20201010" target="rightFrame">封号历史</a><i></i></li>
+                        <li><cite></cite><a href="http://curmsg.zhuochuangzb.com/Home/MsgCur/zjj_20201010" target="rightFrame">消息监控</a><i></i></li>
+                        <li><cite></cite><a class="" href="@Url.Action("Kill_UnDo", "Admin1", new { id = "" })" target="rightFrame">封号记录</a><i></i></li>
+                        <li><cite></cite><a class="" href="@Url.Action("Warn_User", "Admin1", new { id = "" })" target="rightFrame">警告记录</a><i></i></li>
+
+                        <li><cite></cite><a href="@Url.Action("SysSet_MatchUids", "Admin1", new { id = "" })" target="rightFrame">被匹配用户设置</a><i></i></li>
+
+                        <li><cite></cite><a href="http://xhcadmin.zhuochuangzb.com/Home/Server_Time" target="rightFrame">服务器时间</a><i></i></li>
+                    </ul>
+                </dd>
+
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>审核管理
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Check_Sum", "Check", new { id = "" })" target="rightFrame">审核</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("User_Record_All", "Admin1", new { id = "" })")" target="rightFrame">用户记录</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Chat_Check_List", "Admin1", new { id = "" })")" target="rightFrame">会话审核</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Online_Service", "Check", new { id = "" })")" target="rightFrame">在线客服</a><i></i></li>
+
+                        <li><cite></cite><a href="@Url.Action("Check_Msg", "Check", new { id = "" })" target="rightFrame">消息审核</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Chat_Mny", "Admin1", new { id = "" })" target="rightFrame">消息收入</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Admin", "Agent", new { id = "" })" target="rightFrame">代理统计</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Chat_User", "Admin1", new { id = "" })" target="rightFrame">聊天用户</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Score_Reword", "Admin1", new { id = "" })" target="rightFrame">上榜奖励</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Cancel_Check", "Admin1", new { id = "" })" target="rightFrame">注销审核</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Teacher_Student", "Admin1", new { id = "" })" target="rightFrame">师徒关系</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Master_Score", "Admin1", new { id = "" })" target="rightFrame">师徒积分</a><i></i></li>
+                        <li><cite></cite><a class="" href="@Url.Action("Wx_Notice_Record", "Admin1", new { id = "" })" target="rightFrame">微信通知记录</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("CheckWxList", "Admin1", new { id = "" })" target="rightFrame">用户管理</a><i></i></li>
+
+                    </ul>
+                </dd>
+
+                <dd style="display:none;">
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>签约用户
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Sum_UserScore", "Admin1", new { id = "" })" target="rightFrame">运营绩效</a><i></i></li>
+
+                        <li><cite></cite><a href="@Url.Action("Msg_SumInner", "Admin1", new { id = "" })" target="rightFrame">走势统计</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Msg_SumInner_Black", "Admin1", new { id = "" })" target="rightFrame">消除黑圈</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Sum_Inner_Gift", "Admin1", new { id = "" })" target="rightFrame">得分统计</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Inner_Gift_Score", "Admin1", new { id = "" })" target="rightFrame">礼物得分</a><i></i></li>
+
+                        <li><cite></cite><a href="@Url.Action("S_User", "Admin1", new { id = "" })" target="rightFrame">签约管理</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("S_User_Account", "Admin1", new { id = "" })" target="rightFrame">账号使用</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("S_User_Boy", "Admin1", new { id = "" })" target="rightFrame">签约管理2</a><i></i></li>
+                    </ul>
+                </dd>
+
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>统计分析
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Ansy_OverAll", "Admin1", new { id = "" })" target="rightFrame">总体分析</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_CoinScore", "Admin1", new { id = "" })" target="rightFrame">金币积分分析</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_VipAll", "Admin1", new { id = "" })" target="rightFrame">会员分析</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_DaySum", "Admin1", new { id = "" })" target="rightFrame">日总分析</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Msg_Sum_Hour", "Admin1", new { id = "" })" target="rightFrame">消息统计(小时)</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Msg_Sum_Min", "Admin1", new { id = "" })" target="rightFrame">消息统计(分钟)</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Msg_Dtl", "Admin1", new { id = "" })" target="rightFrame">消息详情</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_ScoreChat", "Admin1", new { id = "" })" target="rightFrame">消息收入分析</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_LeastOnline", "Admin1", new { id = "" })" target="rightFrame">最近上线分析</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_NewUser", "Admin1", new { id = "" })" target="rightFrame">新用户分析</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_Match_Hour", "Admin1", new { id = "" })" target="rightFrame">匹配分析(h)</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_Match_Min", "Admin1", new { id = "" })" target="rightFrame">匹配分析(m)</a><i></i></li>
+                    </ul>
+                </dd>
+
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>金币积分
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Coin", "Admin1", new { id = "" })" target="rightFrame">金币明细</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Score", "Admin1", new { id = "" })" target="rightFrame">积分明细</a><i></i></li>
+                    </ul>
+                </dd>
+
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>系统设置
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("SysSet_Var", "Admin1", new { id = "" })" target="rightFrame">参数设置</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("DropdownConfig", "Admin1", new { id = "" })" target="rightFrame">下拉配置</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("SysSet_Config", "Admin1", new { id = "" })" target="rightFrame">配置设置</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("SysUserList", "Admin1", new { id = "" })" target="rightFrame">用户管理</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Login_Record", "Admin1", new { id = "" })" target="rightFrame">登录记录</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Sys_Create_FzQrCode", "Admin1", new { id = "" })" target="rightFrame">渠道二维码</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Sys_DB", "Admin1", new { id = "" })" target="rightFrame">数据库</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("SysSet_JsonCode", "Admin1", new { id = "" })" target="rightFrame">json&code</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Find_Account", "Admin1", new { id = "" })" target="rightFrame">账号找回</a><i></i></li>
+                    </ul>
+                </dd>
+
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>异常检测
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Ex_Coin_Total", "Admin1", new { id = "" })" target="rightFrame">总金币</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ex_Score_AddFriend", "Admin1", new { id = "" })" target="rightFrame">好友积分</a><i></i></li>
+                    </ul>
+                </dd>
+            }
+            else if (ViewData["sys_user_type"].ToString() == "客服")
+            {
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>审核管理
+                    </div>
+                    <ul class="menuson">
+
+                        <li><cite></cite><a href="@Url.Action("Seek_People", "Admin1", new { id = "" })" target="rightFrame">寻人区</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Complain", "Admin1", new { id = "" })" target="rightFrame">聊天举报</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("UpData_UserInfo", "Admin1", new { id = "" })" target="rightFrame">信息审核</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Gif_TouSu", "Admin1", new { id = "" })" target="rightFrame">礼物投诉</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("FeedBack", "Admin1", new { id = "" })" target="rightFrame">用户反馈</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Album", "Admin1", new { id = "" })" target="rightFrame">相册管理</a><i></i></li>
+                    </ul>
+                </dd>
+            }
+            else if (ViewData["sys_user_type"].ToString() == "普通用户")
+            {
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico01.png" width="16" height="16" /></span>核心功能
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("OrderList", "Admin1", new { id = "" })" target="rightFrame">订单管理</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Sum_NewUser_Hour", "Admin1", new { id = "" })" target="rightFrame">小时流量</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Sum_NewUser_Day", "Admin1", new { id = "" })" target="rightFrame">日流量</a><i></i></li>
+                        <li><cite></cite><a class="" href="@Url.Action("Kill_UnDo", "Admin1", new { id = "" })" target="rightFrame">封号记录</a><i></i></li>
+                        <li><cite></cite><a class="" href="@Url.Action("Warn_User", "Admin1", new { id = "" })" target="rightFrame">警告记录</a><i></i></li>
+                    </ul>
+                </dd>
+
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>审核管理
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Check_Sum", "Check", new { id = "" })" target="rightFrame">审核</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("User_Record_All", "Admin1", new { id = "" })")" target="rightFrame">用户记录</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Chat_Check_List", "Admin1", new { id = "" })")" target="rightFrame">会话审核</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Online_Service", "Check", new { id = "" })")" target="rightFrame">在线客服</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Check_Msg", "Check", new { id = "" })" target="rightFrame">消息审核</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Chat_Mny", "Admin1", new { id = "" })" target="rightFrame">消息收入</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Admin", "Agent", new { id = "" })" target="rightFrame">代理统计</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Score_Reword", "Admin1", new { id = "" })" target="rightFrame">上榜奖励</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Teacher_Student", "Admin1", new { id = "" })" target="rightFrame">师徒关系</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Master_Score", "Admin1", new { id = "" })" target="rightFrame">师徒积分</a><i></i></li>
+                        <li><cite></cite><a class="" href="@Url.Action("Wx_Notice_Record", "Admin1", new { id = "" })" target="rightFrame">微信通知记录</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("CheckWxList", "Admin1", new { id = "" })" target="rightFrame">用户管理</a><i></i></li>
+                    </ul>
+                </dd>
+
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>统计分析
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Ansy_CoinScore", "Admin1", new { id = "" })" target="rightFrame">金币积分分析</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_ScoreChat", "Admin1", new { id = "" })" target="rightFrame">消息收入分析</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_DaySum", "Admin1", new { id = "" })" target="rightFrame">日总分析</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_VipAll", "Admin1", new { id = "" })" target="rightFrame">会员分析</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Msg_Sum_Hour", "Admin1", new { id = "" })" target="rightFrame">消息统计(小时)</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Msg_Sum_Min", "Admin1", new { id = "" })" target="rightFrame">消息统计(分钟)</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Msg_Dtl", "Admin1", new { id = "" })" target="rightFrame">消息详情</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ansy_NewUser", "Admin1", new { id = "" })" target="rightFrame">新用户分析</a><i></i></li>
+                    </ul>
+                </dd>
+
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>金币积分
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Coin", "Admin1", new { id = "" })" target="rightFrame">金币明细</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Score", "Admin1", new { id = "" })" target="rightFrame">积分明细</a><i></i></li>
+                    </ul>
+                </dd>
+
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>系统设置
+                    </div>
+                    <ul class="menuson">
+                    <li><cite></cite><a href="@Url.Action("DropdownConfig", "Admin1", new { id = "" })" target="rightFrame">下拉配置</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("SysSet_Config", "Admin1", new { id = "" })" target="rightFrame">配置设置</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("SysUserList", "Admin1", new { id = "" })" target="rightFrame">用户管理</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Find_Account", "Admin1", new { id = "" })" target="rightFrame">账号找回</a><i></i></li>
+                    </ul>
+                </dd>
+            }
+            else if (ViewData["sys_user_type"].ToString() == "聊天代理")
+            {
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>签约用户
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Sum_UserScore", "Admin1", new { id = "" })" target="rightFrame">运营绩效</a><i></i></li>
+
+                        <li><cite></cite><a href="@Url.Action("Msg_SumInner", "Admin1", new { id = "" })" target="rightFrame">聊天统计</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Msg_SumInner_Black", "Admin1", new { id = "" })" target="rightFrame">消除黑圈</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Sum_Inner_Gift", "Admin1", new { id = "" })" target="rightFrame">得分统计</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Inner_Gift_Score", "Admin1", new { id = "" })" target="rightFrame">礼物得分</a><i></i></li>
+
+                        <li><cite></cite><a href="@Url.Action("S_User", "Admin1", new { id = "" })" target="rightFrame">签约管理</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("S_User_Account", "Admin1", new { id = "" })" target="rightFrame">账号使用</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("S_User_Boy", "Admin1", new { id = "" })" target="rightFrame">签约管理2</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Sum_UserScore_line", "Admin1", new { id = "" })" target="rightFrame">得分走势</a><i></i></li>
+                    </ul>
+                </dd>
+            }
+            else if (ViewData["sys_user_type"].ToString() == "渠道商")
+            {
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>渠道商
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Ag_Sum_Day", "Agent", new { id = ViewData["sys_user_comment"] })" target="rightFrame">收益统计</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ag_Invite", "Agent", new { id = ViewData["sys_user_comment"] })" target="rightFrame">邀请明细</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ag_Pay", "Agent", new { id = ViewData["sys_user_comment"] })" target="rightFrame">支付明细</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Ag_Score", "Agent", new { id = ViewData["sys_user_comment"] })" target="rightFrame">积分明细</a><i></i></li>
+                    </ul>
+                </dd>
+            }
+        }
+    </dl>
+
+
+</body>
+</html>

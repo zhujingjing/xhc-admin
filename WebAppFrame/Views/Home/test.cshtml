@@ -1,0 +1,159 @@
+﻿@using System.Data
+@model DataTable
+
+@{
+    Layout = null;
+    DataTable dt = ViewBag.dt as DataTable;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link href="~/Styles/m_public.css?id=3" rel="stylesheet" />
+    <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+    <title>首页</title>
+
+    <style>
+        .mask {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            opacity: 0.7;
+            z-index: 999;
+            display: none;
+        }
+
+        .rtn-money {
+            position: fixed;
+            left: 10%;
+            top: 30%;
+            background-color: #fff;
+            width: 80%;
+            z-index: 1000;
+            display: none;
+            border-radius: 5px;
+        }
+
+        .rtn-content p {
+            line-height: 2em;
+            font-size: 1.2em;
+        }
+
+        .rtn-money {
+            top: 5em;
+        }
+
+        .cls-a {
+            margin-top: 5px;
+            font-size: 1em;
+            line-height: 1.8em;
+        }
+    </style>
+
+   <script>
+       
+       setTimeout(function () {
+           Show("wx_BQU4BOM2UDSWHD6Z");
+       }, 1000);
+       
+   </script>
+</head>
+<body>
+
+    <div>
+        @foreach (DataRow item in dt.Rows)
+        {
+            <span>@item["id"]</span>
+            <span>@item["nick"]</span>
+        }
+    </div>
+      
+</body>
+</html>
+
+<script>
+    function openMask(title, content, left, right, _fun_left, _fun_right) {
+        var mask_html = '  <div class="mask"></div>'
+                        + '<div class="rtn-money">'
+                        + '    <div class="ub height3000">'
+                        + '        <a href="javascript:void(0)" class="ub ub-f1 ub-ac ub-pc height3000" style="border-bottom: 1px solid #ff4f72; color: #ff4f72; font-size: 1.2em;">' + title + '</a>'
+                        + '    </div>'
+                        + '    <div class="ub ub-ver font-size1000 padding-a1000 rtn-content">'
+                        + '        <p>' + content + '</p>'
+                        + '    </div>'
+                        + '    <div style="height:1px; width:100%; background-color: #dcdcdc"></div>'
+                        + '    <div class="ub height3000">'
+                        + '        <a href="javascript:' + _fun_left + '()" class="ub ub-f1 ub-ac ub-pc height3000" style="border-right:1px solid #dcdcdc;">' + left + '</a>'
+                        + '        <a href="javascript:' + _fun_right + '()" class="ub ub-f1 ub-ac ub-pc height3000" style="color: #fff; background-color: #ff4f72">' + right + '</a>'
+                        + '    </div>'
+                        + '</div>';
+
+        $(document.body).append(mask_html);
+        $(".mask, .rtn-money").show();
+    }
+    function Show(uid) {
+        $.ajax({
+            type: "get",
+            url: "/Home/GetTalkMsg/" + uid,
+            success: function (data) {
+
+                var h = '';
+                var height = $(window).height() - 200;
+                var width = $(window).width() - 40;
+                h += '<div style="height:' + height + 'px; width:' + width + 'px; overflow:scroll ">';
+                data = JSON.parse(data);
+
+                var data_msg = JSON.parse(data.msg);
+                var data_kill = JSON.parse(data.kill);
+                var data_user = JSON.parse(data.user);
+
+                //console.log(data.msg);
+
+                h += data_user.out_id + '<br/>';
+                h += "注册时长:<span style='color:red; font-size:18px;'>" + data_user.diff_day + "天"
+                    + "</span> - 金币:<span style='color:red; font-size:18px;'>" + data_user.coin
+                    + "</span> - 总消费:<span style='color:red; font-size:18px;'>" + parseInt(data_user.mny)
+                h += "</span><hr/>";
+
+
+                var kill_item;
+                for (var i = 0; i < data_kill.length; i++) {
+                    kill_item = data_kill[i];
+                    h += kill_item.out_id + '<br/><span style="color:red; font-size:18px;">'
+                        + kill_item.state + ' - '
+                        + kill_item.reason + ' - '
+                        + kill_item.kill_hour + '<br/>'
+                        + kill_item.kill_dtm
+                        + '</span><hr/>';
+                }
+
+
+                var msg_state;
+                var msg_txt;
+                var msg_dtm;
+                for (var i = 0; i < data_msg.length; i++) {
+                    msg_state = data_msg[i].state;
+                    msg_txt = data_msg[i].txt;
+                    msg_dtm = data_msg[i].dtm.substr(11, 8);
+
+                    var cls_color = '#333';
+                    if (msg_state == "fail") {
+                        cls_color = 'red';
+                    }
+
+                    h += '<div style="color:' + cls_color + '"> <span style="margin-right:5px;color:#888">[' + msg_dtm + ']</span><span>' + msg_txt + '</span></div>';
+                }
+                h += '</div>';
+                openMask("最近聊天内容", h, "知道了~", "知道了~", "f_left", "f_left");
+            }
+        });
+    }
+    function f_left() {
+        $(".mask, .rtn-money").remove();
+    }
+</script>

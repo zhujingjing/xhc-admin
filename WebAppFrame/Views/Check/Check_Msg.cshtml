@@ -1,0 +1,1046 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/Style_chart.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=77"></script>
+    <style>
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        #chat_dtl {
+            overflow-x: hidden;
+            border: solid 1px #dcdcdc;
+            background-color: RGB(239,239,244);
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .size-x {
+            font-size: 14px;
+            color: blue;
+        }
+
+        .size-xx {
+            font-size: 14px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .size-xxx {
+            font-size: 18px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .gray {
+            color: red;
+        }
+
+        .msg-rece {
+            display: flexbox;
+            border: solid 1px red;
+            padding: 8px;
+            color: white;
+            background-color: black;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .lb {
+            color: #666;
+            margin-left: 20px;
+        }
+
+        .txt {
+            margin-left: 6px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .right {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .left {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .off {
+            position: fixed;
+            bottom: 30px;
+            right: 80px;
+            padding: 5px 10px;
+            background-color: #e92162;
+            color: #fff;
+            border-radius: 5px;
+            width: 400px;
+            text-align: center;
+        }
+
+        .msg-more {
+            text-align: center;
+            color: blue;
+            cursor: pointer;
+        }
+
+        .message-text {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+
+        .fg-line {
+            text-align: center;
+            color: #808080;
+            background: #dcdcdc;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        var grid,grid2;
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent).height();
+            var width = $("#desc").width();
+            $("#datagrid1,#datagrid2,#chat_dtl").height(parentHeight - 190);
+            $("#chat_dtl").width(width - 1100);
+
+            mini.parse();
+
+            grid = mini.get("datagrid1");
+            grid2 = mini.get("datagrid2");
+
+            // 批量加载下拉框数据
+            var categories = ["check_msg_type", "check_msg_sort", "check_msg_sort2"];
+            loadBatchDropdownOptions(categories, function(data) {
+                // 更新下拉框选项
+                updateDropdown("type", data["check_msg_type"], false);
+                updateDropdown("sort", data["check_msg_sort"], false);
+                updateDropdown("sort2", data["check_msg_sort2"], false);
+            });
+
+            grid.load();
+          
+            drawCell();
+            search();
+
+            $("#sort").change(function () {
+                search();
+            });
+           
+        })
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+                    var nick = record.nick;
+                    var sex = record.sex;
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid + '\',500,1300)"><img src="' + photo + '" class="photo-img" /><br/>';
+                    e.cellHtml += nick + "<br/>(" + sex + ")";
+                    e.cellHtml += "</a>";
+                }
+
+                if (column.name == "info") {
+                    var day = 24 * 60 * 60 * 1000;
+                    var reg_time = Math.floor((Date.now() - new Date(record.create_time).getTime()) / day);
+                    var scoreTotal = record.score_total;
+                    var coinTotal = record.coin_total;
+                    var score = record.score;
+                    var coin = record.coin;
+                    var vip = record.member;
+                    var remark =  record.remark;
+                    var chat_mny_score = record.chat_mny_score;
+                    var chat_mny_score2 = record.chat_mny_score2;
+                    var html = '';
+                    html += '<div style="display: flex; flex-direction: column;">';
+                    html += '<div><span style="color:#666;">备注:</span><span style="color:red;">' + remark + '</span></div>';
+                    html += '<div><span style="color:#666;">时长:</span><span style="color:red;">' + reg_time + '天</span></div>';
+                    html += '<div><span style="color:#666;">豪:</span><span style="color:red;">' + coinTotal + '</span>-<span style="color:blue;">' + coin + '</span></div>';
+                    html += '<div><span style="color:#666;">魅:</span><span style="color:red;">' + scoreTotal + '</span>-<span style="color:blue;">' + score + '</span></div></div>';
+                    //html += '<div><span style="color:#666;">基数:</span><span style="color:red;">' + chat_mny_score + '</span>-<span style="color:blue;">' + chat_mny_score2 + '</span></div></div>';
+                 
+                    e.cellHtml = html;
+                }
+
+                //消息条数
+                if (column.name == "msg") {
+                    var u_c = record.u_c;
+                    var msg_c = record.msg_c;
+                  
+                    var html = '';
+                    html += '<a href="javascript:onRowClick(\'' + record.uid + '\', \'' + record.sex + '\')">' ;
+                    html += '<div><span style="color:#666;">会话:</span><span style="color:blue;">' + u_c + '</span></div>';
+                    html += '<div style="width:5px; height:15px;"></div>';
+                    html += '<div><span style="color:#666;">消息:</span><span style="color:blue;">' + msg_c + '</span></div>';
+                    html += '</a>';
+
+                    e.cellHtml = html;
+                }
+
+                if (column.name == "score") {
+                    var tx_mny = record.tx_mny;
+                    var score_today = record.score_today;
+                    var coin_today = record.coin_today;
+
+                    var chat_mny_score = record.chat_mny_score;
+                    var chat_mny_score2 = record.chat_mny_score2;
+
+                    if(score_today == null) score_today = 0;
+                    if(coin_today == null) coin_today = 0;
+
+                    if(tx_mny == null) tx_mny = 0;
+                    tx_mny = parseFloat(tx_mny);
+                    tx_mny = tx_mny.toFixed(0);
+           
+                  
+                    var html = '';
+                    html += '<a href="javascript:onRowClick(\'' + record.uid + '\', \'' + record.sex + '\')">' ;
+                    if(coin_today)
+                    {
+                        html += '<div><span style="color:#666;">金币:</span><span style="color:red;">' + coin_today + '</span></div>';
+                    }
+                    if(score_today)
+                    {
+                        html += '<div><span style="color:#666;">积分:</span><span style="color:blue;">' + score_today + '</span></div>';
+                    }
+                    if(tx_mny > 0){
+                        html += '<div style="width:5px; height:5px;"></div>';
+                        html += '<div><span style="color:#666;">总提现:</span><span style="color:red;">￥' + tx_mny + '</span></div>';
+                    }
+                    html += '<div style="width:5px; height:5px;"></div>';
+                    html += '<div><span style="color:#666;">基数:</span><span style="color:red;">' + chat_mny_score + '</span>-<span style="color:blue;">' + chat_mny_score2 + '</span></div></div>';
+                    html += '</a>';
+                    if(tx_mny == 0 && coin_today == 0 && score_today == 0 && chat_mny_score == 0){
+                        html = 0;
+                    }
+                    e.cellHtml = html;
+                }
+
+                //支付
+                if (column.name == "mny") {
+                    var mny = record.mny;
+                    var pay_count = record.pay_count;
+                    var mny_0 = record.mny_0;
+                    var mny_7 = record.mny_7;
+                    var mny_30 = record.mny_30;
+
+                    var pay_count_0 = record.pay_count_0;
+                    var pay_count_7 = record.pay_count_7;
+                    var pay_count_30 = record.pay_count_30;
+
+                    if(mny == null )mny = 0;
+                    if(mny_0 == null )mny_0 = 0;
+                    if(mny_7 == null )mny_7 = 0;
+                    if(mny_30 == null )mny_30 = 0;
+                    
+                    if(pay_count == null )pay_count = 0;
+                    if(pay_count_0 == null )pay_count_0 = 0;
+                    if(pay_count_7 == null )pay_count_7 = 0;
+                    if(pay_count_30 == null )pay_count_30 = 0;
+
+                    mny = parseFloat(mny);
+                    mny_0 = parseFloat(mny_0);
+                    mny_7 = parseFloat(mny_7);
+                    mny_30 = parseFloat(mny_30);
+
+                    mny = mny.toFixed(1);
+                    mny_0 = mny_0.toFixed(1);
+                    mny_7 = mny_7.toFixed(1);
+                    mny_30 = mny_30.toFixed(1);
+
+                    
+                    var html = '';
+                    html += '<div style="display: flex; flex-direction: column;">';
+                    if(mny_0 == 0){
+                        html += '<div><span style="color:#666;">今日:0</span></div>';
+                    }else{
+                        html += '<div><span style="color:#666;">今日:</span><span style="color:red;">￥' + mny_0 + '</span>-<span style="color:blue;">' + pay_count_0 + '</span></div>';
+                    }
+                    if(mny_7 == 0){
+                        html += '<div><span style="color:#666;">近7天:0</span></div>';
+                    }else{
+                        html += '<div><span style="color:#666;">近7天:</span><span style="color:red;">￥' + mny_7 + '</span>-<span style="color:blue;">' + pay_count_7 + '</span></div>';
+                    }
+                    if(mny_30 == 0){
+                        html += '<div><span style="color:#666;">近30天:0</span></div>';
+                    }else{
+                        html += '<div><span style="color:#666;">近30天:</span><span style="color:red;">￥' + mny_30 + '</span>-<span style="color:blue;">' + pay_count_30 + '</span></div>';
+                    }
+                    
+                    html += '<div><span style="color:#666;">总:</span><span style="color:red;">￥' + mny + '</span>-<span style="color:blue;">' + pay_count + '</span></div>';
+                    
+                    if(mny == 0){
+                        html = '0';
+                    }
+                    e.cellHtml = html;
+                }
+            });
+
+            drawCell2();
+        }
+
+        function drawCell2() {
+            grid2.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+                
+                //时间
+                if (column.name == "time_start") {
+                    var dtm = record.time_start;
+                    if (dtm == null) { dtm = ''; }
+                    else { dtm = dtm.replace(' ', '<br/>'); }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="dtm">' + dtm + '</span>';
+                }
+
+                if (column.name == "info") {
+                    var day = 24 * 60 * 60 * 1000;
+                    var reg_time = Math.floor((Date.now() - new Date(record.create_time).getTime()) / day);
+                    var scoreTotal = record.score_total;
+                    var coinTotal = record.coin_total;
+                    var score = record.score;
+                    var coin = record.coin;
+                    var vip = record.member;
+                    var remark =  record.remark;
+                    e.cellHtml = '';
+                    e.cellHtml += '<div style="display: flex; flex-direction: column;">';
+                    //e.cellHtml += '<div><span style="color:#666;">备注:</span><span style="color:red;">' + remark + '</span></div>';
+                    e.cellHtml += '<div><span style="color:#666;">时长:</span><span style="color:red;">' + reg_time + '天</span></div>';
+                    e.cellHtml += '<div><span style="color:#666;">豪:</span><span style="color:red;">' + coinTotal + '</span>-<span style="color:blue;">' + coin + '</span></div>';
+                    e.cellHtml += '<div><span style="color:#666;">魅:</span><span style="color:red;">' + scoreTotal + '</span>-<span style="color:blue;">' + score + '</span></div>';
+                    e.cellHtml += '</div>';
+                } 
+
+                if (column.name == "score") {
+                    var score_today = record.s;
+                    var coin_today = record.c;
+                    if(score_today == null) score_today = 0;
+                    if(coin_today == null) coin_today = 0;
+
+                    var html = '';
+                    html += '<div>' ;
+                    if(coin_today)
+                    {
+                        html += '<div><span style="color:#666;">金币:</span><span style="color:red;">' + coin_today + '</span></div>';
+                    }
+                    if(score_today)
+                    {
+                        html += '<div><span style="color:#666;">积分:</span><span style="color:blue;">' + score_today + '</span></div>';
+                    }
+                    
+                    html += '</div>';
+                    e.cellHtml = html;
+                }
+
+                //是否对方发起会话
+                if (column.name == "diff_first") {
+                    var diff_first = record.diff_first;
+
+                    var cls = '';
+                    var txt = 0;
+                    if (diff_first == null ) {
+                        txt = '未响应';
+                        cls = 'gray';
+                    }
+                    else if (diff_first < 0) {
+                        //对方发起的会话
+                        if (diff_first <= -60) {
+                            txt = (diff_first / 60).toFixed(0) + '分钟';
+                        } else {
+                            txt = diff_first + '秒';
+                        }
+                        cls = 'msg-rece';
+                    }
+                    else {
+                        //自己发起的
+                        if (diff_first >= 60) {
+                            txt = (diff_first / 60).toFixed(0) + '分钟';
+                        } else {
+                            txt = diff_first + '秒';
+                        }
+                        cls = 'size-x';
+                    }
+
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + txt + '</span>';
+                }
+
+                //持续时长
+                if (column.name == "sec_diff") {
+                    var time_start = record.time_start;
+                    var time_end = record.time_end;
+                    var sec_diff = record.sec_diff;
+
+                    var tiaoshu_receive = record.tiaoshu_receive;
+
+                    var cls = '';
+                    var txt = 0;
+                    if (sec_diff) {
+                        txt = DateDiff_Txt(time_start, time_end);
+                        if (txt.indexOf("天") > -1) {
+                            cls = 'size-xxx';
+                        }
+                        if (txt.indexOf("小时") > -1) {
+                            cls = 'size-xxx';
+                        }
+                        if (txt.indexOf("分钟") > -1) {
+                            cls = 'size-xx';
+                        }
+                        if (txt.indexOf("秒") > -1) {
+                            cls = 'size-x';
+                        }
+                    }
+                    else {
+                        txt = sec_diff;
+                        cls = 'gray';
+                    }
+
+                    if (tiaoshu_receive == 0) {
+                        cls = 'gray';
+                    }
+
+
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + txt + '</span>';
+                }
+
+                //消息条数
+                if (column.name == "tiaoshu") {
+                    var txt = record.tiaoshu;
+                   
+
+                    var color = '';
+                    if (txt == 1) {
+                        color = "gray";
+                    }
+                    else {
+                        color = "size-xx";
+                    }
+
+                    
+
+                    if (record.sec_diff == 0 || record.tiaoshu_receive == 0) {
+                        color = "gray";
+                    }
+                   
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + color + '">' + txt + '</span>';
+                }
+
+                if (column.name == "tiaoshu_receive") {
+                    var txt = record.tiaoshu_receive;
+
+
+                    var color = '';
+                    if (record.tiaoshu_receive > 0) {
+                        color = "size-xx";
+                    }
+
+                    if (record.sec_diff == 0 || record.tiaoshu_receive == 0) {
+                        color = "gray";
+                    }   
+
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + color + '">' + txt + '</span>';
+                }
+
+
+                //消息内容
+                if (column.name == "txt") {
+                    var txt = record.txt;
+                    var type = record.type;
+                    var state = record.state;
+                    var txt_state = '';
+
+                    var color = '';
+                    if (state == "success") { color = "blue"; txt_state = '成功'; }
+                    if (state == "fail") { color = "red"; txt_state = '失败'; }
+
+                    e.cellStyle = "text-align:left";
+                    e.cellHtml = '<span style="color:' + color + '">' + txt + '</span>';
+                }
+
+                if (column.name == "photo2") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo2;
+                    var nick = record.nick2;
+                    var sex = record.sex2;
+                    var chat_mny_score = record.chat_mny_score;
+                    var chat_mny_score2 = record.chat_mny_score2;
+                    var remark =  record.remark;
+                    if(remark != null){
+                        nick = remark;
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid_to + '\',500,1300)"><img src="' + photo + '" class="photo-img" /><br/>';
+                    e.cellHtml += nick + "<br/>(" + sex + ")";
+                    e.cellHtml += "&nbsp;&nbsp;" + chat_mny_score + "-" + chat_mny_score2;
+                    e.cellHtml += "</a>";
+                }
+            });
+        }
+
+
+        function search() {
+            uid_from = "";
+            uid_to = "";
+            $('.messages').html('');
+            $("#btn_msg_more").hide();
+            $("#btn_msg_more_after").hide();
+
+            var dtm = mini.get("dtm").getText();
+            var type = $("#type").val();
+
+            var sort = $("#sort").val();
+
+            grid.load({
+                "dtm": dtm,
+                "where":type,
+                "sort":sort
+            });
+        }
+
+        function onRowClick(uid, sex) {
+
+            sex_from = sex;
+          
+            var dtm = mini.get("dtm").getText();
+            var sort = $("#sort2").val();
+            grid2.load({
+                "id":uid,
+                "dtm": dtm,
+                "sort":sort,
+                "sex_from":sex_from
+            });
+
+            //加载用户统计信息
+            var fun_name = "";
+            if(sex_from == "男生"){
+                fun_name = "GetUserInfoSumCoin";
+            }else{
+                fun_name = "GetUserInfoSumScore";
+            }
+            $.ajax({
+                type: "GET",
+                url: "/Check/" + fun_name,
+                data: { "dtm": dtm, "uid": uid },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    
+                    //显示数据
+                    var htmlTxt = '';
+                    if(sex_from == "男生"){
+                        htmlTxt = init_user_coin(data);
+                    }else{
+                        htmlTxt = init_user_score(data);
+                    }
+                        
+                    $("#chatAB_from").html(htmlTxt);
+                }
+            });
+        }
+
+
+        function search2() {
+            uid_from = "";
+            uid_to = "";
+            $('.messages').html('');
+            $("#btn_msg_more").hide();
+            $("#btn_msg_more_after").hide();
+
+            var dtm = mini.get("dtm").getText();
+            var type = $("#type").val();
+
+            grid.load({
+                "dtm": dtm
+            });
+        }
+        function onRowClick2(e) {
+
+            var item = e.record;
+            
+            //console.log(JSON.stringify(item));
+            $('.messages').html('');
+            $("#btn_msg_more").show();
+            $("#btn_msg_more_after").show();
+            
+            photo_to = servUrl_AppData + '/photo/' + item.photo2;
+
+            uid_from = item.uid_from;
+            uid_to = item.uid_to;
+            sex_to = item.sex2;
+            var dtm = mini.get("dtm").getText();
+            var start = dtm + " 00:00:00";
+            var end = dtm + " 23:59:59";
+            //重置历史数据日期
+            pre_time = start;
+            front_time = start;
+
+            $.ajax({
+                type: "GET",
+                url: "/Admin1/GetChartA_B",
+                data: { "start": start, "end": end, "from": uid_from, "to": uid_to},
+                success: function (data) {
+                    data = JSON.parse(data);
+                    show_msg(data);
+                    var htmlTxt = '<div class="fg-line">' + start.substr(0, 10) + '</div>';
+                    $(".messages").prepend(htmlTxt);
+                }
+            });
+
+            initUserSum();
+        }
+
+        function jump_date(num) {
+            var d = new Date(mini.get("dtm").getText());
+            d.setDate(d.getDate() + num);
+            var dtm = formatTime(d);
+            mini.get("dtm").setValue(dtm);
+
+            search();
+        }
+
+        function formatTime(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            return year + '-' + month + '-' + day;
+        }
+
+        function onValueChanged() {
+            var start = mini.get("datestart").getText();
+            var end = start.substr(0, 11) + "23:59:59";
+            mini.get("dateend").setValue(end);
+        }
+
+        function onDrawSummaryCell(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+            //客户端汇总计算
+            if (e.field == "tiaoshu" || e.field == "tiaoshu_receive") {
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:12px 0; font-size:18px;color:red; font-weight: bold;">' + e.cellHtml + '</span>';
+            }
+
+        }
+
+    </script>
+
+
+    <script type="text/javascript">
+        var photo_from = "";
+
+        var uid_from = "";
+        var uid_to = "";
+        var sex_from = "";
+        var sex_to = "";
+
+        var pre_time = '@ViewData["dtm"]';
+        var after_time = '@ViewData["dtm"]';
+
+        function show_msg(data) {
+            for (var i = 0; i < data.length; i++) {
+                //跳过探测消息
+                if (data[i].type == "sys_probe") {
+                    continue;
+                }
+                if (data[i].uid_from == uid_to) {
+                    appendHistory("3", data[i], 1);
+                }
+                if (data[i].uid_from == uid_from) {
+                    appendHistory("2", data[i], 1);
+                }
+
+            }
+        }
+
+        function appendHistory(txtType, data, pos) {
+            var txt = data.txt;
+            var msg_type = data.type;
+            if (msg_type == "gif" || msg_type == "emoji" || msg_type == "gift") {
+                txt = "<img src='" + txt + "' style='width:100px;' />";
+            }
+            if (msg_type == "pic") {
+                txt = "<span style='color: blue;' onclick='show_pic(\"" + txt + "\")'>【图片】-详情</span>";
+            }
+            if (msg_type.startsWith('check')) {
+                msg = JSON.parse(data.txt);
+                txt = msg.txt;
+            }
+
+            if (data.type == "sys_kill") {
+                var kill_info = JSON.parse(txt);
+                txt = "封号消息:" + kill_info.kill_time / (1000 * 60 * 60) + "小时,原因:" + kill_info.kill_ause;
+            }
+            if (data.type == "sys_warn") {
+                txt = "警告消息:" + txt / 1000 + "秒";
+            }
+
+            var id = '';
+            var htmlTxt = '';
+            var iwidth;
+
+            var font_wt = "";
+            var time_ss = "";
+
+            if (pos == 1) {
+                var timestamp = parseInt(data.dtm.match(/\d+/)[0], 10);
+                var dtm = new Date(timestamp);
+                time_ss = formatTimestamp(dtm);
+            }
+            if (pos == -1) {
+                time_ss = data.dtm;
+                if (data.dtm.startsWith('/Date')) {
+                    var timestamp = parseInt(data.dtm.match(/\d+/)[0], 10);
+                    var dtm = new Date(timestamp);
+                    time_ss = formatTimestamp(dtm);
+                }
+                //time_ss = data.dtm.substr(10, 10); //data.dtm.replace(" ", "<br/>");
+            }
+            time_ss = time_ss.substr(10, 10);
+
+            switch (txtType) {
+
+                //自己说话
+                case "2":
+                    id = Math.floor(Math.random() * 100000);
+
+                    htmlTxt = '<div id="m' + id + '" class="message right" style="max-width: 45rem;"><div class="" style="">' + time_ss + '</div> <div class="message-text' + font_wt + '" style="max-width: 30rem;">' + txt + '</div></div>';
+                    if (pos == 1) {
+                        $(".messages").append(htmlTxt);
+                    }
+                    if (pos == -1) {
+                        $(".messages").prepend(htmlTxt);
+                    }
+
+                    iwidth = $("#m" + id + " .message-text").width() + 60;
+                    $("#m" + id + " .readSign").css({ "right": iwidth.toString() + "px", "visibility": "visible" });
+                    break;
+                    //对方说话
+                case "3":
+                    id = Math.floor(Math.random() * 100000);
+                    if (msg_type.startsWith('check')) {
+                        htmlTxt = '<div id="m' + id + '" class="message left" style="max-width: 45rem;"> <img id="photo_to" style="width:50px;border-radius:50%;" src="' + photo_to + '"/> <div class="message-text' + font_wt + '" style="border-radius: 0;border-right: 2px solid red; margin-right: 10px;">' + txt + '</div><div class="" style="">' + time_ss + '</div></div>';
+                    } else {
+                        htmlTxt = '<div id="m' + id + '" class="message left" style="max-width: 45rem;"> <img id="photo_to" style="width:50px;border-radius:50%;" src="' + photo_to + '"/> <div class="message-text' + font_wt + '" style="max-width: 30rem; margin-right: 10px;" >' + txt + '</div><div class="" style="">' + time_ss + '</div></div>';
+                    }
+
+                    if (pos == 1) {
+                        $(".messages").append(htmlTxt);
+                    }
+                    if (pos == -1) {
+                        $(".messages").prepend(htmlTxt);
+                    }
+                    break;
+
+            }
+        }
+
+        //前一天
+        function history_msg_front() {
+            //后台
+            var start = pre_time;
+            var time = get_dtm(start,"front");
+            pre_time = time;
+            $.ajax({
+                type: "GET",
+                url: "/Admin1/GetChartA_B",
+                data: { "start": time + " 00:00:00", "end": time +" 23:59:59", "from": uid_from, "to": uid_to },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    dtl_history(data, uid_to, uid_from, -1);
+                    //增加一个分割线
+                    var htmlTxt = '<div class="fg-line">' + time.substr(0, 10) + '</div>';
+                    $(".messages").prepend(htmlTxt);
+                }
+            });
+
+        }
+
+        //后一天
+        function history_msg_after() {
+            //后台
+            var start = front_time;
+            var time = get_dtm(start, "after");
+            front_time = time;
+            $.ajax({
+                type: "GET",
+                url: "/Admin1/GetChartA_B",
+                data: { "start": time + " 00:00:00", "end": time + " 23:59:59", "from": uid_from, "to": uid_to },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    //增加一个分割线
+                    var htmlTxt = '<div class="fg-line">' + time.substr(0, 10) + '</div>';
+                    $(".messages").append(htmlTxt);
+                    var reversedData = data.reverse(); //处理后一天消息倒排
+                    dtl_history(reversedData, uid_to, uid_from, 1);
+
+                }
+            });
+        }
+
+        function dtl_history(data, uid_to, uid_from ,pos) {
+            for (var i = data.length - 1; i >= 0; i--) {
+                if (data[i].type == "sys_probe") {
+                    continue;
+                }
+                if (data[i].uid_to == uid_to) {
+                    appendHistory("3", data[i], pos);
+                }
+                if (data[i].uid_to == uid_from) {
+                    appendHistory("2", data[i], pos);
+                }
+            }
+        }
+
+        function get_dtm(dtm, type) {
+            var [datePart, timePart] = dtm.split(" ");
+            var dateParts = datePart.split("-");
+            var year = parseInt(dateParts[0], 10);
+            var month = parseInt(dateParts[1], 10) - 1; // 月份从0开始
+            var day = parseInt(dateParts[2], 10);
+            var date = new Date(year, month, day);
+            date.setDate(date.getDate());
+            if (type == "after") {
+                date.setDate(date.getDate() + 2);
+            }
+            var newDate = date.toISOString().split("T")[0];
+            return newDate;
+        }
+    </script>
+
+    <script>
+        function initUserSum(){
+            var dtm = mini.get("dtm").getText();
+            $.ajax({
+                type: "GET",
+                url: "/Check/GetChartA_B_Info",
+                data: { "dtm": dtm, "from": uid_from, "to": uid_to , "sex_to": sex_to},
+                success: function (data) {
+                    //alert(data);
+                    data = JSON.parse(data);
+                    var scoreCoin = data.scoreCoin;
+                    scoreCoin = JSON.parse(scoreCoin);
+
+                    var htmlTxt = '本次会话: ';
+                    for(var i=0; i<scoreCoin.length; i++){
+                        if(scoreCoin[i]["t"] == "coin"){
+                            htmlTxt += '<span>金币-'+ scoreCoin[i]["type_dtl"] +':</span><span>'+ scoreCoin[i]["c"] +'</span>'
+                        }
+                        if(scoreCoin[i]["t"] == "score"){
+                            htmlTxt += '<span>积分-'+ scoreCoin[i]["type_dtl"] +':</span><span>'+ scoreCoin[i]["c"] +'</span>'
+                        }
+                        htmlTxt +=  '&nbsp;&nbsp;&nbsp;&nbsp;'
+                    }
+
+                    var friendTime = data.friendTime;
+                    if(friendTime){
+                        htmlTxt += '<span>好友:</span><span>'+ friendTime +'</span>';
+                    }
+
+                    $("#chatAB_Info").html(htmlTxt);
+                    $("#chatAB_Info").attr("title", JSON.stringify(data));
+
+                    //对方信息展示
+                    var sum_info = data.sum_info;
+                    sum_info = JSON.parse(sum_info);
+                    if(sex_to == "男生"){
+                        htmlTxt = init_user_coin(sum_info);
+                    }else{
+                        htmlTxt = init_user_score(sum_info);
+                    }
+                    $("#chatAB_to").html(htmlTxt);
+                }
+            });
+        }
+
+        function init_user_coin(data){
+            var htmlTxt = '';
+            var txt = '';
+
+            txt = data.mny;
+            txt = parseFloat(txt);
+            htmlTxt = '<span>总充值:</span><span style="color:red; font-weight:bold;">￥'+ txt.toFixed(2) +'</span>';
+            htmlTxt +=  '&nbsp;&nbsp;'
+            txt = data.mny_day;
+            txt = parseFloat(txt);
+            htmlTxt += '<span>当日充值:</span><span style="color:red; font-weight:bold;">￥'+ txt.toFixed(2) +'</span>';
+            htmlTxt +=  '&nbsp;&nbsp;&nbsp;&nbsp;'
+            htmlTxt += '<span>当日获得金币:</span><span>'+ data.c_add +'</span>';
+            htmlTxt +=  '&nbsp;&nbsp;'
+            htmlTxt += '<span>当日消耗:</span><span>'+ data.c_sub +'</span>';
+            return htmlTxt;
+        }
+        function init_user_score(data){
+            var htmlTxt = '';
+            var txt = '';
+
+            txt = data.s_sub;
+            txt = txt / 1000;
+            htmlTxt = '<span>总提现:</span><span style="color:red; font-weight:bold;">￥'+ txt.toFixed(2) +'</span>';
+            htmlTxt +=  '&nbsp;&nbsp;'
+            htmlTxt += '<span>当日积分:</span><span style="color:blue; font-weight:bold;">'+ data.s_add +'</span>';
+            return htmlTxt;
+        }
+
+        function show_pic(url) {
+            document.getElementById("img-album").src = url;
+            document.getElementById("popup").style.display = 'flex';
+        }
+        function closePopup() {
+            document.getElementById("popup").style.display = 'none';
+            document.getElementById("alert_json").style.display = 'none';
+        }
+    </script>
+
+</head>
+<body>
+    
+
+    <form id="form1">
+
+        <div id="desc" style="display:flex; padding:15px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+            <div>
+                日期: <input id="dtm" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" onvaluechanged="onValueChanged" /> &nbsp;&nbsp;&nbsp;&nbsp;
+
+                <input type="button" class="sys-btn" style="background-color:forestgreen" value="前一天" onclick="jump_date(-1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="button" class="sys-btn" style="background-color:orange" value="后一天" onclick="jump_date(1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+
+                筛选:
+                <select id="type" style="height:24px;">
+                    <option value="">全部</option>
+                </select>&nbsp;&nbsp;&nbsp;&nbsp;
+                <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+
+                表格1排序:
+                <select id="sort" style="height:24px;">
+                    <option value="">请选择</option>
+                </select>&nbsp;&nbsp;&nbsp;&nbsp;
+
+                表格2排序:
+                <select id="sort2" style="height:24px; width:80px">
+                    <option value="">请选择</option>
+                </select>&nbsp;&nbsp;&nbsp;&nbsp;
+
+            </div>
+            
+        </div>
+
+                <div style="display: flex; justify-content: space-between;">
+                    <div id="datagrid1" class="mini-datagrid" style="width:500px;"
+                         url="/Check/GetCheckMsgData" idfield="id" allowresize="true"
+                       
+                         sizelist="[50,100,200]" pagesize="50">
+                        <div property="columns">
+
+                            <div field="xh" name="xh" width="30" headeralign="center" align="center" allowsort="false">序号</div>
+                            <div name="photo" width="70" align="center" headeralign="center">用户</div>
+                            <div name="info" width="100" headeralign="center" align="left" allowsort="false">综合信息</div>
+                            <div name="mny" width="100" headeralign="center" align="left" allowsort="center" summarytype="sum">充值</div>
+                            <div name="score" width="80" headeralign="center" align="left" allowsort="center" summarytype="sum">得积分/耗金币</div>
+                            <div name="msg" width="60" headeralign="center" align="left" allowsort="center" summarytype="sum">消息</div>
+                            
+
+                        </div>
+                    </div>
+                   
+                    <div style="width:5px"></div>
+
+                    <div id="datagrid2" class="mini-datagrid" style="width: 780px;"
+                         url="/Admin1/GetChartDtl/" idfield="id" allowresize="true"
+                         onrowclick="onRowClick2"
+                         showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell"
+                         sizelist="[50,100,200]" pagesize="200">
+                        <div property="columns">
+
+                            <div field="xh" name="xh" width="30" headeralign="center" align="center" allowsort="false">序号</div>
+                            <div field="time_start" name="time_start" width="60" align="center" headeralign="center">时间</div>
+                            <div name="photo2" width="70" align="center" headeralign="center">聊天对象</div>
+                            <div name="info" width="100" headeralign="center" align="left" allowsort="false">综合信息</div>
+                            <div name="score" width="70" headeralign="center" align="left" allowsort="false">耗金币/得积分</div>
+                            <div field="txt" name="txt" width="100" headeralign="center" align="left" allowsort="false">首条消息</div>
+                            <div field="diff_first" name="diff_first" width="60" headeralign="center" align="left" allowsort="false">对方响应</div>
+                            <div field="sec_diff" name="sec_diff" width="60" align="center" headeralign="center">自己持续</div>
+                            <div field="tiaoshu" name="tiaoshu" width="60" headeralign="center" align="center" allowsort="center" summarytype="sum">发送量</div>
+                            <div field="tiaoshu_receive" name="tiaoshu_receive" width="60" headeralign="center" align="center" allowsort="center" summarytype="sum">接收量</div>
+
+                        </div>
+                    </div>
+
+                    <div style="width:5px"></div>
+
+                        <div id="chat_dtl">
+                            <div id="div_AbInfo" style="position:fixed; top:5px; right:20px; padding:8px; font-size:16px;border-radius:3px;background-color:black; color:#fff;z-index:1000;">
+                                <div id="chatAB_from" title="" style="border-bottom:1px solid #888; margin-bottom:8px;">
+                                    <span>总提现:</span><span>-</span>
+                                    <span>当日积分:</span><span>-</span>
+                                </div>
+                                <div id="chatAB_to" title="" style="border-bottom:1px solid #888; margin-bottom:8px;">
+                                    <span>总充值:</span><span>-</span>
+                                    <span>当日充值:</span><span>-</span>
+                                    <span>当日获得金币:</span><span>-</span>
+                                    <span>当日消耗:</span><span>-</span>
+                                </div>
+                                <div id="chatAB_Info" title="" style="margin:8px 0;">
+                                    <span>金币:</span><span>-</span>
+                                    <span>积分:</span><span>-</span>
+                                </div>
+                            </div>
+                            <div class="content-inner" style="height:90%; transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1); transition-duration: 0ms; transform: translate(0px, 0px) translateZ(0px);">
+                                <div id="btn_msg_more" class="msg-more" style="display:none;" onclick="history_msg_front()">--- 前一天 ---</div>
+                                <div id="contMsg" class="messages"></div>
+                                <div id="btn_msg_more_after" class="msg-more" style="display:none;" onclick="history_msg_after()">--- 后一天 ---</div>
+                            </div>
+                            <div id="popup" class="ub ub-pc ub-ac" style="display: none; justify-content:center; align-items:center; position: fixed; top: 0; right: 0; width: 33%; height: 100%; background-color: rgba(0, 0, 0, 0.9); z-index: 99;" onclick="closePopup()">
+                                <img id="img-album" style="width: 80%; height: auto;" src="" />
+                            </div>
+                        </div>
+                  
+                </div>
+      
+
+    </form>
+</body>
+</html>

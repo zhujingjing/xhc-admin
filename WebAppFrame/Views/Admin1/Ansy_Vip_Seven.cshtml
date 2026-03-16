@@ -1,0 +1,310 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=6"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+        .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 160px;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .txt1 {
+            margin-left: 6px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .lb {
+            color: #666;
+            margin-left: 20px;
+        }
+
+        .mny_red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var day_7 = 0;
+        var day_730 = 0;
+        var day_30 = 0;
+        var expire_num = 0;
+
+        var loginToday = 0;
+        var loginYes7 = 0;
+        var loginNo7 = 0;
+
+        var total = 0;
+
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#datagrid1").height(parentHeight - 80);
+
+
+            mini.parse();
+            grid = mini.get("datagrid1");
+            drawCell();
+            search();
+            init();
+        })
+
+        var uids = [];
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid + '\')"><img src="' + photo + '" class="photo-img" /></a>';
+                }
+
+
+                if (column.field == "create_time") {
+                    var day = 24 * 60 * 60 * 1000;
+                    var dtm = Math.floor((Date.now() - new Date(record.create_time).getTime()) / day);
+                    e.cellHtml = '<span>' + dtm + '天</span>';
+                }
+
+                if (column.field == "least_time") {
+                    var least_time = record.least_time;
+                    var dtm_now = new Date().getTime();
+                    least_time = least_time.getTime();
+                    var diffTime = dtm_now - least_time;
+                    var days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    var hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+                    if (days > 0) {
+                        e.cellHtml = '<span>' + days + '天</span>';
+                    } else if (hours > 0) {
+                        e.cellHtml = '<span>' + hours + '小时</span>';
+                    } else if (minutes > 0) {
+                        e.cellHtml = '<span>' + minutes + '分钟</span>';
+                    } else {
+                        e.cellHtml = '<span>刚刚</span>';
+                    }
+
+                    if (days < 7) {
+                        loginYes7++;
+                        total++;
+                    } else {
+                        loginNo7++;
+                        total++;
+                    }
+                    var login7Percentage = (loginYes7 / total) * 100;
+                    var loginNo7Percentage = (loginNo7 / total) * 100;
+                    $("#loginYes7").html(loginYes7 + "(" + Math.round(login7Percentage) +"%)");
+                    $("#loginNo7").html(loginNo7 + "(" + Math.round(loginNo7Percentage) + "%)");
+                }
+
+                if (column.field == "member") {
+                    var member = record.member;
+                    e.cellHtml = '<span style="color:red; font-size: 14px; font-weight: bold;">' + member + '</span>';
+                }
+
+                if (column.field == "vip_endtime") {
+                    var vip_endtime = record.vip_endtime;
+                    vip_endtime = formatTimestamp(vip_endtime);
+                    vip_endtime = vip_endtime.replace(' ', '<br/>');
+                    e.cellHtml = '<span style="color:blue; font-size: 14px; font-weight: bold;">' + vip_endtime + '</span>';
+                }
+
+                if (column.field == "surplus") {
+                    var vip_endtime = record.vip_endtime;
+                    var dtm_now = new Date().getTime();
+                    vip_endtime = vip_endtime.getTime();
+                    var diffTime = vip_endtime - dtm_now;
+                    var days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    var hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+                    if (days > 0) {
+                        if (days <= 7) {
+                            day_7++;
+                            e.cellHtml = '<span style="color:red">' + days + '天</span>';
+                        }
+                        if (days > 7 && days <= 30) {
+                            day_730++;
+                            e.cellHtml = '<span style="color:#dd4110";>' + days + '天</span>';
+                        }
+                        if (days > 30) {
+                            day_30++;
+                            e.cellHtml = '<span style="color:blue; font-weight: bold;">' + days + '天</span>';
+                        }
+                    } else if (hours > 0) {
+                        day_7++;
+                        e.cellHtml = '<span style="color:red">' + hours + '小时</span>';
+                    } else if (minutes > 0) {
+                        day_7++;
+                        e.cellHtml = '<span style="color:red">' + minutes + '分钟</span>';
+                    } else {
+                        expire_num++;
+                        e.cellHtml = '<span style="color:red">已过期</span>';
+                    }
+                    $("#day_7").html(day_7);
+                    $("#day_730").html(day_730);
+                    $("#day_30").html(day_30);
+                    $("#expire_num").html(expire_num);
+                }
+
+                if (column.field == "today") {
+                    var least_time = record.least_time;
+                    var dtm_now = new Date().getTime();
+                    least_time = least_time.getTime();
+                    var diffTime = dtm_now - least_time;
+                    var hours = diffTime / (1000 * 60 * 60);
+                    if (hours <= 24) {
+                        loginToday++;
+                        e.cellStyle = 'background-color:#458B00;';
+                    }
+                    var loginTodayPercentage = (loginToday / total) * 100;
+                    $("#loginToday").html(loginToday + "(" + Math.round(loginTodayPercentage) + "%)");
+                }
+
+                if (["login_1", "login_2", "login_3", "login_4", "login_5", "login_6", "login_7"].includes(column.field)) {
+                    var login_num = record[column.field];
+                    if (login_num > 0) {
+                        e.cellStyle = 'background-color:#458B00;';
+                        e.cellHtml = '<span>' + value + '</span>';
+                    } else {
+                        e.cellHtml = '<span></span>';
+                    }
+                }
+            });
+
+        }
+
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function init() {
+        }
+
+        function search() {
+            day_7 = 0;
+            day_730 = 0;
+            day_30 = 0;
+            expire_num = 0;
+            loginToday = 0;
+            loginYes7 = 0;
+            loginNo7 = 0;
+            total = 0;
+
+            var sort = $("#sort").val();
+            grid.load({
+                "dtm": "",
+                "sort": sort
+            });
+
+        }
+
+        function formatTimestamp(date) {
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始
+            var day = String(date.getDate()).padStart(2, '0');
+            var hours = String(date.getHours()).padStart(2, '0');
+            var minutes = String(date.getMinutes()).padStart(2, '0');
+            var seconds = String(date.getSeconds()).padStart(2, '0');
+
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+    </script>
+</head>
+<body>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+
+            排序:
+            <select id="sort" style="height:24px; width:150px;">
+                <option value="" selected="selected">默认</option>
+                <option value="vip_endtime asc">到期时间(正排)</option>
+                <option value="vip_endtime desc">到期时间(倒排)</option>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <span class="lb">7天内:</span><span class="txt1" id="day_7" style="color:red">0</span>
+            <span class="lb">7-30天:</span><span class="txt1" id="day_730" style="color:blue">0</span>
+            <span class="lb">大于30天:</span><span class="txt1" id="day_30" style="color:blue">0</span>
+            <span class="lb">已过期:</span><span class="txt1" id="expire_num" style="color:red">0</span>
+
+            <span style="width:1px;height:100%;border-right:1px solid #333; margin-left:20px;"></span>
+
+            <span class="lb">今日登录:</span><span class="txt1" id="loginToday" style="color:blue">0</span>
+            <span class="lb">最近7天有登录:</span><span class="txt1" id="loginYes7" style="color:blue">0</span>
+            <span class="lb">7日都没登录:</span><span class="txt1" id="loginNo7" style="color:blue">0</span>
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Admin1/GetLoginSevenData" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[200,300,500]" pagesize="200">
+            <div property="columns">
+                <div field="xh" width="10" headeralign="center" align="center" allowsort="false">序号</div>
+
+                <div name="photo" width="10" renderer="onGenderRenderer" align="center" headeralign="center">头像</div>
+                <div field="sex" width="10" headeralign="center" align="center" allowsort="false">性别</div>
+                <div field="create_time" width="10" headeralign="center" align="center" allowsort="false">注册时间</div>
+                <div field="least_time" width="10" headeralign="center" align="center" allowsort="false">最近上线</div>
+                <div field="coin_total" width="10" headeralign="center" align="right" allowsort="false">总金币</div>
+                <div field="coin" width="10" headeralign="center" align="right" allowsort="false">金币</div>
+                <div field="score_total" width="10" headeralign="center" align="right" allowsort="false">总积分</div>
+                <div field="score" width="10" headeralign="center" align="right" allowsort="false">积分</div>
+                <div field="member" width="10" headeralign="center" align="right" allowsort="false">会员</div>
+                <div field="vip_endtime" width="15" headeralign="center" align="center" allowsort="false">到期时间</div>
+                <div field="surplus" width="10" headeralign="center" align="right" allowsort="false">剩余时间</div>
+                <div field="today" width="10" headeralign="center" align="center" allowsort="false">今天</div>
+                <div field="login_1" width="10" headeralign="center" align="center" allowsort="false">昨天</div>
+                <div field="login_2" width="10" headeralign="center" align="center" allowsort="false">前天</div>
+                <div field="login_3" width="10" headeralign="center" align="center" allowsort="false">前三天</div>
+                <div field="login_4" width="10" headeralign="center" align="center" allowsort="false">前四天</div>
+                <div field="login_5" width="10" headeralign="center" align="center" allowsort="false">前五天</div>
+                <div field="login_6" width="10" headeralign="center" align="center" allowsort="false">前六天</div>
+                <div field="login_7" width="10" headeralign="center" align="center" allowsort="false">前七天</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

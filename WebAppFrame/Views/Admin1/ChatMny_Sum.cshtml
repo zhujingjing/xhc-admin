@@ -1,0 +1,496 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js?id=1"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=6"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 160px;
+        }
+
+        .txt1 {
+            margin-left: 6px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .lb {
+            color: #666;
+            margin-left: 20px;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .blue {
+            font-size: 14px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .yellow {
+            font-size: 18px;
+            font-weight: bold;
+            color: yellow;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        var grid;
+        $(function () {
+            mini.parse();
+            grid = mini.get("datagrid1");
+            search();
+            drawCell();
+
+            init();
+        })
+        var sum_count = {
+            "v_50": 0,
+            "v_200": 0,
+            "v_100200": 0,
+            "v_50100": 0
+        }
+
+        var sum_people = {
+            "v_200": 0,
+            "v_100200": 0,
+            "v_50100": 0,
+            "v_50": 0
+        }
+
+        var sum_score = {
+            "v_200": 0,
+            "v_100200": 0,
+            "v_50100": 0,
+            "v_50": 0
+        }
+
+        var sum_chatCount = {
+            "v_200": 0,
+            "v_100200": 0,
+            "v_50100": 0,
+            "v_50": 0
+        }
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+                
+
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid_from + '\')"><img src="' + photo + '" class="photo-img" /></a>';
+                }
+
+                if (column.field == "create_time") {
+                    var day = 24 * 60 * 60 * 1000;
+                    var dtm = Math.floor((Date.now() - new Date(record.create_time).getTime()) / day);
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + dtm + '天</span>';
+                }
+
+                if (column.name == "chat_count") {
+                    var chat_count = record.chat_count;
+                    e.cellHtml = '<span style="color:#888">' + record.chat_count + '</span>';
+                    if (chat_count >= 50) {
+                        e.cellHtml = '<span style="font-size:18px; font-weight: bold; color:#00f">' + record.chat_count + '</span>';
+                    }
+ 
+                    if (chat_count >= 200) {
+                        sum_count.v_200++;
+                    }
+                    if (chat_count >= 100 && chat_count < 200) {
+                        sum_count.v_100200++;
+                    }
+                    if (chat_count >= 50 && chat_count < 100) {
+                        sum_count.v_50100++;
+                    }
+                    if (chat_count >= 50) {
+                        sum_count.v_50++;
+                    }
+                    
+
+                    $("#count200").html(sum_count.v_200);
+                    $("#count100_200").html(sum_count.v_100200);
+                    $("#count50_100").html(sum_count.v_50100);
+                    $("#count50").html(sum_count.v_50);
+
+                    var score = record.score;
+                    var chat_count = record.chat_count;
+                    //统计聊天次数/聊天积分
+                    if (chat_count >= 200) {
+                        sum_people.v_200++;
+                        sum_score.v_200 += score;
+                        sum_chatCount.v_200 += chat_count;
+                    }
+                    if (chat_count >= 100 && chat_count <= 200) {
+                        sum_people.v_100200++;
+                        sum_score.v_100200 += score;
+                        sum_chatCount.v_100200 += chat_count;
+                    }
+                    if (chat_count >= 50 && chat_count <= 100) {
+                        sum_people.v_50100++;
+                        sum_score.v_50100 += score;
+                        sum_chatCount.v_50100 += chat_count;
+                    }
+                    if (chat_count < 50) {
+                        sum_people.v_50++;
+                        sum_score.v_50 += score;
+                        sum_chatCount.v_50 += chat_count;
+                    }
+                }
+
+                if (column.name == "score") {
+                    var score = record.score;
+                    var item = separate_Num(score);
+                    e.cellHtml = '<span style="color:#888">' + item + '</span>';
+                    if (score >= 1000) {
+                        e.cellHtml = '<span style="font-size:18px; font-weight: bold; color:#00f">' + item + '</span>';
+                    }
+                    if (score > 300 && score < 1000) {
+                        e.cellHtml = '<span style="font-size:18px;">' + item + '</span>';
+                    }
+
+                }
+
+                if (column.field == "score_total") {
+                    var score_total = record.score_total;
+                    var item = separate_Num(score_total);
+                    e.cellHtml = '<span>' + item + '</span>';
+                    if (score_total >= 500) {
+                        e.cellHtml = '<span class="red" style="font-size:18px;">' + item + '</span>';
+                    }
+                }
+
+                if (column.name == "score_online") {
+                    var score_online = record.score_online;
+                    var item = separate_Num(score_online);
+                    e.cellHtml = '<span>' + item + '</span>';
+                    if (score_online >= 250) {
+                        e.cellHtml = '<span class="red" style="font-size:18px;">' + item + '</span>';
+                    }
+                }
+
+                if (column.name == "today_sum") {
+                    var score_total = record.score_total;
+                    var score = record.score;
+                    var today_sum = Number(score) + Number(score_total);
+                    var item = separate_Num(today_sum);
+                    if (today_sum < 1000) {
+                        e.cellHtml = '<span>' + item + '</span>';
+                    } else {
+                        e.cellHtml = '<span style="color:red;">' + item + '</span>';
+                    }
+                }
+
+                
+
+
+                if (column.name == "dtm_max") {
+                    var dtm = record.dtm_max;
+                    var dtm_old = new Date(dtm).getTime();
+                    var dtm_now = new Date().getTime();
+                    var dtm_ss = Math.floor((dtm_now - dtm_old) / 1000);
+                    
+                    if (dtm_ss < 60) {
+                        e.cellStyle = "text-align:left";
+                        e.cellHtml = '<span style="color:blue;font-size: 14px;font-weight: bold;">' + dtm_ss + '秒前</span>';
+                    }
+                    if (dtm_ss >= 60 && dtm_ss < 60 * 60) {
+                        var dtm_mm = Math.floor(dtm_ss / 60);
+                        e.cellStyle = "text-align:left";
+                        e.cellHtml = '<span style="color:blue;font-size: 14px;font-weight: bold;">' + dtm_mm + '分钟前</span>';
+                    }
+                    if (dtm_ss >= (60 * 60) && dtm_ss < (60 * 60) * 10) {
+                        var dtm_hh = Math.floor(dtm_ss / (60 * 60));
+                        e.cellStyle = "text-align:left";
+                        e.cellHtml = '<span style="color:#008866;font-size: 14px;font-weight: bold;">' + dtm_hh + '小时前</span>';
+                    }
+
+                    if (dtm_ss > 60 * 60 * 10) {
+                        if (dtm == null) { dtm = ''; }
+                        dtm = dtm.replace(' ', '<br/>');
+                    
+                        e.cellStyle = "text-align:left";
+                        e.cellHtml = '<span style="color:#888;">' + dtm + '</span>';
+                    }
+                    
+
+                    
+                }
+
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:left";
+                    e.cellHtml = '<a style="font-size:16px;color:blue;" href="javascript:Dtl(\'' + record.uid_from + '\',\'' + record.dtm + '\')"> <span>---详情---</span> </a>';
+                }
+
+            });
+        }
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 130);
+        }
+
+        function search() {
+            sum_count = {
+                "v_50": 0,
+                "v_200": 0,
+                "v_100200": 0,
+                "v_50100": 0
+            }
+
+            sum_people = {
+                "v_200": 0,
+                "v_100200": 0,
+                "v_50100": 0,
+                "v_50": 0
+            }
+
+            sum_score = {
+                "v_200": 0,
+                "v_100200": 0,
+                "v_50100": 0,
+                "v_50": 0
+            }
+
+            sum_chatCount = {
+                "v_200": 0,
+                "v_100200": 0,
+                "v_50100": 0,
+                "v_50": 0
+            }
+
+            var dtm = mini.get("dtm").getText();
+            var uid = $("#uid").val().trim();
+            grid.load({
+                "dtm": dtm,
+                "uid":uid
+            });
+        }
+
+        function jump_date(num) {
+            var d = new Date(mini.get("dtm").getText());
+
+            d.setDate(d.getDate() + num);
+            var dtm = formatTime(d);
+
+
+            mini.get("dtm").setValue(dtm);
+
+            search();
+        }
+
+        function formatTime(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            return year + '-' + month + '-' + day;
+        }
+
+        function Dtl(uid, dtm) {
+            var url = "/Admin1/ChatMny_Dtl/?uid=" + uid + "&dtm=" + dtm;
+            mini.open({
+                url: url,
+                showMaxButton: false,
+                title: "详情",
+                width: $(window).width()-6,
+                height: $(window).height()-8,
+                ondestroy: function (action) {
+                    //grid.reload();
+                }
+            });
+        }
+
+        function onDrawSummaryCell(e) {
+            var result = e.result;
+            var grid = e.sender;
+
+            //客户端汇总计算
+            if (e.field == "score") {
+                e.cellHtml = separate_Num(e.cellHtml);
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:#00f; font-size:18px; font-weight:bold;">' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "chat_count") {
+                e.cellHtml = separate_Num(e.cellHtml);
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:#00f; font-size:18px;font-weight:bold;">' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "score_hello") {
+                e.cellHtml = separate_Num(e.cellHtml);
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "score_anser") {
+                e.cellHtml = separate_Num(e.cellHtml);
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "score_online") {
+                e.cellHtml = separate_Num(e.cellHtml);
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "score_total") {
+                e.cellHtml = separate_Num(e.cellHtml);
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "score_login") {
+                e.cellHtml = separate_Num(e.cellHtml);
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span>' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "score_gift") {
+                e.cellHtml = separate_Num(e.cellHtml);
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span>' + e.cellHtml + '</span>';
+            }
+
+            if (e.field == "today_sum") {
+                e.cellStyle = "text-align:right";
+                e.cellHtml = '<span style="display:inline-block;margin:10px 0; color:red; font-size:18px; font-weight:bold;">' + e.cellHtml + '</span>';
+            }
+        }
+
+        function pie() {
+            var dtm = mini.get("dtm").getText();
+            var params = {
+                "sum_people": sum_people,
+                "sum_score": sum_score,
+                "sum_chatCount": sum_chatCount
+            }
+            var url = "/Admin1/ChatMny_Sum_Pie?" + "dtm=" + dtm ;
+            mini.open({
+                url: url,
+                showMaxButton: false,
+                title: "饼图",
+                width: $(window).width()-6,
+                height: $(window).height()-8,
+                onload: function () {
+                    var iframe = this.getIFrameEl();
+                    iframe.contentWindow.setData(params);
+                },
+                ondestroy: function (action) {
+                    //grid.reload();
+                }
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+            日期: <input id="dtm" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            uid:<input type="text" class="txt" id="uid" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input type="button" class="sys-btn" style="background-color:forestgreen" value="前一天" onclick="jump_date(-1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" class="sys-btn" style="background-color:orange" value="后一天" onclick="jump_date(1)" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <span class="lb">大于50:</span><span class="txt1" id="count50" style="color:red">0</span>
+            <span class="lb">其中大于200:</span><span class="txt1" id="count200" style="color:blue">0</span>
+            <span class="lb">100-200:</span><span class="txt1" id="count100_200" style="color:blue">0</span>
+            <span class="lb">50-100:</span><span class="txt1" id="count50_100" style="color:blue">0</span>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            
+            <input id="btn_pie" type="button" class="sys-btn" value="积分组成" onclick="pie()" />&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Admin1/GetChatMynSumData" idfield="id" allowresize="true" multiselect="true"
+              showsummaryrow="true" ondrawsummarycell="onDrawSummaryCell"
+             sizelist="[150,300]" pagesize="150">
+            <div property="columns">
+                <div field="xh" width="10" headeralign="center" align="center" allowsort="false">序号</div>
+                <div field="dtm" width="20" headeralign="center" align="center" allowsort="false">日期</div>
+                <div field="uid_from" width="40" headeralign="center" align="left" allowsort="false">uid</div>
+                <div name="photo" width="15" renderer="onGenderRenderer" align="center" headeralign="center">头像</div>
+                <div field="nick" width="20" headeralign="center" align="left" allowsort="false">昵称</div>
+                <div field="sex" width="10" headeralign="center" align="center" allowsort="false">性别</div>
+                <div field="create_time" width="20" headeralign="center" align="center" allowsort="false">注册时间</div>
+                <div field="remark" width="30" headeralign="center" align="left" allowsort="false">备注</div>
+                <div field="chat_mny_score" width="20" headeralign="center" align="center" allowsort="false">聊天基数</div>
+                <div name="chat_count" field="chat_count" width="20" headeralign="center" align="right" summarytype="sum">消息次数</div>
+                <div name="score" field="score" width="30" headeralign="center" align="right" summarytype="sum">消息收入</div>
+                <div field="score_total" width="20" headeralign="center" align="right" summarytype="sum">任务积分</div>
+                <div name="score_hello" field="score_hello" width="20" headeralign="center" align="right" summarytype="sum">打招呼</div>
+                <div name="score_anser" field="score_anser" width="20" headeralign="center" align="right" summarytype="sum">回复</div>
+                <div name="score_online" field="score_online" width="20" headeralign="center" align="right" summarytype="sum">在线奖励</div>
+                <div name="score_login" field="score_login" width="20" headeralign="center" align="right" summarytype="sum">登录奖励</div>
+                <div name="score_gift" field="score_gift" width="20" headeralign="center" align="right" summarytype="sum">礼物奖励</div>
+                <div name="today_sum" field="today_sum" width="30" headeralign="center" align="right" summarytype="sum">日总</div>
+                <div name="dtm_max" field="dtm_max" width="30" headeralign="center" align="right">最近时间</div>
+                <div name="dtl" width="40" headeralign="left" align="left" allowsort="false">详情</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

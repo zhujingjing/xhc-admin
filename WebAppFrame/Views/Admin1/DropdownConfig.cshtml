@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>下拉框配置管理</title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=9"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .blue {
+            font-size: 18px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        /* 调整分类输入框和查询按钮的对齐 */
+        .toolbar li {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .toolbar .mini-label {
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        .toolbar .mini-textbox {
+            vertical-align: middle;
+        }
+
+        .toolbar .mini-button {
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 100);
+
+            mini.parse();
+
+            grid = mini.get("datagrid1");
+
+            grid.load();
+
+            drawCell();
+
+            init();
+        })
+
+        function init() {
+
+        }
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:left";
+                    e.cellHtml = '<a style="color:blue;" href="javascript:Edit(\'' + record.id + '\')">&nbsp;&nbsp;修改</a>';
+                }
+                //状态
+                if (field == "status") {
+                    e.cellHtml = value == 1 ? "启用" : "禁用";
+                }
+                
+                //时间字段
+                if (field == "create_time" || field == "update_time") {
+                    if (value) {
+                        // 格式化时间为 yyyy-MM-dd HH:mm:ss
+                        var date = new Date(value);
+                        var year = date.getFullYear();
+                        var month = String(date.getMonth() + 1).padStart(2, '0');
+                        var day = String(date.getDate()).padStart(2, '0');
+                        var hours = String(date.getHours()).padStart(2, '0');
+                        var minutes = String(date.getMinutes()).padStart(2, '0');
+                        var seconds = String(date.getSeconds()).padStart(2, '0');
+                        var formattedDate = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+                        e.cellHtml = '<span>' + formattedDate + '</span>';
+                    } else {
+                        e.cellHtml = '<span></span>';
+                    }
+                }
+            });
+        }
+
+        function Add() {
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            var parentWidth = $(window.parent.document).find("#rightFrame").width();
+
+            mini.open({
+                url: "/Admin1/DropdownConfigAdd",
+                showMaxButton: false,
+                title: "添加下拉框选项",
+                width: 600,
+                height: 450,
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        grid.reload();
+                    }
+                }
+            });
+        }
+
+        function Edit(id) {
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            var parentWidth = $(window.parent.document).find("#rightFrame").width();
+
+            mini.open({
+                url: "/Admin1/DropdownConfigAdd/" + id,
+                showMaxButton: false,
+                title: "编辑下拉框选项",
+                width: 600,
+                height: 520,
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        grid.reload();
+                    }
+                }
+            });
+        }
+
+        function Remove() {
+            var rows = grid.getSelecteds();
+            if (rows.length == 0) {
+                mini.alert("请选择要删除的行");
+                return;
+            }
+            mini.confirm("确定要删除选中的记录吗？删除后无法恢复！", "删除确认", function (action) {
+                if (action == "ok") {
+                    var ids = [];
+                    for (var i = 0; i < rows.length; i++) {
+                        ids.push(rows[i].id);
+                    }
+                    $.ajax({
+                        url: "/Admin1/DeleteDropdownConfig",
+                        type: "post",
+                        data: { id: ids.join(",") },
+                        success: function (text) {
+                            var result = mini.decode(text);
+                            if (result.state == "1" || result.State == "1") {
+                                // 刷新所有缓存
+                                refreshDropdownCache();
+                                mini.alert("删除成功");
+                                grid.reload();
+                            } else {
+                                mini.alert(result.msg || result.Msg);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function search() {
+            var category = mini.get("category").getValue();
+            grid.load({ category: category });
+        }
+
+        function onGenderRenderer(e) {
+            var grid = e.sender;
+            var rowIndex = e.rowIndex;
+            return rowIndex + 1;
+        }
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">系统设置</a></li>
+            <li><a href="#">下拉配置</a></li>
+        </ul>
+    </div>
+
+    <form id="form1">
+        <div class="tools" style="display: flex; align-items: center;">
+            <ul class="toolbar" style="display: flex; align-items: center; margin: 0; padding: 0;">
+                <li class="click" onclick="Add()" style="margin-right: 5px;"><span><img src="/Images/frame/t01.png" /></span>添加</li>
+                <li class="click" onclick="Remove()" style="margin-right: 5px;"><span><img src="/Images/frame/t03.png" /></span>删除</li>
+                <li class="click" onclick="refreshDropdownCache()" style="margin-right: 15px;"><span><img src="/Images/frame/t04.png" /></span>刷新缓存</li>
+                <li style="background: url(/Images/frame/toolbg.gif) repeat-x; border: solid 1px #d3dbde; padding: 0 10px; border-radius: 3px; height: 33px; display: flex; align-items: center;">
+                    <span style="margin-right: 5px; color: #333; font-size: 9pt;">分类：</span>
+                    <input id="category" type="text" style="width:150px; height: 22px; border: 1px solid #d3dbde; border-radius: 3px; padding: 0 5px; font-size: 9pt;" />
+                    <button onclick="search()" style="margin-left: 5px; height: 26px; padding: 0 10px; background: #3eaf7c; color: white; border: 1px solid #3eaf7c; border-radius: 3px; cursor: pointer; font-size: 9pt;">查询</button>
+                </li>
+            </ul>
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Admin1/GetDropdownConfigData" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[50,100]" pagesize="50">
+            <div property="columns">
+                <div field="xh" width="40" renderer="onGenderRenderer" align="center" headeralign="center">序号</div>
+                <div field="status" width="40" headeralign="center" align="center" allowsort="false">状态</div>
+                <div field="comment" width="120" headeralign="center" align="left" allowsort="false">下拉位置</div>
+                <div field="value" width="180" align="left" headeralign="center">下拉框显示内容</div>
+                <div field="sort_order" width="40" headeralign="center" align="center" allowsort="false">排序</div>
+                <div field="category" width="120" headeralign="center" align="left" allowsort="false">分类</div>
+                <div field="key" width="120" align="left" headeralign="center">键值</div>
+                <div field="parent_category" width="120" align="left" headeralign="center">父级分类</div>
+                <div field="parent_key" width="120" align="left" headeralign="center">父级键值</div>
+                
+                <div field="create_time" width="150" headeralign="center" align="center" allowsort="false">创建时间</div>
+                <div field="update_time" width="150" headeralign="center" align="center" allowsort="false">更新时间</div>
+                <div name="dtl" width="100" headeralign="center" align="center" allowsort="false">操作</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

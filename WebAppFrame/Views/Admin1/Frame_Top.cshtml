@@ -1,0 +1,172 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>无标题文档</title>
+
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <style>
+        #msg_tip {
+            position: fixed;
+            top: 0;
+            width: 400px;
+            height: 100px;
+            z-index: 1000;
+            background-color: #fff;
+        
+            border-radius:8px;
+            display:none;
+            padding:5px;
+        }
+
+        .opt-close {
+            width:40px;
+            height:20px;
+            line-height:20px;
+            text-align:center;
+            color:#000;
+            font-weight:bold;
+            float:right;
+        }
+
+        .item {
+            line-height:25px;
+            margin-top:3px;
+        }
+         .imp-item {
+            display: inline-block;
+            width: 50px;
+            height: 18px;
+            line-height: 18px;
+            text-align: center;
+            margin-left:3px;
+            background-color: #000;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size:16px;
+            color: #f00;
+        }
+    </style>
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            //顶部导航切换
+            $(".nav li a").click(function () {
+                $(".nav li a.selected").removeClass("selected")
+                $(this).addClass("selected");
+            })
+
+            autoTishi();
+        })
+
+        function autoTishi() {
+            var frm_left = $(window).width();
+            var frm_height = $(window).height();
+            var left = (frm_left - 400) * 0.5 + "px";
+            var height = frm_height + "px";
+            $("#msg_tip").css({ "left": left, "height": height });
+            $(".opt-close").bind("click", function () { closeMsg(); });
+
+            setInterval(function () {
+                var tm_count = $("#tm_tz").html();
+                tm_count = parseInt(tm_count);
+                if (tm_count <= 0) {
+                    doBll();
+                    tm_count = 60;
+                }
+
+                tm_count--;
+                $("#tm_tz").html(tm_count);
+
+            }, 1000);
+
+            doBll();
+        }
+
+        function doBll() {
+            //后台
+            $.ajax({
+                type: "get",
+                url: "/Admin1/GetTopFrmMsgInfo",
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data.state == "1") {
+                        var count_score = data.count_score;
+                        var count_order = data.count_order;
+                        if (count_score > 0 || count_order > 0) {
+                            $("#sp_score").html(count_score);
+                            $("#sp_menber").html(count_order);
+                            showMsg();
+                            playSound();
+                        }
+                    }
+                }
+            });
+
+
+        }
+
+        function showMsg() {
+            $("#msg_tip").slideDown(600);
+        }
+        function closeMsg() {
+            $("#msg_tip").slideUp(300);
+        }
+
+        //播放声音
+        function playSound() {
+            var audio = document.getElementById("msg_sound");
+            audio.currentTime = 0;
+            audio.play();
+        }
+    </script>
+
+</head>
+
+<body style="background:url(/Images/frame/topbg.gif) repeat-x;">
+
+    <input type="hidden" id="sys_user_type" value="@ViewData["sys_user_type"]" />
+    <input type="hidden" id="sys_user_id" value="@ViewData["sys_user_id"]" />
+    <input type="hidden" id="sys_user_name" value="@ViewData["sys_user_name"]" />
+    <input type="hidden" id="sys_user_comment" value="@ViewData["sys_user_comment"]" />
+
+    <div class="topleft">
+        <a href="/Home/Index" target="_parent"><img src="/Images/frame/logo.png" title="系统首页" /></a>
+    </div>
+
+    <ul class="nav">
+        <li><a href="/Admin1/Shop_Add" target="rightFrame" class="selected"><img src="/Images/frame/icon01.png" title="工作台" /><h2>工作台</h2></a></li>
+    </ul>
+
+    <div class="topright">
+        <ul>
+            <li><a href="javascript:doBll();">通知<span id="tm_tz">60</span></a></li>
+            <li><span><img src="/Images/frame/help.png" title="帮助" class="helpimg" /></span><a href="#">帮助</a></li>
+            <li><a href="#">关于</a></li>
+            <li><a href="/Admin1/Login/exit" target="_parent">退出</a></li>
+        </ul>
+
+        <div class="user">
+            <span id="sp_user">@ViewData["sys_user_name"]</span>
+        </div>
+
+    </div>
+
+    <div id="msg_tip">
+        <div class="opt-close">关闭</div>
+        <div class="item">
+            积分兑换<span id="sp_score" class="imp-item">0</span>条
+        </div>
+        <div class="item">
+            最近会员<span id="sp_menber" class="imp-item">0</span>条
+        </div>
+    </div>
+
+    <div style="display:none;">
+        <audio id="msg_sound" controls="controls" style="display:none;">
+            <source src="/Scripts/sound2.mp3" type="audio/mpeg" />
+        </audio>
+    </div>
+
+</body>
+</html>

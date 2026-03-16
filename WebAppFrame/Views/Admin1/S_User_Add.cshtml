@@ -1,0 +1,162 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <script src="~/Scripts/jquery-1.8.2.min.js?id=123"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+
+    <style>
+        .txt {
+            margin: 5px;
+            padding-left:5px;
+            height:24px;
+            line-height:24px;
+            width:240px;
+            border-radius:5px;
+            outline:none;
+            border:1px solid #6579f6;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        var id = '@ViewData["id"]';
+
+        $(function () {
+            var data = '@Html.Raw(ViewData["data"])';
+            data = data.replace(/[\r\n]/g, "");
+            data = JSON.parse(data);
+            for (var key in data) {
+                $("#" + key).val(data[key]);
+            }
+
+            $("#btnOK").bind("click", function () {
+                doSave();
+            });
+
+            
+        })
+
+        function doSave() {
+            var id = $("#id").val();
+            var uid = $("#uid").val();
+            var name = $("#name").val();
+            var is_use = $("#is_use").val();
+            var is_use_outnet = $("#is_use_outnet").val();
+            var score_lv = $("#score_lv").val();
+
+            //检测数据
+            if (uid == "" || name == "")
+            {
+                alert("请完善表单!");
+                return false;
+            }
+
+            var send = {
+                "id": id,
+                "uid": uid,
+                "name": name,
+                "is_use": is_use,
+                "is_use_outnet": is_use_outnet,
+                "score_lv": score_lv
+            };
+            var strSend = JSON.stringify(send);
+
+            //后台
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/SaveSUser",
+                data: { "send": strSend },
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        alert(data.msg);
+                        CloseWindow("ok");
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function CloseWindow(action) {
+            if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+            else window.close();
+        }
+    </script>
+</head>
+<body>
+    <form id="form1">
+        <div style="padding: 15px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
+            <table>
+                <tr>
+                    <td class="lb">id</td>
+                    <td class="ctxt">
+                        <input class="txt" type="text" id="id" disabled />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">uid</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="text" id="uid" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">姓名</td>
+                    <td class="ctxt ">
+                        <input class="txt" type="text" id="name" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">是否可用</td>
+                    <td class="ctxt ">
+                        <select class="txt"  id="is_use">
+                            <option value="1" selected>可用</option>
+                            <option value="0">不可用</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">外网可用</td>
+                    <td class="ctxt ">
+                        <select class="txt" id="is_use_outnet">
+                            <option value="1" >可用</option>
+                            <option value="0" selected>不可用</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb">得分等级</td>
+                    <td class="ctxt ">
+                        <select class="txt" id="score_lv">
+                            <option value="1" selected>1级</option>
+                            <option value="2">2级</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="lb"></td>
+                    <td class="ctxt ">
+                        <input class="sys-btn" type="button" id="btnOK" value="保存" />
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+    </form>
+</body>
+</html>
+
+
+

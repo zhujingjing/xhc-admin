@@ -1,0 +1,348 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=10" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=5"></script>
+
+    <style lang="scss">
+        /*-----弹性盒子部分---开始-----*/
+        .ub {
+            display: flex;
+        }
+
+        .ub-ver {
+            flex-direction: column;
+        }
+
+        .ub-as {
+            justify-content: flex-start;
+        }
+
+        .ub-ac {
+            justify-content: center;
+        }
+
+        .ub-ac1 {
+            justify-content: space-around;
+        }
+
+        .ub-ac2 {
+            justify-content: space-between;
+        }
+
+        .ub-ac3 {
+            justify-content: space-evenly;
+        }
+
+        .ub-ae {
+            justify-content: flex-end;
+        }
+
+        .ub-ps {
+            align-items: flex-start;
+        }
+
+        .ub-pc {
+            align-items: center;
+        }
+
+        .flexWrap {
+            flex-wrap: wrap;
+        }
+
+        .ub-pc1 {
+            align-items: stretch;
+        }
+
+        .ub-pe {
+            align-items: flex-end;
+        }
+
+
+        .ub-f1 {
+            flex-grow: 1;
+        }
+
+        .ub-f2 {
+            flex-grow: 2;
+        }
+
+        .ub-f3 {
+            flex-grow: 3;
+        }
+
+        .ub-f4 {
+            flex-grow: 4;
+        }
+        /*-----弹性盒子部分---结束-----*/
+        .container {
+            width: 100%;
+            display: flex;
+        }
+        .gift_pack-block {
+            margin-top: 24px;
+            padding: 8px 12.8px;
+
+            .gift_pack {
+                padding-bottom: 16px;
+                width: 100%;
+                border-radius: 16px;
+                background-color: #ffeff0;
+
+                ul {
+                    width: 100%;
+                    background-color: #FFDBDF;
+                    border-top-left-radius: 16px;
+                    border-top-right-radius: 16px;
+
+                    .item {
+                        height: 48px;
+                        border-top-left-radius: 16px;
+                        border-top-right-radius: 16px;
+
+                        span {
+                            font-size: 16px;
+                            font-weight: bold;
+                            color: #8E3C40;
+                        }
+
+                        a {
+                            font-size: 10.4px;
+                            color: #81504A;
+                        }
+                    }
+
+                    .on {
+                        margin-top: -16px;
+                        height: 64px;
+                        background-color: #FDFDFD;
+                    }
+                }
+            }
+
+            .giftPack_info {
+                margin-top: 16px;
+                width: 300px;
+
+                .vip_block {
+                    position: relative;
+                    width: 40%;
+                    height: 176px;
+                    background-color: #FFE4E9;
+                    border-radius: 8px;
+
+                    .tag {
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        padding: 1.6px 6.4px;
+                        background: linear-gradient( 90deg, #FDBABE, #FF869E);
+                        border-bottom-left-radius: 8px;
+                        border-top-right-radius: 8px;
+                        font-size: 12px;
+                        color: #fff;
+                    }
+
+                    img {
+                        margin-top: 30px;
+                        width: 70%;
+                    }
+
+                    span {
+                        width: 100%;
+                        height: 32px;
+                        border-bottom-left-radius: 8px;
+                        border-bottom-right-radius: 8px;
+                        background-color: #FFCCD3;
+                        color: #903A44;
+                        font-size: 16px;
+                    }
+                }
+
+                .jia {
+                    font-size: 32px;
+                    font-weight: bold;
+                    color: #903A44;
+                }
+
+                .coin_block {
+                    position: relative;
+                    width: 40%;
+                    height: 176px;
+                    background-color: #FFE4E9;
+                    border-radius: 8px;
+
+                    .tag {
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        padding: 1.6px 6.4px;
+                        background: linear-gradient( 90deg, #FDBABE, #FF869E);
+                        border-bottom-left-radius: 8px;
+                        border-top-right-radius: 8px;
+                        font-size: 12px;
+                        color: #fff;
+                    }
+
+                    img {
+                        margin-top: 30px;
+                        width: 80%;
+                    }
+
+                    span {
+                        width: 100%;
+                        height: 32px;
+                        border-bottom-left-radius: 8px;
+                        border-bottom-right-radius: 8px;
+                        background-color: #FFCCD3;
+                        color: #903A44;
+                        font-size: 16px;
+                    }
+                }
+            }
+        }
+        .alert_json {
+            display: none;
+            position: fixed;
+            margin: auto;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 550px;
+            height: 700px;
+            background-color: #E3E6E8;
+            border: 1px solid #999999;
+            z-index: 99;
+        }
+
+        .close {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            height: 30px;
+        }
+
+        .close span {
+            font-size: 14px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        $(function () {
+            init();
+        })
+    </script>
+
+    <script>
+        var data = '@Html.Raw(ViewData["data"])';
+        function init() {
+
+            data = JSON.parse(data);
+
+            var h = "";
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                h += `
+                      <div class="gift_pack-block ub ub-ver ub-pc">
+                                <div class="gift_pack ub ub-ver">
+                                    <ul class="ub ub-ac1">
+                                        <li class="item ub ub-ver ub-pc ub-ac ub-f1">
+                                            <span>${item.act_name}</span>
+                                            <a>价值${item.mny_old}元</a>
+                                        </li>
+                                    </ul>
+
+                                    <div class="giftPack_info ub ub-ac3">
+                                        <div class="vip_block ub ub-ver ub-ac2 ub-pc">
+                                            <div class="tag ub ub-ac ub-pc">${item.vip_mny} 元</div>
+                                            <div class="vip-pic ub ub-pc ub-ac">
+                                                    <img src="/Images/会员.png" />
+                                            </div>
+                                            <span class="ub ub-ac ub-pc">${item.name}会员</span>
+                                        </div>
+                                        <div class="jia ub ub-ac ub-pc">+</div>
+                                        <div class="coin_block ub ub-ver ub-ac2 ub-pc">
+                                            <div class="tag ub ub-ac ub-pc">${item.coin_mny} 元</div>
+                                            <div class="coin-pic ub ub-pc ub-ac">
+                                                    <img src="/Images/一堆金币2.png" />
+                                            </div>
+                                            <span class="ub ub-ac ub-pc">${item.coin}金币</span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div ub ub-ac ub-pc><span>lv:${item.lv}</span></div>
+                            </div>
+              `;
+            }
+            $("#blk").html(h);
+        }
+
+        function SetOnLine() {
+            var tag = confirm("确定要更新吗，这会影响到正式系统的首充支付数据");
+            if(tag)
+            {
+                //后台
+                //后台
+                $.ajax({
+                    type: "Get",
+                    url: "/Home/SetOnline_Mem_First",
+                    success: function (data) {
+                        if (data == "True") {
+                            alert("更新成功");
+                        }
+                    }
+                });
+            }
+        }
+        function show_json(data) {
+            var json_data = JSON.stringify(data);
+            document.getElementById("alert_json").style.display = 'flex';
+            document.getElementById("alert_json").style.flexDirection = 'column';
+            document.getElementById("alert_json").style.justifyContent = 'center';
+            $("#json_data").html(json_data);
+        }
+
+        function closePopup() {
+            document.getElementById("alert_json").style.display = 'none';
+        }
+    </script>
+</head>
+<body>
+    <div id="alert_json" class="alert_json">
+        <div class="close">
+            <span>json数据</span>
+            <span style="font-size: 16px;" onclick="closePopup()">关闭</span>
+        </div>
+        <textarea id="json_data" style="height: 95%; background: white; resize: none;padding:3px;"></textarea>
+    </div>
+
+    <form id="form1">
+        <div class="tools">
+            <ul class="toolbar">
+                <li class="click" onclick="SetOnLine()"><span><img src="/Images/frame/ico04.png" /></span>上线</li>
+                <li style="margin-left:10px;" class="click" onclick="show_json(data)"><span><img src="/Images/frame/ico02.png" /></span>数据</li>
+            </ul>
+        </div>
+
+        <div>购买首充配置数据</div>
+        <div id="blk" class="container">
+        </div>
+
+
+    </form>
+</body>
+</html>
+

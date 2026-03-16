@@ -1,0 +1,217 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=6"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+       
+         .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width:180px;
+        } 
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .gray {
+            color: #808080;
+        }
+
+        .blue {
+            color: blue;
+        }
+
+        .red {
+            color: red;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 102);
+
+            mini.parse();
+
+            grid = mini.get("datagrid1");
+
+            //grid.load();
+            search();
+
+            drawCell();
+
+            init();
+        })
+
+        function init() {
+
+        }
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+
+                    if (photo == null || photo == "") {
+                        photo = "/Images/frame/i07.png";
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid + '\')"><img src="' + photo + '" class="photo-img" /></a>';
+                }
+                if (column.name == "sex") {
+                    var sex = record.sex;
+                    if (sex=="男生")
+                        e.cellHtml = '<span class="blue">' + sex + '</span>';
+                }
+                if (sex == "女生") {
+                    e.cellHtml = '<span class="red">' + sex + '</span>';
+                }
+                if (column.name == "dtm") {
+                    var dtm = record.dtm;
+                    dtm = dtm.replace(" ", "<br/>");
+                    e.cellHtml = '<span class="red" style="font-size:18px; color:#f00;">' + dtm + '</span>';
+                }
+                if (column.name == "msg_rst") {
+                    var msg_rst = record.msg_rst;
+                    if (msg_rst == "1") {
+                        msg_rst = "成功";
+                        e.cellHtml = '<span class="blue">' + msg_rst + '</span>';
+                    } else {
+                        msg_rst = "失败";
+                        e.cellHtml = '<span class="red">' + msg_rst + '</span>';
+                    }
+                   
+                }
+                if (column.name == "send_opr") {
+                    var send_opr = record.send_opr;
+                    if (send_opr == "1") {
+                        e.cellHtml = '<span class="blue">' + send_opr + '</span>';
+                    } else {
+                        e.cellHtml = '<span class="red">' + send_opr + '</span>';
+                    }
+
+                }
+                if (column.name == "send_desc") {
+                    var send_desc = record.send_desc;
+                    if (send_desc == "正常") {
+                        e.cellHtml = '<span class="blue">' + send_desc + '</span>';
+                    } else {
+                        e.cellHtml = '<span class="red">' + send_desc + '</span>';
+                    }
+
+                }
+                
+            });
+        }
+
+        function search() {
+            var type = $("#type").val();
+            var key = $("#key").val().trim();
+            var dtm_start = mini.get("dtm_start").getText();
+            var dtm_end = mini.get("dtm_end").getText();
+
+            grid.load({
+                "start": dtm_start,
+                "end": dtm_end,
+                "type": type,
+                "key": key
+            });
+        }
+
+    </script>
+
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">微信通知记录</a></li>
+        </ul>
+    </div>
+
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+            开始日期: <input id="dtm_start" format="yyyy-MM-dd HH:mm:ss" class="mini-datepicker" style="width:180px;" value="@ViewData["start"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            截止日期: <input id="dtm_end" format="yyyy-MM-dd HH:mm:ss" class="mini-datepicker" style="width:180px;" value="@ViewData["end"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            通知类型:
+            <select id="type" style="height:24px; width:160px">
+                <option value="" selected="selected">全部</option>
+                <option value="6">签到成功通知</option>
+                <option value="2">购买成功通知</option>
+                <option value="12">实时交易提醒(离线礼物)</option>
+                <option value="11">实时交易提醒(上榜奖励)</option>
+                <option value="13">实时交易提醒(返还金币)</option>
+                <option value="3">提现到账通知</option>
+                <option value="5">收益发放通知</option>
+                <option value="999">系统预警通知</option>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+            关键词:<input type="text" class="txt" id="key" />&nbsp;(uid)&nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px;"
+             url="/Admin1/GetWxNoticeRecord" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[20,50,100]" pagesize="50">
+            <div property="columns">
+
+                <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+                <div name="photo" width="60" headeralign="center" align="center" allowsort="false">头像</div>
+                <div field="nick" width="50" headeralign="center" align="left" allowsort="false">昵称</div>
+                <div name="sex" width="40" headeralign="center" align="center" allowsort="false">性别</div>
+                <div field="dtm" name="dtm" width="80" headeralign="center" align="right" allowsort="false">时间</div>
+                <div field="msg_type" width="30" headeralign="center" align="left" allowsort="false">类型1</div>
+                <div field="msg_type_ch" width="100" headeralign="center" align="left" allowsort="false">类型2</div>
+
+                
+                <div field="msg_rst" name="msg_rst"  width="40" renderer="onGenderRenderer" align="center" headeralign="center">发送状态</div>
+
+
+                <div field="send_opr" name="send_opr" width="40" headeralign="center" align="center" allowsort="false">发送控制</div>
+                <div field="send_desc" name="send_desc" width="80" headeralign="center" align="left" allowsort="false">控制描述</div>
+
+
+                <div field="msg_rst_ch" name="state" width="40" headeralign="center" align="center" allowsort="false">微信结果</div>
+                <div field="msg_txt" width="150" renderer="onGenderRenderer" align="right" headeralign="center">详情</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

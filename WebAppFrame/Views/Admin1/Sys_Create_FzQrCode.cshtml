@@ -1,0 +1,86 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=5"></script>
+
+    <style>
+
+    </style>
+
+    <style>
+        .txt {
+            width: 300px;
+            border: #0094ff solid 1px;
+            height: 22px;
+            line-height: 22px;
+            padding: 3px;
+            border-radius: 3px;
+            margin:0 5px;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        $(function () {
+
+        })
+
+        function createQrCode() {
+            var parm_str = $("#parm_str").val();
+
+            if (!confirm("您确定要生成吗?")) {
+                return;
+            }
+
+            //后台
+            $.ajax({
+                type: "POST",
+                url: "/Admin1/DoCreate_QrCode",
+                data: { "id": parm_str },
+                success: function (data) {
+                    data = strToJson(data);
+                    if (data.state == "1") {
+                        //生成成功
+                        $("#img_qrcode").attr("src", "/" + data.msg);
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">生成带参数二维码 (说明：该功能其他人员不能使用，必须在负责人同意的情况下才能使用)</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+      
+        <div class="sys-content-border" style="padding: 10px">
+            参数:<input type="text" id="parm_str" class="txt" />
+            <input class="sys-btn" type="button" value="生成" onclick="createQrCode()" />&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+
+        <div class="sys-content-border" style="margin-top:30px;">
+
+            <img id="img_qrcode" style="width:400px; height:400px; border:#999" />
+        </div>
+
+    </form>
+</body>
+</html>

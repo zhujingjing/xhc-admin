@@ -1,0 +1,206 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/public.css" rel="stylesheet" />
+
+    <style>
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .gray {
+            color: #808080;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 120px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 16px;
+            text-align: center;
+            margin-left: 8px;
+        }
+
+        .blue {
+            color: blue;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .bold {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        var grid;
+
+        var left_count = 0;
+        var left_vip_count = 0;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window).height();
+            $("#datagrid1").height(parentHeight - 35);
+
+            mini.parse();
+
+            grid = mini.get("datagrid1");
+
+            grid.load();
+
+            drawCell();
+
+            init();
+        })
+
+        function init() {
+
+        }
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:center";
+
+                    //e.cellHtml = '<a href="javascript:del(\'' + record.id + '\')">删除</a>';
+                    //e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                    e.cellHtml += '<a style="color:blue;" href="javascript:UserAllInfo(\'' + record.uid + '\')">全貌</a>';
+                }
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+
+                    if (photo == null || photo == "") {
+                        photo = "/Images/frame/i07.png";
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<img src="' + photo + '" class="photo-img" />';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+                if (column.name == "state") {
+                    var state = record.state;
+
+                    var cls = 'blue';
+                    if (state == "封杀") {
+                        cls = 'red';
+                    }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + state + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                if (column.name == "wx_sex") {
+                    var wx_sex = record.wx_sex;
+                    var txt = '未知';
+                    var cls = 'gray';
+                    if (wx_sex == "2") {
+                        txt = '女';
+                        cls = 'blue';
+                    }
+                    else if (wx_sex == "1") {
+                        txt = '男';
+                        cls = 'red';
+                    }
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="' + cls + '">' + txt + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                if (column.name == "dtm") {
+                    var dtm = record.dtm;
+                    dtm = dtm.replace(" ", "<br/>");
+                    e.cellHtml = '<span class="red" style="font-size:18px; color:#f00;">' + dtm + '</span>';
+                }
+
+                if (column.name == "dtm_line") {
+                    var dtm_line = record.dtm_line;
+                    dtm_line = dtm_line.replace(" ", "<br/>");
+                    e.cellHtml = '<span class="red" style="font-size:18px; color:#00f;">' + dtm_line + '</span>';
+                }
+
+                if (column.name == "scan_count") {
+                    var scan_count = record.scan_count;
+                    if (scan_count == 1) {
+                        scan_count = "是";
+                        e.cellHtml = '<span class="red" style="font-size:18px; color:#00f;">' + scan_count + '</span>';
+                    } else if (scan_count == 0) {
+                        scan_count = "否";
+                        e.cellHtml = '<span class="red" style="font-size:18px; color:red;">' + scan_count + '</span>';
+                    } else {
+                        scan_count = "";
+                        e.cellHtml = '<span class="red" style="font-size:18px; color:#00f;">' + scan_count + '</span>';
+                    }
+
+                }
+
+
+
+            });
+        }
+
+
+
+    </script>
+
+</head>
+<body>
+    <form id="form1">
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px;"
+             url="/Admin1/GetWarnUserList/@ViewData["id"]" idfield="id" allowresize="true"
+             sizelist="[20,50,100,1000]" pagesize="1000">
+            <div property="columns">
+
+                <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+                <div field="uid" width="120" renderer="onGenderRenderer" align="left" headeralign="left">uid</div>
+                <div name="photo" width="80" headeralign="center" align="center" allowsort="false">头像</div>
+                <div field="nick" width="60" headeralign="center" align="left" allowsort="false">昵称</div>
+                <div field="sex" width="40" headeralign="center" align="center" allowsort="false">微信性别</div>
+
+                <div field="dtm" name="dtm" width="100" renderer="onGenderRenderer" align="right" headeralign="center">警告时间</div>
+                <div field="warn_sec" width="80" renderer="onGenderRenderer" align="right" headeralign="center">警告时长</div>
+                <div field="state" name="state" width="80" headeralign="center" align="center" allowsort="false">状态</div>
+
+                <div field="reason" width="120" headeralign="center" align="left" allowsort="false">警告原因</div>
+                <div field="warn_type" width="90" headeralign="center" align="left" allowsort="false">警告类型</div>
+                <div field="scan_count" name="scan_count" width="40" headeralign="center" align="center" allowsort="false">是否查看</div>
+                <div name="dtl" width="120" headeralign="center" align="center" allowsort="false">操作</div>
+
+            </div>
+        </div>
+    </form>
+</body>
+</html>
+
+

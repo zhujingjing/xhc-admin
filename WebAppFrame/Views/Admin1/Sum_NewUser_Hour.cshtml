@@ -1,0 +1,221 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+
+    <!-- S  amcharts 资源 -->
+    <script src="~/Scripts/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/gauge.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/Scripts/amcharts/serial.js" type="text/javascript"></script>
+    <!-- E  amcharts 资源 -->
+
+    <script src="~/Scripts/AmChartsDemo1-line.js"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+
+        .blue {
+            display: inline-block;
+            color: blue;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .red {
+            display: inline-block;
+            color: red;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .mny {
+            display: inline-block;
+            min-width: 180px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .tag-a {
+            color:blue;
+            font-size:16px; 
+        }
+
+        a:visited {
+            color: red;
+        }
+
+
+    </style>
+
+    <script type="text/javascript">
+
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#divContainer").height(parentHeight - 130);
+
+            init();
+        })
+
+        function init() {
+            var data = '@Html.Raw(ViewData["data"])';
+            var data_com = '@Html.Raw(ViewData["data_com"])';
+            data = JSON.parse(data);
+            data_com = JSON.parse(data_com);
+            var data_new = [];
+            for (var i = 0; i < data.length; i++) {
+                var item = {};
+                item.dtm = data[i].dtm;
+                item.数量 = data[i].数量;
+                item.dtm_contrast = data_com[i].dtm;
+                item.数量_对比 = data_com[i].数量;
+                
+                data_new.push(item);
+
+            }
+            //线图
+            showLine546(data_new);
+        }
+
+        function search() {
+
+            var dtm = mini.get("dtm").getText();
+            var dtm_compare = mini.get("dtm_compare").getText();
+
+            var url = "/Admin1/Sum_NewUser_Hour/?dtm=" + dtm + "&dtm_compare=" + dtm_compare;
+            window.location.href = url;
+        }
+
+        function jump_date(num) {
+            var myDate = new Date();//当前日期
+            var d = new Date(myDate);
+
+            d.setDate(d.getDate() - num);//当前日期
+            var dtm_compare = formatTime(d);
+          
+            mini.get("dtm_compare").setValue(dtm_compare);
+
+            search();
+        }
+
+        function formatTime(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1, month = month < 10 ? '0' + month : month;
+            var day = date.getDate(), day = day < 10 ? '0' + day : day;
+            return year + '-' + month + '-' + day;
+        }
+      
+
+    </script>
+
+    <script>
+        function showLine546(data) {
+            // 创建chart
+            var chart = new AmCharts.AmSerialChart();
+            chart.color = "#888888";
+            chart.dataProvider = data;
+            chart.categoryField = "dtm"; //横轴显示内容
+            chart.startDuration = 1;
+
+            // x轴
+            var categoryAxis = chart.categoryAxis;
+            categoryAxis.dashLength = 1;
+            categoryAxis.fillColor = "#ffffff";
+            categoryAxis.axisColor = "#888888";
+            categoryAxis.labelRotation = 45; //横轴字体倾斜度数
+
+            // x轴值
+            var valueAxis = new AmCharts.ValueAxis();
+            valueAxis.inside = false;
+            valueAxis.axisColor = "#888888";
+            chart.addValueAxis(valueAxis);
+
+            // 图
+            var graph = new AmCharts.AmGraph();
+            graph.valueAxis = valueAxis;
+            graph.bullet = "round"; //"none", "round", "square", "triangleUp", "triangleDown", "triangleLeft", "triangleRight", "bubble", "diamond", "xError", "yError" and "custom".
+            graph.bulletSize = 8; //大小
+            graph.bulletBorderColor = "#FFFFFF";
+            graph.lineColor = "#0000FF"; //线条颜色 "00FF00" "0000FF"
+            graph.valueField = "数量"; //纵轴显示内容
+            graph.title = "新增注册用户";
+            graph.balloonText = "[[dtm]]新增注册用户<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+            chart.addGraph(graph);
+
+
+
+            if (true) {
+                //
+                graph = new AmCharts.AmGraph();
+                graph.valueAxis = valueAxis;
+                graph.bullet = "round";//
+                graph.bulletSize = 8;//
+                graph.bulletBorderColor = "#FFFFFF";
+                graph.lineColor = "#ff0099";//
+                graph.valueField = "数量_对比"; //纵轴显示内容
+                graph.title = "对比";
+                graph.balloonText = "[[dtm_contrast]]昨日对比新增注册用户<br><b><span style='font-size:14px;'>[[value]]</span></b>"; //提示信息
+                chart.addGraph(graph);
+            }
+
+            // 光标
+            var chartCursor = new AmCharts.ChartCursor();
+            chartCursor.cursorAlpha = 0;
+            chartCursor.cursorPosition = "mouse";
+            chartCursor.graphBulletSize = 1.5;
+            chart.addChartCursor(chartCursor);
+            chart.numberFormatter.precision = 0;
+
+            //图例
+            var legend = new AmCharts.AmLegend();
+            legend.align = "center";
+            chart.addLegend(legend);
+
+            chart.write("divContainer");
+        };
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">用户新增统计（小时）</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+        <div style="padding:10px; margin-bottom:5px; border: solid 1px #dcdcdc;">
+
+            选择日期:<input id="dtm" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm"]" /> &nbsp;&nbsp;
+            对比日期:<input id="dtm_compare" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["dtm_compare"]" /> &nbsp;
+            <a class="tag-a" href="javascript:jump_date(1)">(前一天)</a>&nbsp;
+            <a class="tag-a" href="javascript:jump_date(7)">(上周同日)</a>&nbsp;&nbsp;
+            <input type="button" value="加载数据" class="sys-btn" onclick="search()" />&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <span class="mny">今日累计:<span class="blue"> @ViewData["today_count"] </span></span>
+            <span class="mny">当前小时:<span class="red"> @ViewData["cur_hour_count"] </span></span>
+
+        </div>
+        <div id="divContainer" style="width: 100%; border: solid 1px #dcdcdc">
+
+        </div>
+    </form>
+</body>
+</html>
+
+

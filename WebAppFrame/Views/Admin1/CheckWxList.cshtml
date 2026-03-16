@@ -1,0 +1,399 @@
+﻿
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=6"></script>
+
+    <style>
+        select {
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #dfdfdf;
+        }
+        .txt {
+            height: 22px;
+            line-height: 22px;
+            border: 1px solid #dfdfdf;
+            border-radius: 5px;
+            padding-left: 5px;
+            width:160px;
+        }
+        .sys-summary {
+            display: inline-block;
+            text-align: center;
+            min-width: 20px;
+            font-size: 18px;
+            color: #ff6a00;
+        }
+
+        .photo-img {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #dcdcdc;
+            border-radius: 50%;
+        }
+
+        .photo-img-big {
+            width: 100px;
+            height: 100px;
+        }
+
+        .red {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f00;
+        }
+
+        .blue {
+            font-size: 14px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        .yellow {
+            font-size: 18px;
+            font-weight: bold;
+            color: yellow;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var FZ_Num = "";
+
+        var grid;
+        $(function () {
+            init_FZ();
+            mini.parse();
+            grid = mini.get("datagrid1");
+            //grid.load();
+            search();
+            drawCell();
+
+            init();
+            bindEvent();
+        })
+
+        function drawCell() {
+            grid.on("drawcell", function (e) {
+                var record = e.record,
+                    column = e.column,
+                    field = e.field,
+                    value = e.value;
+
+                //详情
+                if (column.name == "dtl") {
+                    e.cellStyle = "text-align:center";
+                    if (!FZ_Num) {
+                        e.cellHtml += '<a style="color:blue;" href="javascript:check(\'' + record.uid + '\', 1)">通过</a>';
+                        e.cellHtml += '&nbsp;&nbsp;&nbsp;&nbsp;';
+                        e.cellHtml += '<a style="color:blue;" href="javascript:check(\'' + record.uid + '\', 0)">不通过</a>';
+                    }
+                }
+
+                if (column.name == "photo") {
+                    var photo = servUrl_AppData + '/photo/' + record.photo;
+
+                    e.cellStyle = "text-align:center";
+                    if (FZ_Num) {
+                        e.cellHtml = '<a href="javascript:void(0)"><img src="' + photo + '" class="photo-img" /></a>';
+                    } else {
+                        e.cellHtml = '<a href="javascript:UserAllInfo(\'' + record.uid + '\')"><img src="' + photo + '" class="photo-img" /></a>';
+                    }
+
+                }
+
+                if (column.name == "pay_mny") {
+                    var mny = record.pay_mny;
+                    if (mny == null) { mny = '0'; }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="red">￥' + mny + '</span>';
+                    e.cellHtml += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                if (column.name == "dtm_pay") {
+                    var dtm = record.dtm_pay;
+                    if (dtm == null) { dtm = ''; }
+                    else { dtm = dtm.replace(' ', '<br/>'); }
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span class="blue">' + dtm + '</span>';
+                }
+                if (column.name == "dtm_create") {
+                    var dtm = record.dtm_create;
+                    if (dtm == null) { dtm = ''; }
+                    dtm = dtm.replace(' ', '<br/>');
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + dtm + '</span>';
+                }
+                if (column.name == "first_time") {
+                    var dtm = record.first_time;
+                    if (dtm == null) { dtm = ''; }
+                    dtm = dtm.replace(' ', '<br/>');
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + dtm + '</span>';
+                }
+                if (column.name == "least_time") {
+                    var dtm = record.least_time;
+                    if (dtm == null) { dtm = ''; }
+                    dtm = dtm.replace(' ', '<br/>');
+
+                    e.cellStyle = "text-align:center";
+                    e.cellHtml = '<span>' + dtm + '</span>';
+                }
+                if (column.name == "least_time2") {
+                    var least_time = record.least_time;
+                    var dtm = new Date().getTime();
+                    least_time = new Date(least_time).getTime();
+                    var diff_time = dtm - least_time;
+                    var min = Math.floor(diff_time / (1000 * 60));
+                    if (min >= 1 && min < 60) {
+                        e.cellStyle = "text-align:left";
+                        e.cellHtml = '<span style="color:blue;font-size:12px;font-weight: bold;">' + min + '分钟</span>';
+                    }
+                    if (min >= 60 && min < 60 * 24) {
+                        min = Math.floor(diff_time / (1000 * 60 * 60));
+                        e.cellStyle = "text-align:left";
+                        e.cellHtml = '<span style="color:blue;font-size:12px;font-weight: bold;">' + min + '小时</span>';
+                    }
+                    if (min >= 60 * 24) {
+                        min = Math.floor(diff_time / (1000 * 60 * 60 * 24));
+                        e.cellStyle = "text-align:left";
+                        e.cellHtml = '<span style="color:red;font-size:12px;font-weight: bold;">' + min + '天</span>';
+                    }
+                }
+                
+
+                if (column.field == "coin_total") {
+                    var coin_total = record.coin_total;
+                    if (coin_total == null) { coin_total=''}
+                    e.cellStyle = "text-align:right";
+                    e.cellHtml = '<span style="color:red">' + coin_total + '</span>';
+                }
+                if (column.field == "coin") {
+                    var coin = record.coin;
+                    if (coin == null) { coin = '' }
+                    e.cellStyle = "text-align:right";
+                    e.cellHtml = '<span style="color:red">' + coin + '</span>';
+                }
+                if (column.field == "score_total") {
+                    var score_total = record.score_total;
+                    if (score_total == null) { score_total = '' }
+                    e.cellStyle = "text-align:right";
+                    e.cellHtml = '<span style="color:blue">' + score_total + '</span>';
+                }
+                if (column.field == "score") {
+                    var score = record.score;
+                    if (score == null) { score = '' }
+                    e.cellStyle = "text-align:right";
+                    e.cellHtml = '<span style="color:blue">' + score + '</span>';
+                }
+                if (column.field == "vip_endtime") {
+                    var vip_endtime = record.vip_endtime;
+                    if (vip_endtime == "1900-01-01 00:00:00 " || vip_endtime == null) {
+                        vip_endtime = '';
+                        e.cellStyle = "text-align:left";
+                        e.cellHtml = '<span>' + vip_endtime + '</span>';
+                    } else {
+                        dtm = new Date().getTime();
+                        dtm_endtime = new Date(vip_endtime).getTime();
+                        diff_time = dtm_endtime - dtm;
+                        vip_endtime = Math.floor(diff_time / (1000 * 60));
+                        if (vip_endtime >= 1 && vip_endtime < 60) {
+                            e.cellStyle = "text-align:left";
+                            e.cellHtml = '<span style="color:red;font-size:14px;font-weight: bold;">' + vip_endtime + '分钟</span>';
+                        }
+                        if (vip_endtime >= 60 && vip_endtime < 60 * 24) {
+                            vip_endtime = Math.floor(diff_time / (1000 * 60 * 60));
+                            e.cellStyle = "text-align:left";
+                            e.cellHtml = '<span style="color:#CCFF99;font-size:14px;font-weight: bold;">' + vip_endtime + '小时</span>';
+                        }
+                        if (vip_endtime >= 60 * 24) {
+                            vip_endtime = Math.floor(diff_time / (1000 * 60 * 60 * 24));
+                            e.cellStyle = "text-align:left";
+                            e.cellHtml = '<span style="color:#00FF00;font-size:14px;font-weight: bold;">' + vip_endtime + '天</span>';
+                        }
+                    }
+                    
+                }
+            });
+        }
+    </script>
+
+    <script>
+        var servUrl_AppData = '@ViewData["servUrl_AppData"]';
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#datagrid1").height(parentHeight - 110);
+        }
+
+        function init_FZ() {
+            //分站数据过滤，通过框架页面获取相关参数
+            FZ_Num = $(window.parent.frames["topFrame"].document).find("#sys_user_comment").val();
+            if (FZ_Num) {
+                $("#fz_tag").val(FZ_Num);
+                //处理相关元素
+                $("#fz_tag").attr("disabled", "disabled");
+                $("#fz_hide").hide();
+            }
+        }
+
+        function bindEvent() {
+        }
+
+        function check(uid, tag) {
+            var wx_check = '';
+            if (tag == 1) {
+                wx_check = "通过";
+            }
+            if (tag == 0) {
+                wx_check = "未通过";
+            }
+
+            if (wx_check) {
+                //后台修改
+                $.ajax({
+                    type: "POST",
+                    url: "/Admin1/CheckWx",
+                    data: { "uid": uid, "wx_check": wx_check },
+                    success: function (data) {
+                        data = JSON.parse(data)
+                        if (data.state == "1") {
+                            grid.reload();
+                        }
+                        else {
+                            alert(data.msg);
+                        }
+                    }
+                });
+            }
+        }
+
+        function search() {
+
+            var wx_check = $("#wx_check").val();
+            var key = $("#key").val();
+            var wxnick = $("#wxnick").val();
+
+            var dtm_start = mini.get("dtm_start").getText();
+            var dtm_end = mini.get("dtm_end").getText();
+
+            var fz_tag = $("#fz_tag").val();
+
+            var srot = $("#srot").val();
+
+            if (FZ_Num) {
+                fz_tag = FZ_Num;
+            }
+
+            grid.load({
+                "start": dtm_start,
+                "end": dtm_end,
+                "wx_check": wx_check,
+                "key": key,
+                "wxnick": wxnick,
+                "fz_tag": fz_tag,
+                "sort": srot
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">用户管理</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+
+        <div class="sys-content-border" style="padding:8px 3px;">
+            起始时间: <input id="dtm_start" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["start"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            截止时间: <input id="dtm_end" format="yyyy-MM-dd" class="mini-datepicker" style="width:120px;" value="@ViewData["end"]" /> &nbsp;&nbsp;&nbsp;&nbsp;
+                  <span id="fz_hide">
+                      审核状态:
+                      <select id="wx_check" style="height:24px;">
+                          <option value="" selected="selected">全部</option>
+                          <option value="待审核">待审核</option>
+                          <option value="通过">通过</option>
+                          <option value="未通过">未通过</option>
+                      </select>&nbsp;&nbsp;&nbsp;&nbsp;
+                      排序:
+                      <select id="srot" style="height:20px;">
+                          <option value="" selected="selected">默认</option>
+                          <option value="least_time desc">最近上线</option>
+                          <option value="coin_total desc">总金币</option>
+                          <option value="coin desc">金币</option>
+                          <option value="score_total desc">总积分</option>
+                          <option value="score desc">积分</option>
+                      </select>&nbsp;&nbsp;&nbsp;&nbsp;
+                      关键词:<input type="text" class="txt" id="key" />&nbsp;(uid,手机号码,微信号码,昵称)&nbsp;&nbsp;&nbsp;&nbsp;
+
+                      微信查询:<input type="text" class="txt" id="wxnick" />&nbsp;(微信昵称)&nbsp;&nbsp;&nbsp;&nbsp;
+                  </span>
+            渠道:
+            <select id="fz_tag" style="height:20px;">
+                <option value="" selected="selected">全部</option>
+                <option value="1001">1001</option>
+                <option value="1002">1002</option>
+                <option value="1003">1003</option>
+                <option value="1004">1004</option>
+                <option value="1005">1005</option>
+                
+                <option value="1006">1006</option>
+                <option value="1007">1007</option>
+                <option value="1008">1008</option>
+                <option value="1009">1009</option>
+                <option value="5678">5678</option>
+               
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input id="btn_search" type="button" class="sys-btn" value="查找" onclick="search()" />
+        </div>
+
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:600px; margin-top:5px;"
+             url="/Admin1/GetCheckWxData" idfield="id" allowresize="true" multiselect="true"
+             sizelist="[20,50,100,1000]" pagesize="50">
+            <div property="columns">
+                <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+                <div name="first_time" width="60" headeralign="center" align="center" allowsort="false">注册时间</div>
+                <div name="photo" width="60" renderer="onGenderRenderer" align="center" headeralign="center">头像</div>
+                <div field="nick" width="60" headeralign="center" align="left" allowsort="false">昵称</div>
+                <div field="sex" width="50" headeralign="center" align="center" allowsort="false">性别</div>
+                <div name="least_time" width="60" headeralign="center" align="center" allowsort="false">最近上线</div>
+                <div name="least_time2" width="40" headeralign="center" align="center" allowsort="false">-</div>
+                <div field="coin_total" width="50" headeralign="center" align="center" allowsort="false">总金币</div>
+                <div field="coin" width="50" headeralign="center" align="center" allowsort="false">可用金币</div>
+                <div field="score_total" width="50" headeralign="center" align="center" allowsort="false">总积分</div>
+                <div field="score" width="50" headeralign="center" align="center" allowsort="false">可用积分</div>
+                <div field="member" width="50" headeralign="center" align="left" allowsort="false">会员</div>
+                <div field="vip_endtime" width="50" headeralign="center" align="center" allowsort="false">到期</div>
+                <div field="out_id" width="100" headeralign="center" align="center" allowsort="false">外部id</div>
+                <div field="tel" width="80" headeralign="center" align="center" allowsort="false">绑定手机</div>
+                <div field="wx" width="80" headeralign="center" align="center" allowsort="false">微信号</div>
+                <div field="wx_check" width="80" headeralign="center" align="center" allowsort="false">审核状态</div>
+
+                <div field="risk_tip" width="80" headeralign="center" align="center" allowsort="false">风险提示</div>
+
+                <div field="comment2" width="40" headeralign="center" align="center" allowsort="false">备注</div>
+                <div field="fz_tag" width="50" headeralign="center" align="center" allowsort="false">渠道</div>
+                <div name="dtl" width="100" headeralign="center" align="center" allowsort="false">操作</div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>
