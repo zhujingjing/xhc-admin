@@ -1,4 +1,4 @@
-﻿
+
 
 <!DOCTYPE html>
 
@@ -13,6 +13,10 @@
     <link href="~/Styles/public.css?id=1" rel="stylesheet" />
     <script src="~/Scripts/public.js?id=15"></script>
     <style>
+    html body form{
+        margin:0;
+        padding:0;
+    }
         .sys-summary {
             display: inline-block;
             text-align: center;
@@ -56,21 +60,100 @@
         .watit {
             color: gray;
         }
+
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .stats-box {
+            flex: 1;
+            min-width: 180px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stats-box-blue {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 1px solid #90caf9;
+        }
+
+        .stats-box-green {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border: 1px solid #a5d6a7;
+        }
+
+        .stats-box-orange {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 1px solid #ffcc80;
+        }
+
+        .stats-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+            text-align: center;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .stats-item {
+            font-size: 15px;
+            margin: 8px 0;
+            padding: 6px 8px;
+            background-color: rgba(255,255,255,0.6);
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-label {
+            color: #555;
+            font-weight: 500;
+        }
+
+        .stats-value {
+            color: #ff6a00;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .stats-no-data {
+            text-align: center;
+            color: #999;
+            padding: 15px;
+            font-style: italic;
+        }
     </style>
 
     <script type="text/javascript">
         var servUrl_AppData = '@ViewData["servUrl_AppData"]';
         var uid = '@ViewData["id"]';
         var grid;
+
+        function formatNumber(num) {
+            var number = parseFloat(num);
+            if (isNaN(number)) {
+                return num;
+            }
+            if (number >= 1000) {
+                return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+            return number.toString();
+        }
+
         $(function () {
-            //设置表格的高度
             var parentHeight = $(window).height();
             var width = $("#desc").width();
-            $("#datagrid1").height(parentHeight - 196);
-            $("#datagrid2").height(parentHeight - 196);
+            $("#datagrid1").height(parentHeight - 290);
+            $("#datagrid2").height(parentHeight - 290);
 
-            $("#datagrid1, #cnd_1").width(width / 2 - 100);
-            $("#datagrid2, #cnd_2").width(width / 2 + 100);
+            $("#datagrid1,#cnd_1").width(width / 2 -5 );
+            $("#datagrid2,#cnd_2").width(width / 2 -5);
 
             mini.parse();
 
@@ -226,11 +309,85 @@
 </head>
 <body>
     <form id="form1">
-        <div id="desc" style="padding: 15px; margin-bottom: 5px; border: solid 1px #dcdcdc;">
-            <span class="mny">总金币:<br /><span class="gray">@ViewData["coin_total"]</span></span>
-            <span class="mny">可用:<br /><span class="gray">@ViewData["coin_canuse"]</span></span>
-            <span class="mny">已用:<br /><span class="gray">@ViewData["coin_used"]</span></span>
+        <div id="desc" style="margin-bottom:8px;">
+            <div class="stats-container">
+                <div class="stats-box stats-box-blue">
+                    <div class="stats-title">金币概况</div>
+                    <div class="stats-item">
+                        <span class="stats-label">总金币</span>
+                        <span class="stats-value" id="coin_total">@ViewData["coin_total"]</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">可用</span>
+                        <span class="stats-value" id="coin_canuse">@ViewData["coin_canuse"]</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">已用</span>
+                        <span class="stats-value" id="coin_used">@ViewData["coin_used"]</span>
+                    </div>
+                </div>
+
+                <div class="stats-box stats-box-green">
+                    <div class="stats-title">金币来源(前3)</div>
+                    @{
+                        var coinSourceStats = ViewData["coin_source_stats"] as System.Data.DataTable;
+                        if (coinSourceStats != null && coinSourceStats.Rows.Count > 0)
+                        {
+                            for (int i = 0; i < coinSourceStats.Rows.Count; i++)
+                            {
+                                var row = coinSourceStats.Rows[i];
+                                <div class="stats-item">
+                                    <span class="stats-label">@row["source_type"]</span>
+                                    <span class="stats-value">@row["total_amount"]</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="stats-no-data">暂无数据</div>
+                        }
+                    }
+                </div>
+
+                <div class="stats-box stats-box-orange">
+                    <div class="stats-title">金币消耗(前3)</div>
+                    @{
+                        var coinConsumeStats = ViewData["coin_consume_stats"] as System.Data.DataTable;
+                        if (coinConsumeStats != null && coinConsumeStats.Rows.Count > 0)
+                        {
+                            for (int i = 0; i < coinConsumeStats.Rows.Count; i++)
+                            {
+                                var row = coinConsumeStats.Rows[i];
+                                <div class="stats-item">
+                                    <span class="stats-label">@row["consume_type"]</span>
+                                    <span class="stats-value">@row["total_amount"]</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="stats-no-data">暂无数据</div>
+                        }
+                    }
+                </div>
+            </div>
         </div>
+
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $('#coin_total').text(formatNumber($('#coin_total').text()));
+                $('#coin_canuse').text(formatNumber($('#coin_canuse').text()));
+                $('#coin_used').text(formatNumber($('#coin_used').text()));
+
+                $('.stats-box-green .stats-value').each(function() {
+                    $(this).text(formatNumber($(this).text()));
+                });
+
+                $('.stats-box-orange .stats-value').each(function() {
+                    $(this).text(formatNumber($(this).text()));
+                });
+            });
+        </script>
 
         <div class="sys-content-border ub" style="padding:8px 3px;">
             <div id="cnd_1" style="">
@@ -274,13 +431,13 @@
                          url="/Admin1/GetCoinList/@ViewData["id"]?bll=增加" idfield="id" allowresize="true"
                          sizelist="[20,100,1000]" pagesize="20">
                         <div property="columns">
-                            <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
+                            <div field="xh" width="20" headeralign="center" align="center" allowsort="false">序号</div>
 
-                            <div field="dtm" width="120" renderer="onGenderRenderer" align="center" headeralign="center">操作时间</div>
-                            <div name="amount" width="80" renderer="onGenderRenderer" align="center" headeralign="center">金币</div>
-                            <div name="type" width="80" renderer="onGenderRenderer" align="center" headeralign="center">类型</div>
-                            <div field="type_dtl" width="80" renderer="onGenderRenderer" align="center" headeralign="center">类型详情</div>
-                            <div field="comment" width="80" renderer="onGenderRenderer" align="center" headeralign="center">备注</div>
+                            <div field="dtm" width="90" renderer="onGenderRenderer" align="center" headeralign="center">操作时间</div>
+                            <div name="amount" width="60" renderer="onGenderRenderer" align="center" headeralign="center">金币</div>
+                            <div name="type" width="60" renderer="onGenderRenderer" align="center" headeralign="center">类型</div>
+                            <div field="type_dtl" width="60" renderer="onGenderRenderer" align="center" headeralign="center">类型详情</div>
+                            <div field="comment" width="60" renderer="onGenderRenderer" align="center" headeralign="center">备注</div>
                         </div>
                     </div>
                 </td>
@@ -291,12 +448,12 @@
                         <div property="columns">
                             <div field="xh" width="40" headeralign="center" align="center" allowsort="false">序号</div>
 
-                            <div field="dtm" width="100" renderer="onGenderRenderer" align="center" headeralign="center">操作时间</div>
-                            <div name="amount" width="70" renderer="onGenderRenderer" align="center" headeralign="center">金币</div>
-                            <div name="type" width="70" renderer="onGenderRenderer" align="center" headeralign="center">类型</div>
+                            <div field="dtm" width="80" renderer="onGenderRenderer" align="center" headeralign="center">操作时间</div>
+                            <div name="amount" width="80" renderer="onGenderRenderer" align="center" headeralign="center">金币</div>
+                            <div name="type" width="80" renderer="onGenderRenderer" align="center" headeralign="center">类型</div>
                             <div field="type_dtl" width="80" renderer="onGenderRenderer" align="center" headeralign="center">类型详情</div>
                             <div name="photo2" width="100" renderer="onGenderRenderer" align="center" headeralign="center">对象</div>
-                            <div field="comment" width="70" renderer="onGenderRenderer" align="center" headeralign="center">备注</div>
+                            <div field="comment" width="80" renderer="onGenderRenderer" align="center" headeralign="center">备注</div>
                         </div>
                     </div>
                 </td>

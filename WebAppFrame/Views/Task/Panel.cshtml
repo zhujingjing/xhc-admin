@@ -1,0 +1,552 @@
+﻿
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <title>任务面板</title>
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=12"></script>
+    <style type="text/css">
+        body {
+            font-family: tahoma, arial, sans-serif;
+            font-size: 12px;
+        }
+        .font-bold {
+            font-weight: bold;
+        }
+        .right {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .left {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+    </style>
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent).height();
+            $("#grid1").height(parentHeight - 120);
+
+            mini.parse();
+
+            grid = mini.get("grid1");
+
+            init();
+
+            // 加载任务分类列表
+            loadTaskCategories();
+            
+            // 加载任务数据
+            loadData();
+            
+            // 绑定面板按钮事件
+            document.getElementById("btn_close_panel").onclick = hideHideSettingsPanel;
+            document.getElementById("btn_cancel_settings").onclick = hideHideSettingsPanel;
+            document.getElementById("btn_save_settings").onclick = saveHideSettings;
+        })
+
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#grid1").height(parentHeight - 110);
+        }
+
+        // 获取当前登录用户名
+        function getCurrentUserName() {
+            var operator_name = "";
+            if (window.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            if (window.parent.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            return operator_name;
+        }
+
+        // 渲染优先级
+        function renderPriority(e) {
+            var value = e.value;
+            if (value == 0) return '<span style="color: black;">低</span>';
+            if (value == 1) return '<span style="color: orange;">中</span>';
+            if (value == 2) return '<span style="color: red;">高</span>';
+            return value;
+        }
+
+        // 渲染状态
+        function renderStatus(e) {
+            var value = e.value;
+            if (value == 0) return '<span style="color: red;">待处理</span>';
+            if (value == 1) return '<span style="color: orange;">处理中</span>';
+            if (value == 2) return '<span style="color: blue;">已完成</span>';
+            if (value == 3) return '<span style="color: green;">已审核</span>';
+            return value;
+        }
+
+        // 渲染任务名称，添加点击事件
+        function renderTaskName(e) {
+            var record = e.record;
+            var taskId = record.TaskID;
+            var taskName = record.TaskName;
+            return '<a href="javascript:viewTaskDetail(\'' + taskId + '\')" style="color: blue; text-decoration: underline; cursor: pointer;">' + taskName + '</a>';
+        }
+
+        // 渲染外部链接
+        function renderExternalUrl(e) {
+            var record = e.record;
+            var fullExternalUrl = record.FullExternalUrl;
+            if (fullExternalUrl) {
+                return '<a href="' + fullExternalUrl + '" target="_blank" style="color: #409eff; text-decoration: underline; cursor: pointer;">访问链接</a>';
+            }
+            return '';
+        }
+
+        // 加载任务分类列表
+        function loadTaskCategories() {
+            $.ajax({
+                url: "/Task/GetTaskCategoryList",
+                type: "get",
+                data: { categoryName: "" },
+                success: function (text) {
+                    var result = mini.decode(text);
+                    if (result.data) {
+                        var categories = mini.decode(result.data);
+                        
+                        // 加载到主页面的分类下拉框
+                        var categorySelect = document.getElementById("categoryFilter");
+                        categorySelect.innerHTML = '<option value="">全部分类</option>';
+                        for (var i = 0; i < categories.length; i++) {
+                            var option = document.createElement("option");
+                            option.value = categories[i].CategoryID;
+                            option.text = categories[i].CategoryName;
+                            categorySelect.appendChild(option);
+                        }
+                        
+                        // 加载到不显示设置面板 - 生成分类与状态的组合列表
+                var categoryStatusList = document.getElementById("categoryStatusList");
+                categoryStatusList.innerHTML = '';
+                
+                // 状态列表
+                var statuses = [
+                    { value: 0, text: "待处理" },
+                    { value: 1, text: "处理中" },
+                    { value: 2, text: "已完成" },
+                    { value: 3, text: "已审核" }
+                ];
+                
+                for (var i = 0; i < categories.length; i++) {
+                    var category = categories[i];
+                    
+                    // 创建分类标题
+                    var categoryTitle = document.createElement("div");
+                    categoryTitle.style.fontWeight = "bold";
+                    categoryTitle.style.marginTop = "15px";
+                    categoryTitle.style.marginBottom = "8px";
+                    categoryTitle.style.color = "#333";
+                    categoryTitle.textContent = category.CategoryName;
+                    categoryStatusList.appendChild(categoryTitle);
+                    
+                    // 创建状态列表
+                    var statusContainer = document.createElement("div");
+                    statusContainer.style.marginLeft = "20px";
+                    statusContainer.style.display = "flex";
+                    statusContainer.style.flexWrap = "wrap";
+                    statusContainer.style.gap = "15px";
+                    
+                    for (var j = 0; j < statuses.length; j++) {
+                        var status = statuses[j];
+                        var label = document.createElement("label");
+                        label.style.display = "inline-block";
+                        label.style.marginBottom = "6px";
+                        label.style.width = "80px";
+                        label.innerHTML = '<input type="checkbox" value="' + category.CategoryID + '-' + status.value + '" class="category-status-checkbox"> ' + status.text;
+                        statusContainer.appendChild(label);
+                    }
+                    
+                    categoryStatusList.appendChild(statusContainer);
+                }
+                
+                // 绑定批量操作按钮事件
+                bindBatchOperationEvents();
+                        
+                        // 加载保存的设置
+                        loadSavedSettings();
+                    }
+                },
+                error: function () {
+                    mini.alert("网络错误");
+                }
+            });
+        }
+
+        // 加载数据
+        function loadData() {
+            var status = document.getElementById("statusFilter").value || "";
+            var priority = document.getElementById("priorityFilter").value || "";
+            var categoryId = document.getElementById("categoryFilter").value || "";
+            var assignedTo = getCurrentUserName();
+            
+            // 直接传递参数对象，不需要指定url
+            grid.load({
+                assignedTo: assignedTo,
+                status: status,
+                priority: priority,
+                categoryId: categoryId
+            }, function(data) {
+                // 加载完成后根据设置过滤数据
+                filterTasksBySettings();
+            });
+        }
+
+        // 根据设置过滤任务
+        function filterTasksBySettings() {
+            var savedSettings = localStorage.getItem("taskHideSettings");
+            if (!savedSettings) {
+                return; // 没有设置，不需要过滤
+            }
+            
+            var settings = JSON.parse(savedSettings);
+            var hiddenCategoryStatuses = settings.hiddenCategoryStatuses || [];
+            
+            // 获取所有任务数据
+            var data = grid.getData();
+            var filteredData = [];
+            
+            // 过滤数据
+            for (var i = 0; i < data.length; i++) {
+                var task = data[i];
+                
+                // 检查分类和状态的组合是否在隐藏列表中
+                var categoryStatusKey = task.CategoryID + '-' + task.Status;
+                if (hiddenCategoryStatuses.includes(categoryStatusKey)) {
+                    continue;
+                }
+                
+                // 通过过滤，添加到结果中
+                filteredData.push(task);
+            }
+            
+            // 更新表格数据
+            grid.setData(filteredData);
+        }
+
+        // 开始任务
+        function startTask(taskId) {
+            mini.confirm("确定要开始该任务吗？", "提示", function (action) {
+                if (action == "ok") {
+                    var operatorName = getCurrentUserName();
+                    $.ajax({
+                        url: "/Task/UpdateTaskStatus",
+                        type: "post",
+                        data: { id: taskId, status: 1, operatorName: operatorName },
+                        success: function (text) {
+                            var result = mini.decode(text);
+                            if (result.state == "1" || result.state == 1) {
+                                mini.alert("任务已开始");
+                                loadData();
+                            } else {
+                                mini.alert(result.msg || "操作失败");
+                            }
+                        },
+                        error: function () {
+                            mini.alert("网络错误");
+                        }
+                    });
+                }
+            });
+        }
+
+        // 完成任务
+        function completeTask(taskId) {
+            mini.confirm("确定要完成该任务吗？", "提示", function (action) {
+                if (action == "ok") {
+                    var operatorName = getCurrentUserName();
+                    $.ajax({
+                        url: "/Task/UpdateTaskStatus",
+                        type: "post",
+                        data: { id: taskId, status: 2, operatorName: operatorName },
+                        success: function (text) {
+                            var result = mini.decode(text);
+                            if (result.state == "1" || result.state == 1) {
+                                mini.alert("任务已完成");
+                                loadData();
+                            } else {
+                                mini.alert(result.msg || "操作失败");
+                            }
+                        },
+                        error: function () {
+                            mini.alert("网络错误");
+                        }
+                    });
+                }
+            });
+        }
+
+        // 查看任务详情
+        function viewTaskDetail(taskId) {
+            var win = mini.open({
+                url: "/Task/Detail?id=" + taskId,
+                title: "任务详情",
+                width:"100%",
+                height: "100%",
+                showMaxButton: true,
+                showMinButton: true,
+                showCloseButton: true,
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        loadData();
+                    }
+                }
+            });
+        }
+
+        // 批量操作
+        function batchOperation() {
+            var rows = grid.getSelecteds();
+            if (rows.length == 0) {
+                mini.alert("请选择要操作的任务");
+                return;
+            }
+
+            // 创建自定义弹窗
+            var html = '<div style="padding: 20px;">' +
+                '<h4 style="margin-bottom: 15px;">请选择操作类型：</h4>' +
+                '<div style="margin-bottom: 10px;">' +
+                '<input type="radio" name="operationType" value="1" checked> 开始任务<br/>' +
+                '<input type="radio" name="operationType" value="2"> 完成任务' +
+                '</div>' +
+                '<div style="text-align: right; margin-top: 20px;">' +
+                '<button id="btnOk" style="margin-right: 10px; padding: 5px 15px; background-color: #E3F2FD; color: #1976D2; border: 1px solid #BBDEFB; cursor: pointer;">确定</button>' +
+                '<button id="btnCancel" style="padding: 5px 15px; background-color: #FFF; color: #333; border: 1px solid #DDD; cursor: pointer;">取消</button>' +
+                '</div>' +
+                '</div>';
+
+            var win = mini.open({
+                title: "批量操作",
+                width: 300,
+                height: 250,
+                showCloseButton: true,
+                showMaxButton: false,
+                showMinButton: false,
+                url: "about:blank",
+                onload: function () {
+                    var iframe = this.getIFrameEl();
+                    iframe.contentDocument.body.innerHTML = html;
+                    
+                    // 绑定事件
+                    iframe.contentDocument.getElementById("btnOk").onclick = function() {
+                        var operationType = iframe.contentDocument.querySelector('input[name="operationType"]:checked').value;
+                        var status = operationType == "1" ? 1 : 2;
+                        var ids = [];
+                        for (var i = 0; i < rows.length; i++) {
+                            ids.push(rows[i].TaskID);
+                        }
+                        var operatorName = getCurrentUserName();
+
+                        $.ajax({
+                            url: "/Task/BatchUpdateTaskStatus",
+                            type: "post",
+                            data: { ids: ids.join(","), status: status, operatorName: operatorName },
+                            success: function (text) {
+                                var result = mini.decode(text);
+                                if (result.state == "1" || result.state == 1) {
+                                    mini.alert("批量操作成功");
+                                    loadData();
+                                } else {
+                                    mini.alert(result.msg || "操作失败");
+                                }
+                            },
+                            error: function () {
+                                mini.alert("网络错误");
+                            }
+                        });
+                        win.destroy();
+                    };
+                    
+                    iframe.contentDocument.getElementById("btnCancel").onclick = function() {
+                        win.destroy();
+                    };
+                }
+            });
+        }
+
+        // 显示不显示设置面板
+        function showHideSettingsPanel() {
+            document.getElementById("hideSettingsOverlay").style.display = "block";
+            document.getElementById("hideSettingsPanel").style.display = "block";
+        }
+
+        // 隐藏不显示设置面板
+        function hideHideSettingsPanel() {
+            document.getElementById("hideSettingsOverlay").style.display = "none";
+            document.getElementById("hideSettingsPanel").style.display = "none";
+            // 不刷新数据，只有点击保存设置才刷新
+        }
+
+        // 加载保存的设置
+        function loadSavedSettings() {
+            var savedSettings = localStorage.getItem("taskHideSettings");
+            if (savedSettings) {
+                var settings = JSON.parse(savedSettings);
+                
+                // 加载分类与状态组合设置
+                if (settings.hiddenCategoryStatuses) {
+                    var checkboxes = document.getElementsByClassName("category-status-checkbox");
+                    for (var i = 0; i < checkboxes.length; i++) {
+                        var checkbox = checkboxes[i];
+                        checkbox.checked = settings.hiddenCategoryStatuses.includes(checkbox.value);
+                    }
+                }
+            }
+        }
+
+        // 绑定批量操作按钮事件
+        function bindBatchOperationEvents() {
+            // 状态类型复选框
+            var statusCheckboxes = document.getElementsByClassName("status-checkbox");
+            for (var i = 0; i < statusCheckboxes.length; i++) {
+                statusCheckboxes[i].onchange = function() {
+                    var status = this.getAttribute("data-status");
+                    var isChecked = this.checked;
+                    var checkboxes = document.getElementsByClassName("category-status-checkbox");
+                    for (var j = 0; j < checkboxes.length; j++) {
+                        var checkbox = checkboxes[j];
+                        if (checkbox.value.endsWith("-" + status)) {
+                            checkbox.checked = isChecked;
+                        }
+                    }
+                };
+            }
+        }
+
+        // 保存不显示设置
+        function saveHideSettings() {
+            // 收集分类与状态组合设置
+            var hiddenCategoryStatuses = [];
+            var checkboxes = document.getElementsByClassName("category-status-checkbox");
+            for (var i = 0; i < checkboxes.length; i++) {
+                var checkbox = checkboxes[i];
+                if (checkbox.checked) {
+                    hiddenCategoryStatuses.push(checkbox.value);
+                }
+            }
+            
+            // 保存到localStorage
+            var settings = {
+                hiddenCategoryStatuses: hiddenCategoryStatuses
+            };
+            localStorage.setItem("taskHideSettings", JSON.stringify(settings));
+            
+            // 重新加载数据
+            loadData();
+            
+            // 隐藏面板
+            hideHideSettingsPanel();
+        }
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">任务管理</a></li>
+            <li><a href="#">任务面板</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+        <div class="sys-content-border" style="padding:8px 3px;">
+            状态: 
+            <select id="statusFilter" style="width:150px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;">
+                <option value="">全部状态</option>
+                <option value="0">待处理</option>
+                <option value="1">处理中</option>
+                <option value="2">已完成</option>
+                <option value="3">已审核</option>
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            优先级: 
+            <select id="priorityFilter" style="width:100px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;">
+                <option value="">全部优先级</option>
+                <option value="0">低</option>
+                <option value="1">中</option>
+                <option value="2">高</option>
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_refresh" type="button" class="sys-btn" value="刷新" onclick="loadData()" style="background-color: #E3F2FD; color: #1976D2;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_batch" type="button" class="sys-btn" value="批量操作" onclick="batchOperation()" style="background-color: #FFF3E0; color: #EF6C00;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            分类: 
+            <select id="categoryFilter" style="width:150px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;" onchange="loadData()">
+                <option value="">全部分类</option>
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_hide_settings" type="button" class="sys-btn" value="不显示设置" onclick="showHideSettingsPanel()" style="background-color: #E8F5E8; color: #2E7D32;" />
+        </div>
+        <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskList" idfield="TaskID" allowresize="true" multiselect="true"
+             sizelist="[50,100,200]" pagesize="50">
+            <div property="columns">
+                <div type="checkcolumn" width="30"></div>
+                <div field="TaskID" width="0" visible="false"></div>
+                <div field="Status" width="60" header="状态" allowSort="true" renderer="renderStatus"></div>
+                <div field="TaskName" width="200" header="任务名称" allowSort="true" renderer="renderTaskName"></div>
+                <div field="FullExternalUrl" width="60" header="外部链接" renderer="renderExternalUrl"></div>
+                <div field="Result" width="100" header="结果" allowSort="true"></div>
+                <div field="CategoryName" width="80" header="分类" allowSort="true"></div>
+                <div field="Description" width="300" header="任务描述"></div>
+                <div field="Priority" width="60" header="优先级" allowSort="true" renderer="renderPriority"></div>
+                
+                <div field="Deadline" width="120" header="截止时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="Creator" width="80" header="创建人" allowSort="true"></div>
+                <div field="CreateTime" width="80" header="创建时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+
+            </div>
+        </div>
+        
+        <!-- 不显示设置面板 -->
+        <div id="hideSettingsOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9998;"></div>
+        <div id="hideSettingsPanel" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 450px; background-color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 9999; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <h3 style="margin: 0; color: #333;">不显示设置</h3>
+                <span id="btn_close_panel" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #999; display: inline-block; padding: 0 5px;">&times;</span>
+            </div>
+            <div style="max-height: 320px; overflow-y: auto;">
+                <h4 style="margin-top: 0; margin-bottom: 10px; color: #666;">分类与状态组合设置</h4>
+                
+                <!-- 状态类型批量选择 -->
+                <div style="margin-left: 20px; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 15px;">
+                    <label style="display: inline-block; margin-bottom: 6px; width: 80px;">
+                        <input type="checkbox" id="select-status-0" class="status-checkbox" data-status="0"> 待处理
+                    </label>
+                    <label style="display: inline-block; margin-bottom: 6px; width: 80px;">
+                        <input type="checkbox" id="select-status-1" class="status-checkbox" data-status="1"> 处理中
+                    </label>
+                    <label style="display: inline-block; margin-bottom: 6px; width: 80px;">
+                        <input type="checkbox" id="select-status-2" class="status-checkbox" data-status="2"> 已完成
+                    </label>
+                    <label style="display: inline-block; margin-bottom: 6px; width: 80px;">
+                        <input type="checkbox" id="select-status-3" class="status-checkbox" data-status="3"> 已审核
+                    </label>
+                </div>
+                
+                <div id="categoryStatusList" style="margin-bottom: 20px;">
+                    <!-- 分类与状态组合列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+                <span id="btn_save_settings" style="padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; display: inline-block;">保存设置</span>
+                <span id="btn_cancel_settings" style="padding: 8px 16px; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; display: inline-block;">取消</span>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

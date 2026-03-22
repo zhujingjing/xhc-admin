@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <title>任务分类管理</title>
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=12"></script>
+    <style type="text/css">
+        body {
+            font-family: tahoma, arial, sans-serif;
+            font-size: 12px;
+        }
+        .font-bold {
+            font-weight: bold;
+        }
+        .right {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .left {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+    </style>
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent).height();
+            $("#grid1").height(parentHeight - 120);
+
+            mini.parse();
+
+            grid = mini.get("grid1");
+
+            init();
+
+            // 加载分类数据
+            loadData();
+        })
+
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#grid1").height(parentHeight - 110);
+        }
+
+        // 获取当前登录用户名
+        function getCurrentUserName() {
+            var operator_name = "";
+            if (window.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            if (window.parent.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            return operator_name;
+        }
+
+        // 渲染操作按钮
+        function renderAction(e) {
+            var record = e.record;
+            var categoryId = record.CategoryID;
+            return '<a href="javascript:editCategory(\'' + categoryId + '\')" style="color:green;">编辑</a> | <a href="javascript:deleteCategory(\'' + categoryId + '\')" style="color:red;">删除</a>';
+        }
+
+        // 加载数据
+        function loadData() {
+            var categoryNameValue = mini.get("categoryName").getValue();
+            
+            // 直接使用grid.load方法，传递参数
+            grid.load({ categoryName: categoryNameValue });
+        }
+
+        // 搜索
+        function search() {
+            loadData();
+        }
+
+        // 新增分类
+        function addCategory() {
+            var win = mini.open({
+                url: "/Task/CategoryAdd",
+                title: "新增任务分类",
+                width: 800,
+                height: 650,
+                onload: function () {
+                    var iframe = this.getIFrameEl();
+                    var data = { action: "new" };
+                    iframe.contentWindow.SetData(data);
+                },
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        loadData();
+                    }
+                }
+            });
+        }
+
+        // 编辑分类
+        function editCategory(categoryId) {
+            var win = mini.open({
+                url: "/Task/CategoryAdd?id=" + categoryId,
+                title: "编辑任务分类",
+                width: 800,
+                height: 650,
+                onload: function () {
+                    var iframe = this.getIFrameEl();
+                    var data = { action: "edit", categoryId: categoryId };
+                    iframe.contentWindow.SetData(data);
+                },
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        loadData();
+                    }
+                }
+            });
+        }
+
+        // 删除分类
+        function deleteCategory(categoryId) {
+            if (!categoryId) {
+                mini.alert("请选择要删除的分类");
+                return;
+            }
+
+            mini.confirm("确定要删除该分类吗？", "提示", function (action) {
+                if (action == "ok") {
+                    $.ajax({
+                        url: "/Task/DeleteTaskCategory",
+                        type: "post",
+                        data: { id: categoryId },
+                        success: function (text) {
+                            var result = mini.decode(text);
+                            if (result.state == "1" || result.state == 1) {
+                                mini.alert("删除成功");
+                                loadData();
+                            } else {
+                                mini.alert(result.msg || "删除失败");
+                            }
+                        },
+                        error: function () {
+                            mini.alert("网络错误");
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">任务管理</a></li>
+            <li><a href="#">任务分类管理</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+        <div class="sys-content-border" style="padding:8px 3px;">
+            分类名称: 
+            <input id="categoryName" class="mini-textbox" style="width:200px;" placeholder="分类名称" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_search" type="button" class="sys-btn" value="搜索" onclick="search()" style="background-color: #E3F2FD; color: #1976D2;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_add" type="button" class="sys-btn" value="新增分类" onclick="addCategory()" style="background-color: #E8F5E9; color: #388E3C;" />
+        </div>
+        <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskCategoryList" idfield="CategoryID" allowresize="true"
+             sizelist="[50,100,200]" pagesize="50">
+            <div property="columns">
+                <div type="checkcolumn" width="30"></div>
+                <div field="CategoryID" width="0" visible="false"></div>
+                <div field="CategoryName" width="200" header="分类名称" allowSort="true"></div>
+                <div field="ParentName" width="150" header="父分类" allowSort="true"></div>
+                <div field="Description" width="300" header="分类描述"></div>
+                <div field="CreateTime" width="180" header="创建时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="action" width="150" header="操作" align="center" renderer="renderAction"></div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

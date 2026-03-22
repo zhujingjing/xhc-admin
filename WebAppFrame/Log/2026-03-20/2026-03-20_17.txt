@@ -1,0 +1,15 @@
+时间:2026/3/20 17:54:54-内容:ExecuteTaskGeneration started at: 2026/3/20 17:54:54
+时间:2026/3/20 17:54:55-内容:Found 0 schedules to execute
+时间:2026/3/20 17:54:55-内容:ExecuteTaskGeneration completed at: 2026/3/20 17:54:55, Duration: 29.9832ms, Generated tasks: 0
+时间:2026/3/20 17:55:12-内容:ExecuteTaskGeneration started at: 2026/3/20 17:55:12
+时间:2026/3/20 17:55:12-内容:Found 1 schedules to execute
+时间:2026/3/20 17:55:13-内容:Generated task: C端产品体验-核查问题 - 2026-03-20 (Template: C端产品体验-核查问题, AssignedTo: xhc_zjj)
+时间:2026/3/20 17:55:13-内容:ExecuteTaskGeneration completed at: 2026/3/20 17:55:13, Duration: 339.1714ms, Generated tasks: 1
+时间:2026/3/20 17:55:57-内容:ExecuteTaskGeneration started at: 2026/3/20 17:55:57
+时间:2026/3/20 17:55:57-内容:Found 1 schedules to execute
+时间:2026/3/20 17:55:57-内容:Task already generated today for template: C端产品体验-核查问题
+时间:2026/3/20 17:55:57-内容:ExecuteTaskGeneration completed at: 2026/3/20 17:55:57, Duration: 64.4726ms, Generated tasks: 0
+时间:2026/3/20 17:57:25-内容:TaskController.GetTaskList called with: assignedTo=xhc_zjj, status=, priority=
+时间:2026/3/20 17:57:25-内容:GetTaskList called with: assignedTo=xhc_zjj, status=, priority=
+时间:2026/3/20 17:59:24-内容:TaskController.GetTaskList called with: assignedTo=xhc_zjj, status=, priority=
+时间:2026/3/20 17:59:24-内容:GetTaskList called with: assignedTo=xhc_zjj, status=, priority=

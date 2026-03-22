@@ -43,43 +43,95 @@
             color: red;
         }
 
-        .mny {
-            display: inline-block;
-            width: 120px;
-            height: 40px;
-            line-height: 40px;
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .stats-box {
+            flex: 1;
+            min-width: 180px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stats-box-blue {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 1px solid #90caf9;
+        }
+
+        .stats-box-green {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border: 1px solid #a5d6a7;
+        }
+
+        .stats-box-orange {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 1px solid #ffcc80;
+        }
+
+        .stats-title {
             font-size: 18px;
             font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
             text-align: center;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
-            border-radius: 8px;
-            margin: 5px;
-            padding: 8px 5px;
-            height: auto;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 1px solid #dcdcdc;
-            transition: all 0.3s ease;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
         }
 
-        .mny:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        .stats-item {
+            font-size: 15px;
+            margin: 8px 0;
+            padding: 6px 8px;
+            background-color: rgba(255,255,255,0.6);
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .watit {
-            color: gray;
+        .stats-label {
+            color: #555;
+            font-weight: 500;
+        }
+
+        .stats-value {
+            color: #ff6a00;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .stats-no-data {
+            text-align: center;
+            color: #999;
+            padding: 15px;
+            font-style: italic;
         }
     </style>
 
     <script type="text/javascript">
         var servUrl_AppData = '@ViewData["servUrl_AppData"]';
         var grid;
+
+        function formatNumber(num) {
+            var number = parseFloat(num);
+            if (isNaN(number)) {
+                return num;
+            }
+            if (number >= 1000) {
+                return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+            return number.toString();
+        }
+
         $(function () {
-            //设置表格的高度
             var parentHeight = $(window).height();
             var width = $("#desc").width();
-            $("#datagrid1").height(parentHeight - 150);
-            $("#datagrid2").height(parentHeight - 150);
+            $("#datagrid1").height(parentHeight - 230);
+            $("#datagrid2").height(parentHeight - 230);
 
             mini.parse();
 
@@ -92,6 +144,7 @@
             drawCell2();
 
             init();
+
             deal_Num("score_total");
             deal_Num("score_canuse");
             deal_Num("score_used");
@@ -286,7 +339,7 @@
             //客户端汇总计算
             if (e.field == "pay_mny") {
                 e.cellStyle = "text-align:right";
-                e.cellHtml = '<span style="display:inline-block;margin:12px 0; font-size:18px;color:red; font-weight: bold;">￥' + e.cellHtml + '</span>';
+                e.cellHtml = '<span style="display:inline-block;margin:12px 0; font-size:16px;color:red; font-weight: bold;">￥' + e.cellHtml + '</span>';
             }
         }
         function deal_Num(id) {
@@ -304,23 +357,78 @@
 </head>
 <body>
     <form id="form1">
-        <div id="desc" style=" margin-bottom: 5px;">
-            <span class="mny">天数:<br /><span class="blue">@ViewData["register_days"]</span></span>
-            <span class="mny">得分:<br /><span class="blue">@ViewData["p_score"]</span></span>
-   
-            <span class="mny">总提现:<br /><span class="red">￥@ViewData["tx_total"]</span></span>
-            <span class="mny">待提现:<br /><span class="red">￥@ViewData["tx_ing"]</span></span>
-            <span class="mny">可兑换:<br /><span class="red">￥@ViewData["tx_can"]</span></span>
+        <div id="desc" style="margin-bottom:8px;">
+            <div class="stats-container">
+                <div class="stats-box stats-box-blue">
+                    <div class="stats-title">账户信息</div>
+                    <div class="stats-item">
+                        <span class="stats-label">注册天数</span>
+                        <span class="stats-value" id="register_days">@ViewData["register_days"]</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">得分</span>
+                        <span class="stats-value" id="p_score">@ViewData["p_score"]</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">***</span>
+                        <span class="stats-value" id="p_xxx">0</span>
+                    </div>
+                </div>
 
+                <div class="stats-box stats-box-green">
+                    <div class="stats-title">提现统计</div>
+                    <div class="stats-item">
+                        <span class="stats-label">总提现</span>
+                        <span class="stats-value" id="tx_total">@ViewData["tx_total"]</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">待提现</span>
+                        <span class="stats-value" id="tx_ing">@ViewData["tx_ing"]</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">可兑换</span>
+                        <span class="stats-value" id="tx_can">@ViewData["tx_can"]</span>
+                    </div>
+                </div>
+
+                <div class="stats-box stats-box-orange">
+                    <div class="stats-title">金币统计</div>
+                    <div class="stats-item">
+                        <span class="stats-label">总金币</span>
+                        <span class="stats-value" id="coin_total">@ViewData["coin_total"]</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">可用</span>
+                        <span class="stats-value" id="coin_canuse">@ViewData["coin_canuse"]</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">已用</span>
+                        <span class="stats-value" id="coin_used">@ViewData["coin_used"]</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:none;">
             <span class="mny">总积分:<br /><span id="score_total" class="blue">@ViewData["score_total"]</span></span>
             <span class="mny">可兑换:<br /><span id="score_canuse" class="blue">@ViewData["score_canuse"]</span></span>
             <span class="mny">已兑换:<br /><span id="score_used" class="blue">@ViewData["score_used"]</span></span>
-
-            <span class="mny">总金币:<br /><span class="gray">@ViewData["coin_total"]</span></span>
-            <span class="mny">可用:<br /><span class="gray">@ViewData["coin_canuse"]</span></span>
-            <span class="mny">已用:<br /><span class="gray">@ViewData["coin_used"]</span></span>
-
         </div>
+
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $('#register_days').text(formatNumber($('#register_days').text()));
+                $('#p_score').text(formatNumber($('#p_score').text()));
+
+                $('#tx_total').text(formatNumber($('#tx_total').text()));
+                $('#tx_ing').text(formatNumber($('#tx_ing').text()));
+                $('#tx_can').text(formatNumber($('#tx_can').text()));
+
+                $('#coin_total').text(formatNumber($('#coin_total').text()));
+                $('#coin_canuse').text(formatNumber($('#coin_canuse').text()));
+                $('#coin_used').text(formatNumber($('#coin_used').text()));
+            });
+        </script>
 
         <div style="display: flex; width: 100%;">
             <!-- 提现列表 -->

@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -52,6 +52,7 @@
                         <span><img src="/Images/frame/leftico01.png" width="16" height="16" /></span>核心功能
                     </div>
                     <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Panel", "Task")" target="rightFrame">任务面板</a><i></i></li>
                         <li><cite></cite><a href="@Url.Action("OrderList", "Admin1", new { id = "" })" target="rightFrame">订单管理</a><i></i></li>
                         <li><cite></cite><a href="@Url.Action("Sum_NewUser_Hour", "Admin1", new { id = "" })" target="rightFrame">小时流量</a><i></i></li>
                         <li><cite></cite><a href="@Url.Action("Sum_NewUser_Day", "Admin1", new { id = "" })" target="rightFrame">日流量</a><i></i></li>
@@ -73,9 +74,9 @@
                     </div>
                     <ul class="menuson">
                         <li><cite></cite><a href="@Url.Action("Check_Sum", "Check", new { id = "" })" target="rightFrame">审核</a><i></i></li>
-                        <li><cite></cite><a href="@Url.Action("User_Record_All", "Admin1", new { id = "" })")" target="rightFrame">用户记录</a><i></i></li>
-                        <li><cite></cite><a href="@Url.Action("Chat_Check_List", "Admin1", new { id = "" })")" target="rightFrame">会话审核</a><i></i></li>
-                        <li><cite></cite><a href="@Url.Action("Online_Service", "Check", new { id = "" })")" target="rightFrame">在线客服</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("User_Record_All", "Admin1", new { id = "" })" target="rightFrame">用户记录</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Chat_Check_List", "Admin1", new { id = "" })" target="rightFrame">会话审核</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Online_Service", "Check", new { id = "" })" target="rightFrame">在线客服</a><i></i></li>
 
                         <li><cite></cite><a href="@Url.Action("Check_Msg", "Check", new { id = "" })" target="rightFrame">消息审核</a><i></i></li>
                         <li><cite></cite><a href="@Url.Action("Chat_Mny", "Admin1", new { id = "" })" target="rightFrame">消息收入</a><i></i></li>
@@ -165,6 +166,22 @@
                         <li><cite></cite><a href="@Url.Action("Ex_Score_AddFriend", "Admin1", new { id = "" })" target="rightFrame">好友积分</a><i></i></li>
                     </ul>
                 </dd>
+
+                <dd>
+                    <div class="title">
+                        <span><img src="/Images/frame/leftico02.png" width="16" height="16" /></span>任务管理
+                    </div>
+                    <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Panel", "Task")" target="rightFrame">任务面板</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Management", "Task")" target="rightFrame">任务管理</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Template", "Task")" target="rightFrame">任务模板管理</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Category", "Task")" target="rightFrame">任务分类管理</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Time", "Task")" target="rightFrame">时间段设置</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Schedule", "Task")" target="rightFrame">调度配置</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Audit", "Task")" target="rightFrame">任务审核</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Statistics", "Task")" target="rightFrame">任务统计</a><i></i></li>
+                    </ul>
+                </dd>
             }
             else if (ViewData["sys_user_type"].ToString() == "客服")
             {
@@ -190,6 +207,7 @@
                         <span><img src="/Images/frame/leftico01.png" width="16" height="16" /></span>核心功能
                     </div>
                     <ul class="menuson">
+                        <li><cite></cite><a href="@Url.Action("Panel", "Task")" target="rightFrame">任务面板</a><i></i></li>
                         <li><cite></cite><a href="@Url.Action("OrderList", "Admin1", new { id = "" })" target="rightFrame">订单管理</a><i></i></li>
                         <li><cite></cite><a href="@Url.Action("Sum_NewUser_Hour", "Admin1", new { id = "" })" target="rightFrame">小时流量</a><i></i></li>
                         <li><cite></cite><a href="@Url.Action("Sum_NewUser_Day", "Admin1", new { id = "" })" target="rightFrame">日流量</a><i></i></li>
@@ -204,9 +222,9 @@
                     </div>
                     <ul class="menuson">
                         <li><cite></cite><a href="@Url.Action("Check_Sum", "Check", new { id = "" })" target="rightFrame">审核</a><i></i></li>
-                        <li><cite></cite><a href="@Url.Action("User_Record_All", "Admin1", new { id = "" })")" target="rightFrame">用户记录</a><i></i></li>
-                        <li><cite></cite><a href="@Url.Action("Chat_Check_List", "Admin1", new { id = "" })")" target="rightFrame">会话审核</a><i></i></li>
-                        <li><cite></cite><a href="@Url.Action("Online_Service", "Check", new { id = "" })")" target="rightFrame">在线客服</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("User_Record_All", "Admin1", new { id = "" })" target="rightFrame">用户记录</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Chat_Check_List", "Admin1", new { id = "" })" target="rightFrame">会话审核</a><i></i></li>
+                        <li><cite></cite><a href="@Url.Action("Online_Service", "Check", new { id = "" })" target="rightFrame">在线客服</a><i></i></li>
                         <li><cite></cite><a href="@Url.Action("Check_Msg", "Check", new { id = "" })" target="rightFrame">消息审核</a><i></i></li>
                         <li><cite></cite><a href="@Url.Action("Chat_Mny", "Admin1", new { id = "" })" target="rightFrame">消息收入</a><i></i></li>
                         <li><cite></cite><a href="@Url.Action("Admin", "Agent", new { id = "" })" target="rightFrame">代理统计</a><i></i></li>

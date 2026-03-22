@@ -1299,6 +1299,8 @@ namespace WebAppFrame.Controllers
             return json.ToString();
         }
         #endregion
+
+
         public string GetSysUserData(string pageIndex, string pageSize, string user_type)
         {
             string strRtn = string.Empty;
@@ -1586,10 +1588,11 @@ namespace WebAppFrame.Controllers
             }
             return info.ToString();
         }
-        public ActionResult Action_score(string id, string comment)
+        public ActionResult Action_score(string id, string comment, string type)
         {
             ViewData["uid"] = id;
             ViewData["comment"] = string.IsNullOrEmpty(comment) ? "" : comment;
+            ViewData["type"] = string.IsNullOrEmpty(type) ? "" : type;
 
             return View();
         }
@@ -3705,6 +3708,12 @@ update dbo.[user] set out_id = '' where uid = '{0}';";
             ViewData["coin_canuse"] = coin_canuse;
             ViewData["coin_used"] = coin_used;
 
+            System.Data.DataTable coinSourceStats = bll.GetCoinSourceStats(id);
+            ViewData["coin_source_stats"] = coinSourceStats;
+
+            System.Data.DataTable coinConsumeStats = bll.GetCoinConsumeStats(id);
+            ViewData["coin_consume_stats"] = coinConsumeStats;
+
             return View();
         }
         public ActionResult User_Score(string id)
@@ -4244,6 +4253,141 @@ update dbo.[user] set out_id = '' where uid = '{0}';";
             strRtn = comm.GetMiniUIData(strSql, strSort, index, size);
 
             return strRtn;
+        }
+
+        // 金币交易统计功能
+        public ActionResult GetCoinTransaction(string userA, string userB)
+        {
+            // 从A到B的金币消耗
+            string sqlAtoB = string.Format(@"
+                SELECT 
+                    'A->B' as direction,
+                    type_dtl as transaction_type,
+                    SUM(amount) as amount
+                FROM dbo.coin
+                WHERE uid_from = '{0}' AND uid_to = '{1}' AND type = '减少'
+                GROUP BY type_dtl
+                ORDER BY amount DESC
+            ", userA, userB);
+            
+            // 从B到A的金币消耗
+            string sqlBtoA = string.Format(@"
+                SELECT 
+                    'B->A' as direction,
+                    type_dtl as transaction_type,
+                    SUM(amount) as amount
+                FROM dbo.coin
+                WHERE uid_from = '{1}' AND uid_to = '{0}' AND type = '减少'
+                GROUP BY type_dtl
+                ORDER BY amount DESC
+            ", userA, userB);
+            
+            // 执行查询并返回结果
+            var resultAtoB = DBHelper.SqlHelper.GetDataTable(sqlAtoB);
+            var resultBtoA = DBHelper.SqlHelper.GetDataTable(sqlBtoA);
+            
+            // 使用CommonTool.JsonHelper处理数据
+            var result = new {
+                AtoB = CommonTool.JsonHelper.DataTableToJSON(resultAtoB),
+                BtoA = CommonTool.JsonHelper.DataTableToJSON(resultBtoA)
+            };
+            
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        // 积分交易统计功能
+        public ActionResult GetScoreTransaction(string userA, string userB)
+        {
+            // 从A到B的积分活动
+            string sqlAtoB = string.Format(@"
+                SELECT 
+                    'A->B' as direction,
+                    type_dtl as transaction_type,
+                    SUM(amount) as amount
+                FROM dbo.score
+                WHERE uid_from = '{0}' AND uid_to = '{1}' AND type = '增加'
+                GROUP BY type_dtl
+                ORDER BY amount DESC
+            ", userA, userB);
+            
+            // 从B到A的积分活动
+            string sqlBtoA = string.Format(@"
+                SELECT 
+                    'B->A' as direction,
+                    type_dtl as transaction_type,
+                    SUM(amount) as amount
+                FROM dbo.score
+                WHERE uid_from = '{1}' AND uid_to = '{0}' AND type = '增加'
+                GROUP BY type_dtl
+                ORDER BY amount DESC
+            ", userA, userB);
+            
+            // 执行查询并返回结果
+            var resultAtoB = DBHelper.SqlHelper.GetDataTable(sqlAtoB);
+            var resultBtoA = DBHelper.SqlHelper.GetDataTable(sqlBtoA);
+            
+            // 使用CommonTool.JsonHelper处理数据
+            var result = new {
+                AtoB = CommonTool.JsonHelper.DataTableToJSON(resultAtoB),
+                BtoA = CommonTool.JsonHelper.DataTableToJSON(resultBtoA)
+            };
+            
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        // 按日期统计交易情况
+        public ActionResult GetTransactionByDate(string userA, string userB)
+        {
+            string sql = string.Format(@"
+                WITH all_transactions AS (
+                    SELECT 
+                        CONVERT(char(10), dtm, 120) as date,
+                        '金币' as transaction_type,
+                        CASE 
+                            WHEN uid_from = '{0}' AND uid_to = '{1}' AND type = '减少' THEN amount
+                            WHEN uid_from = '{1}' AND uid_to = '{0}' AND type = '减少' THEN amount
+                            ELSE 0 
+                        END as coin_amount,
+                        0 as score_amount
+                    FROM dbo.coin
+                    WHERE ((uid_from = '{0}' AND uid_to = '{1}') OR (uid_from = '{1}' AND uid_to = '{0}')) AND type = '减少'
+                    
+                    UNION ALL
+                    
+                    SELECT 
+                        CONVERT(char(10), dtm, 120) as date,
+                        '积分' as transaction_type,
+                        0 as coin_amount,
+                        CASE 
+                            WHEN uid_from = '{0}' AND uid_to = '{1}' AND type = '增加' THEN amount
+                            WHEN uid_from = '{1}' AND uid_to = '{0}' AND type = '增加' THEN amount
+                            ELSE 0 
+                        END as score_amount
+                    FROM dbo.score
+                    WHERE ((uid_from = '{0}' AND uid_to = '{1}') OR (uid_from = '{1}' AND uid_to = '{0}')) AND type = '增加'
+                )
+                SELECT 
+                    date,
+                    SUM(coin_amount) as 金币消耗,
+                    SUM(score_amount) as 积分产生
+                FROM all_transactions
+                GROUP BY date
+                ORDER BY date DESC
+            ", userA, userB);
+            
+            var result = DBHelper.SqlHelper.GetDataTable(sql);
+            
+            // 使用CommonTool.JsonHelper处理数据
+            string jsonResult = CommonTool.JsonHelper.DataTableToJSON(result);
+            return Content(jsonResult, "application/json");
+        }
+
+        // 交易情况详情页面
+        public ActionResult TransactionDetails(string userA, string userB)
+        {
+            ViewData["userA"] = userA;
+            ViewData["userB"] = userB;
+            return View();
         }
 
         public string GetScoreList(string id, string pageIndex, string pageSize, string key, string type_dtl, string dtm, string fz_tag)

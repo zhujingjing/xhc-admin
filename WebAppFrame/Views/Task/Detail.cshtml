@@ -1,0 +1,928 @@
+
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <title>任务详情</title>
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=14"></script>
+    <script src="~/Scripts/imageUpload.js?id=1"></script>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: tahoma, arial, sans-serif;
+            font-size: 12px;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f5f7fa;
+        }
+        html {
+            height: 100%;
+        }
+        .place {
+            padding: 12px 20px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e4e7ed;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .placeul li {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .placeul li a {
+            color: #606266;
+            text-decoration: none;
+        }
+        .placeul li a:hover {
+            color: #409eff;
+        }
+        .font-bold {
+            font-weight: bold;
+        }
+        .mt10 {
+            padding: 20px;
+            height: calc(100% - 60px);
+            overflow-y: auto;
+        }
+        .DetailBox {
+            border: 1px solid #e4e7ed;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        .DetailBox:hover {
+            box-shadow: 0 4px 16px 0 rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .DetailBox h3 {
+            margin: 0;
+            padding: 16px 20px;
+            color: #303133;
+            font-size: 14px;
+            font-weight: 600;
+            border-bottom: 1px solid #ebeef5;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .DetailBox h3:hover {
+            background-color: #f5f7fa;
+        }
+        .DetailBox h3 .toggle-icon {
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+        .DetailBox h3.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        .DetailBox .content {
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .DetailBox .content.collapsed {
+            display: none;
+        }
+        .DetailTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+        .DetailTable th,
+        .DetailTable td {
+            padding: 10px 16px;
+            border: 1px solid #ebeef5;
+            text-align: left;
+        }
+        .DetailTable th {
+            background-color: #f5f7fa;
+            font-weight: 600;
+            color: #606266;
+        }
+        .DetailTable .label {
+            width: 120px;
+            font-weight: 600;
+            background-color: #f5f7fa;
+            color: #606266;
+        }
+        .DetailTable td {
+            color: #303133;
+        }
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .image-preview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #ebeef5;
+            transition: all 0.3s ease;
+        }
+        .image-preview img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .json-params {
+            background-color: #f5f7fa;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ebeef5;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        #images {
+            min-height: 120px;
+        }
+        #parameters {
+            min-height: 100px;
+        }
+        .form-item {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #606266;
+            margin-right: 16px;
+            min-width: 80px;
+            padding-top: 6px;
+        }
+        .form-content {
+            flex: 1;
+        }
+        .button-container {
+            margin-top: 20px;
+            padding-left: 96px;
+        }
+        .upload-area {
+            border: 2px dashed #d9d9d9;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+        }
+        .upload-area:hover {
+            border-color: #409eff;
+            background-color: #ecf5ff;
+        }
+        .upload-area.upload-area-dragover {
+            border-color: #67c23a;
+            background-color: #f0f9eb;
+        }
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        .upload-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #409eff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-btn:hover {
+            background-color: #66b1ff;
+        }
+        .upload-preview {
+            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .upload-preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+        .upload-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #ebeef5;
+        }
+        .upload-preview-item .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background-color: #ff4d4f;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        .upload-preview-item .remove-btn:hover {
+            background-color: #ff7875;
+        }
+        .upload-preview-item.add-button {
+            border: 2px dashed #d9d9d9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-preview-item.add-button:hover {
+            border-color: #409eff;
+            background-color: #ecf5ff;
+        }
+        .upload-preview-item.add-button .add-icon {
+            font-size: 24px;
+            color: #d9d9d9;
+            transition: all 0.3s ease;
+        }
+        .upload-preview-item.add-button:hover .add-icon {
+            color: #409eff;
+        }
+        .image-path-input {
+            margin-top: 8px;
+            width: 100%;
+        }
+        
+        /* 按钮样式 */
+        .custom-button {
+            display: inline-block;
+            height: 56px;
+            width: 180px;
+            line-height: 56px;
+            text-align: center;
+            background-color: #409eff;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .custom-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(64, 158, 255, 0.4);
+        }
+        
+        /* 操作按钮样式 */
+        .action-button {
+            position: relative;
+            background-color: #409eff;
+            animation: breathe 1s infinite;
+        }
+        
+        @@keyframes breathe {
+            0% {
+                border-color: rgba(64, 158, 255, 0.2);
+                box-shadow: 0 0 0 0 rgba(64, 158, 255, 0.6);
+            }
+            50% {
+                border-color: rgba(64, 158, 255, 1);
+                box-shadow: 0 0 0 15px rgba(64, 158, 255, 0);
+            }
+            100% {
+                border-color: rgba(64, 158, 255, 0.2);
+                box-shadow: 0 0 0 0 rgba(64, 158, 255, 0);
+            }
+        }
+        
+        /* 关闭按钮样式 */
+        .close-button {
+            background-color: #f56c6c;
+        }
+        
+        .close-button:hover {
+            background-color: #f78989;
+            box-shadow: 0 4px 8px rgba(245, 108, 108, 0.4);
+        }
+        
+        /* 输入框样式 */
+        .custom-textarea {
+            width: 100%;
+            height: 100px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            resize: vertical;
+        }
+        .custom-textarea:focus {
+            outline: none;
+            border-color: #409eff;
+            box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+        }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            // 初始化加载
+            loadTaskDetail();
+            loadAuditInfo();
+            loadOperationLog();
+            initFileUpload();
+            
+            // 绑定窗口大小调整事件
+            $(window).resize(function () {
+                adjustPageSize();
+            });
+            
+            // 初始调整
+            adjustPageSize();
+        });
+        
+        // 调整页面大小
+        function adjustPageSize() {
+            // 可以根据需要添加具体的调整逻辑
+            // 例如调整表格高度、内容区域大小等
+            var windowHeight = $(window).height();
+            var contentHeight = windowHeight - 100; // 减去顶部和底部的空间
+            
+            // 调整内容区域的高度
+            $('.mt10').height(contentHeight);
+        }
+
+        // 获取URL参数
+        function getUrlParam(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]);
+            return null;
+        }
+
+        // 获取当前登录用户名
+        function getCurrentUserName() {
+            var operator_name = "";
+            if (window.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            if (window.parent.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            return operator_name;
+        }
+
+        // 开始任务
+        function startTask() {
+            var taskId = getUrlParam("id");
+            if (!taskId) return;
+            
+            mini.confirm("确定要开始该任务吗？", "提示", function (action) {
+                if (action == "ok") {
+                    var operatorName = getCurrentUserName();
+                    $.ajax({
+                        url: "/Task/UpdateTaskStatus",
+                        type: "post",
+                        data: { id: taskId, status: 1, operatorName: operatorName },
+                        success: function (text) {
+                            var result = mini.decode(text);
+                            if (result.state == "1" || result.state == 1) {
+                                mini.alert("任务已开始");
+                                CloseWindow("ok");
+                            } else {
+                                mini.alert(result.msg || "操作失败");
+                            }
+                        },
+                        error: function () {
+                            mini.alert("网络错误");
+                        }
+                    });
+                }
+            });
+        }
+
+        // 完成任务
+        function completeTask() {
+            var taskId = getUrlParam("id");
+            if (!taskId) return;
+            
+            mini.confirm("确定要完成该任务吗？", "提示", function (action) {
+                if (action == "ok") {
+                    var operatorName = getCurrentUserName();
+                    $.ajax({
+                        url: "/Task/UpdateTaskStatus",
+                        type: "post",
+                        data: { id: taskId, status: 2, operatorName: operatorName },
+                        success: function (text) {
+                            var result = mini.decode(text);
+                            if (result.state == "1" || result.state == 1) {
+                                mini.alert("任务已完成");
+                                CloseWindow("ok");
+                            } else {
+                                mini.alert(result.msg || "操作失败");
+                            }
+                        },
+                        error: function () {
+                            mini.alert("网络错误");
+                        }
+                    });
+                }
+            });
+        }
+
+        // 加载任务详情
+        function loadTaskDetail() {
+            var taskId = getUrlParam("id");
+            if (!taskId) return;
+
+            $.ajax({
+                url: "/Task/GetTaskById",
+                type: "post",
+                data: { id: taskId },
+                success: function (text) {
+                    console.log("Task detail response:", text);
+                    var result = mini.decode(text);
+                    console.log("Decoded result:", result);
+                    
+                    // 检查数据格式并适配
+                    var task = null;
+                    if (result && result.data && result.data.length > 0) {
+                        // 包含data属性的格式
+                        task = result.data[0];
+                    } else if (result && result.length > 0) {
+                        // 直接返回数组格式
+                        task = result[0];
+                    } else if (result && result.TaskID) {
+                        // 直接返回对象格式
+                        task = result;
+                    } else {
+                        task = {};
+                    }
+                    console.log("Task data:", task);
+                    
+                    $("#taskName").html(task.TaskName || "");
+                    $("#categoryName").html(task.CategoryName || "");
+                    $("#description").html(task.Description || "");
+                    $("#assignedTo").html(task.AssignedTo || "");
+                    
+                    var priorityText = "低";
+                    if (task.Priority == 1) priorityText = "中";
+                    if (task.Priority == 2) priorityText = "高";
+                    $("#priority").html(priorityText);
+                    
+                    var statusText = "待处理";
+                    if (task.Status == 1) statusText = "处理中";
+                    if (task.Status == 2) statusText = "已完成";
+                    if (task.Status == 3) statusText = "已审核";
+                    $("#status").html(statusText);
+                    
+                    $("#standardScore").html(task.StandardScore || "");
+                    $("#actualScore").html(task.ActualScore || "");
+                    
+                    // 使用public.js中定义的formatDate函数
+                    
+                    $("#startTime").html(formatDate(task.StartTime));
+                    $("#endTime").html(formatDate(task.EndTime));
+                    $("#deadline").html(formatDate(task.Deadline));
+                    $("#creator").html(task.Creator || "");
+                    $("#createTime").html(formatDate(task.CreateTime));
+                    $("#updateTime").html(formatDate(task.UpdateTime));
+                    
+                    // 显示参数
+                    if (task.Parms) {
+                        try {
+                            var paramsObj = JSON.parse(task.Parms);
+                            var paramsHtml = '<div class="json-params">' + JSON.stringify(paramsObj, null, 2) + '</div>';
+                            $("#parameters").html(paramsHtml);
+                        } catch (e) {
+                            $("#parameters").html('<div class="json-params">' + task.Parms + '</div>');
+                        }
+                    } else {
+                        $("#parameters").html("");
+                    }
+                    
+                    // 显示结果
+                    $("#result").html(task.Result || "");
+                    
+                    // 显示备注
+                    $("#remarks").html(task.Remarks || "");
+                    
+                    // 显示图片
+                    if (task.Images) {
+                        console.log("Images data:", task.Images);
+                        var imagesHtml = '<div class="image-preview">';
+                        var imagePaths = task.Images.split(",");
+                        console.log("Image paths:", imagePaths);
+                        $.each(imagePaths, function(i, path) {
+                            if (path) {
+                                imagesHtml += '<a href="javascript:void(0)" onclick="openImageManager(\'' + imagePaths.join(',') + '\', ' + i + ')"><img src="' + path + '" /></a>';
+                            }
+                        });
+                        imagesHtml += '</div>';
+                        $("#images").html(imagesHtml);
+                    } else {
+                        $("#images").html("");
+                    }
+                    
+                    // 显示外部链接
+                    if (task.FullExternalUrl) {
+                        $("#externalUrl").html('<a href="' + task.FullExternalUrl + '" target="_blank" style="color: #409eff; text-decoration: underline;">点击访问外部链接</a>');
+                    } else {
+                        $("#externalUrl").html("无外部链接");
+                    }
+
+                    // 根据任务状态显示或隐藏操作按钮
+                    var status = task.Status || 0;
+                    if (status == 0) {
+                        $("#startTaskBtn").show();
+                        $("#completeTaskBtn").hide();
+                    } else if (status == 1) {
+                        $("#startTaskBtn").hide();
+                        $("#completeTaskBtn").show();
+                    } else {
+                        $("#startTaskBtn").hide();
+                        $("#completeTaskBtn").hide();
+                    }
+                }
+            });
+        }
+
+        // 加载审核信息
+        function loadAuditInfo() {
+            var taskId = getUrlParam("id");
+            if (!taskId) return;
+
+            $.ajax({
+                url: "/Task/GetTaskAudit",
+                type: "post",
+                data: { taskId: taskId },
+                success: function (text) {
+                    var result = mini.decode(text);
+                    
+                    // 检查数据格式并适配
+                    var auditData = null;
+                    if (result && result.data && result.data.length > 0) {
+                        // 包含data属性的格式
+                        auditData = result.data[0];
+                    } else if (result && result.length > 0) {
+                        // 直接返回数组格式
+                        auditData = result[0];
+                    } else if (result && result.AuditID) {
+                        // 直接返回对象格式
+                        auditData = result;
+                    } else {
+                        auditData = {};
+                    }
+                    
+                    if (auditData.Auditor) {
+                        var auditHtml = "";
+                        auditHtml += "<table class='DetailTable'>";
+                        auditHtml += "<tr><td class='label'>审核人:</td><td>" + (auditData.Auditor || "") + "</td></tr>";
+                        auditHtml += "<tr><td class='label'>审核结果:</td><td>" + (auditData.AuditResult ? "通过" : "拒绝") + "</td></tr>";
+                        auditHtml += "<tr><td class='label'>审核意见:</td><td>" + (auditData.AuditOpinion || "") + "</td></tr>";
+                        auditHtml += "<tr><td class='label'>审核时间:</td><td>" + (auditData.AuditTime || "") + "</td></tr>";
+                        auditHtml += "</table>";
+                        $("#auditInfo").html(auditHtml);
+                    } else {
+                        $("#auditInfo").html("<p>暂无审核信息</p>");
+                    }
+                }
+            });
+        }
+
+        // 加载操作日志
+        function loadOperationLog() {
+            var taskId = getUrlParam("id");
+            if (!taskId) return;
+
+            $.ajax({
+                url: "/Task/GetTaskOperationLog",
+                type: "post",
+                data: { taskId: taskId },
+                success: function (text) {
+                    var result = mini.decode(text);
+                    
+                    // 检查数据格式并适配
+                    var logData = [];
+                    if (result && result.data) {
+                        // 包含data属性的格式
+                        logData = result.data;
+                    } else if (result && result.length > 0) {
+                        // 直接返回数组格式
+                        logData = result;
+                    }
+                    
+                    if (logData.length > 0) {
+                        var logHtml = "<table class='DetailTable'>";
+                        logHtml += "<tr><th>操作人</th><th>操作类型</th><th>操作内容</th><th>操作时间</th></tr>";
+                        $.each(logData, function(i, log) {
+                            logHtml += "<tr>";
+                            logHtml += "<td>" + (log.Operator || "") + "</td>";
+                            logHtml += "<td>" + (log.OperationType || "") + "</td>";
+                            logHtml += "<td>" + (log.OperationContent || "") + "</td>";
+                            logHtml += "<td>" + formatDate(log.OperationTime) + "</td>";
+                            logHtml += "</tr>";
+                        });
+                        logHtml += "</table>";
+                        $("#operationLog").html(logHtml);
+                    } else {
+                        $("#operationLog").html("<p>暂无操作日志</p>");
+                    }
+                }
+            });
+        }
+
+        // 初始化文件上传
+        function initFileUpload() {
+            // 使用ImageUploader初始化上传区域
+            ImageUploader.initUploadArea('uploadArea', 'imagePreview', 'inputImages', 10);
+        }
+
+        // 切换执行信息表单显示
+        function toggleExecutionForm() {
+            var $form = $("#executionForm");
+            var $table = $("#executionInfoTable");
+            var $button = $("button[onclick='toggleExecutionForm()']");
+            
+            if ($form.css("display") === "none") {
+                $form.show();
+                $table.hide();
+                $button.text("取消录入");
+                
+                // 填充表单数据
+                var taskId = getUrlParam("id");
+                $("#taskId").val(taskId);
+                
+                // 从显示区域获取当前数据并填充到表单
+                $("#inputResult").val($("#result").text() || "");
+                $("#inputRemarks").val($("#remarks").text() || "");
+                
+                // 处理图片数据
+                var imagesElement = $("#images")[0];
+                var imagePaths = ImageUploader.getImagePathsFromDisplay(imagesElement);
+                $("#inputImages").val(imagePaths.join(','));
+                
+                // 更新预览
+                var previewContainer = $("#imagePreview")[0];
+                ImageUploader.updatePreview(previewContainer, imagePaths, 10, "inputImages");
+            } else {
+                $form.hide();
+                $table.show();
+                $button.text("录入执行信息");
+                
+                // 重置上传图片预览
+                $("#imagePreview").html('');
+                $("#inputImages").val('');
+            }
+        }
+
+        // 保存执行信息
+        function saveExecutionInfo() {
+            var taskId = $("#taskId").val();
+            if (!taskId) return;
+
+            var formData = {
+                TaskID: taskId,
+                Result: $("#inputResult").val(),
+                Remarks: $("#inputRemarks").val(),
+                Images: $("#inputImages").val(),
+                Operator: getCurrentUserName()
+            };
+        console.log(JSON.stringify(formData));
+            $.ajax({
+                url: "/Task/SaveTask",
+                type: "post",
+                data: { send: JSON.stringify(formData) },
+                success: function (text) {
+                    var result = mini.decode(text);
+                    if (result.state == "1" || result.state == 1) {
+                        mini.alert("保存成功");
+                        toggleExecutionForm();
+                        loadTaskDetail();
+                    } else {
+                        mini.alert(result.msg || "保存失败");
+                    }
+                },
+                error: function () {
+                    mini.alert("网络错误");
+                }
+            });
+        }
+
+        // 切换板块展开/收起
+        function toggleBox(header) {
+            var $header = $(header);
+            var $content = $header.next('.content');
+            
+            $header.toggleClass('collapsed');
+            $content.toggleClass('collapsed');
+        }
+
+        // 打开图片管理器
+        function openImageManager(images, index) {
+            // 编码图片路径，确保URL参数正确
+            var encodedImages = encodeURIComponent(images);
+            var url = '/Common/ImageManager?images=' + encodedImages + '&index=' + index;
+            
+            // 打开新窗口
+            window.open(url, '_blank', 'width=1000,height=800,top=100,left=100');
+        }
+
+        // 关闭页面
+        function closePage() {
+            // 关闭当前窗口
+            if (window.CloseOwnerWindow) {
+                window.CloseOwnerWindow("cancel");
+            } else if (window.parent && window.parent.CloseWindow) {
+                window.parent.CloseWindow("cancel");
+            } else if (window.close) {
+                window.close();
+            }
+        }
+
+        function CloseWindow(action) {
+            if (window.CloseOwnerWindow) {
+                window.CloseOwnerWindow(action);
+            } else if (window.parent && window.parent.CloseWindow) {
+                window.parent.CloseWindow(action);
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="mt10">
+        <div class="DetailBox">
+            <h3>任务操作 <span class="toggle-icon">▶</span></h3>
+            <div class="content">
+                <div style=" margin-bottom: 20px;">
+                    <button id="startTaskBtn" class="custom-button action-button" onclick="startTask()">开始任务</button>
+                    <button id="completeTaskBtn" class="custom-button action-button" onclick="completeTask()" style="margin-left: 15px;">完成任务</button>
+                    <button class="custom-button close-button" onclick="closePage()" style="margin-left: 15px;">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="DetailBox">
+            <h3 onclick="toggleBox(this)">执行信息 <span class="toggle-icon">▶</span></h3>
+            <div class="content">
+                <div style=" margin-bottom: 10px;">
+                    <button class="custom-button" onclick="toggleExecutionForm()">录入执行信息</button>
+                </div>
+                
+                <table class="DetailTable" id="executionInfoTable">
+                    <tr>
+                        <td class="label">结果:</td>
+                        <td id="result"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">备注:</td>
+                        <td id="remarks"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">图片:</td>
+                        <td id="images"></td>
+                    </tr>
+                </table>
+                
+                <div id="executionForm" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ebeef5;">
+                    <form id="executionInfoForm">
+                        <input type="hidden" id="taskId" value="" />
+                        <input type="hidden" id="inputImages" name="Images" value="" />
+                        
+                        <div class="form-item">
+                            <label class="form-label">结果:</label>
+                            <div class="form-content">
+                                <textarea id="inputResult" name="Result" class="custom-textarea" placeholder="请输入任务结果"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-item">
+                            <label class="form-label">备注:</label>
+                            <div class="form-content">
+                                <textarea id="inputRemarks" name="Remarks" class="custom-textarea" placeholder="请输入备注信息"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-item">
+                            <label class="form-label">图片:</label>
+                            <div class="form-content">
+                                <div class="upload-area" id="uploadArea">
+                                    <div class="upload-btn">点击上传图片</div>
+                                    <p style="margin-top: 8px; color: #909399; font-size: 12px;">支持上传多张图片</p>
+                                    <div id="imagePreview" class="upload-preview"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="button-container">
+                            <a class="custom-button" onclick="saveExecutionInfo()">保存</a>
+                        </div>
+                    </form>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="DetailBox">
+            <h3 onclick="toggleBox(this)">审核信息 <span class="toggle-icon">▶</span></h3>
+            <div class="content">
+                <div id="auditInfo"></div>
+            </div>
+        </div>
+
+        <div class="DetailBox">
+            <h3 onclick="toggleBox(this)">任务基本信息 <span class="toggle-icon">▶</span></h3>
+            <div class="content">
+                <table class="DetailTable">
+                    <tr>
+                        <td class="label">任务名称:</td>
+                        <td id="taskName"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">任务分类:</td>
+                        <td id="categoryName"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">任务描述:</td>
+                        <td id="description"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">分配人:</td>
+                        <td id="assignedTo"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">优先级:</td>
+                        <td id="priority"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">状态:</td>
+                        <td id="status"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">标准分:</td>
+                        <td id="standardScore"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">实际分:</td>
+                        <td id="actualScore"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">开始时间:</td>
+                        <td id="startTime"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">结束时间:</td>
+                        <td id="endTime"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">截止时间:</td>
+                        <td id="deadline"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">创建人:</td>
+                        <td id="creator"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">创建时间:</td>
+                        <td id="createTime"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">更新时间:</td>
+                        <td id="updateTime"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">参数:</td>
+                        <td id="parameters"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">外部链接:</td>
+                        <td id="externalUrl"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="DetailBox">
+            <h3 onclick="toggleBox(this)" class="collapsed">操作日志 <span class="toggle-icon">▶</span></h3>
+            <div class="content collapsed">
+                <div id="operationLog"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

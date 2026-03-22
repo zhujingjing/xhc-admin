@@ -1,4 +1,4 @@
-﻿
+
 using Com.Alipay;
 using System;
 using System.Collections.Generic;
@@ -532,13 +532,47 @@ namespace WebAppFrame.Controllers
         #region 图片上传
         public string UpLoadImage()
         {
-            var file = Request.Files[0];
-            string file_name = Guid.NewGuid().ToString() + ".jpg";
-            string strFileName = "/UpLoadFile/" + file_name;
-            string path = Server.MapPath(strFileName);
-            file.SaveAs(path);
+            try
+            {
+                if (Request.Files.Count == 0)
+                {
+                    return "";
+                }
 
-            return strFileName;
+                var file = Request.Files[0];
+                if (file == null || file.ContentLength == 0)
+                {
+                    return "";
+                }
+
+                // 检查文件类型
+                var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var fileExtension = Path.GetExtension(file.FileName).ToLower();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return "";
+                }
+
+                // 确保上传目录存在
+                string uploadDir = Server.MapPath("/UpLoadFile");
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+
+                // 生成唯一文件名
+                string file_name = Guid.NewGuid().ToString() + fileExtension;
+                string strFileName = "/UpLoadFile/" + file_name;
+                string path = Server.MapPath(strFileName);
+                file.SaveAs(path);
+
+                return strFileName;
+            }
+            catch (Exception ex)
+            {
+                CommonTool.WriteLog.Write("图片上传错误: " + ex.Message);
+                return "";
+            }
         }
 
         #endregion 
@@ -557,6 +591,12 @@ namespace WebAppFrame.Controllers
         public string DBBackUp()
         {
             return "";
+        }
+
+        // 图片管理器
+        public ActionResult ImageManager()
+        {
+            return View();
         }
 
         #endregion 

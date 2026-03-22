@@ -467,6 +467,10 @@ namespace WebAppFrame.Controllers
                 strRtn += Create_InviteScore(DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd"));
             }
 
+            //执行任务自动生成
+            strRtn += "\r\n";
+            strRtn += ExecuteTaskGeneration();
+
             CommonTool.WriteLog.Write(strRtn);
             return strRtn;
         }
@@ -490,6 +494,23 @@ namespace WebAppFrame.Controllers
             }
 
             strRtn = string.Format("生成邀请收益，计算【{0}】个代理，共计【{1}】条邀请积分",listAgent.Count, count);
+            return strRtn;
+        }
+
+        // 执行任务自动生成
+        public string ExecuteTaskGeneration()
+        {
+            BLL.Task taskBll = new BLL.Task();
+            string strRtn = "";
+            try
+            {
+                int generatedCount = taskBll.ExecuteTaskGeneration();
+                strRtn = "成功生成【" + generatedCount + "】个任务";
+            }
+            catch (Exception ex)
+            {
+                strRtn = "执行失败: " + ex.Message;
+            }
             return strRtn;
         }
 

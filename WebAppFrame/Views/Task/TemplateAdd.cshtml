@@ -1,0 +1,449 @@
+
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <title>新增/编辑任务模板</title>
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/Style_chart.css" rel="stylesheet" />
+    <link href="~/Styles/public.css" rel="stylesheet" />
+    <script src="~/Scripts/public.js"></script>
+    <style type="text/css">
+        body {
+            font-family: tahoma, arial, sans-serif;
+            font-size: 12px;
+            margin: 5px;
+        }
+        .form-container {
+            width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .form-item {
+            margin-bottom: 15px;
+        }
+        .form-label {
+            display: inline-block;
+            width: 100px;
+            text-align: right;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .mini-textbox, .mini-combobox, .mini-textarea, .mini-datepicker {
+            width: 400px;
+            border: 1px solid #b3d9ff;
+            border-radius: 3px;
+        }
+        .mini-textbox {
+            height: 35px;
+        }
+        .mini-textarea {
+            height: 80px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+            width: 510px;
+        }
+        .mini-button {
+            width: 100px;
+            margin-left: 10px;
+            text-align: center;
+            padding: 8px 0;
+        }
+    </style>
+    <script type="text/javascript">
+        var form;
+        var action = "new";
+        var templateData = null;
+        
+        $(function () {
+            mini.parse();
+            form = new mini.Form("form1");
+            
+            // 加载任务分类
+            loadCategories();
+            
+            // 使用jQuery绑定截止时间类型变更事件
+            $("#DeadlineType").change(function() {
+                onDeadlineTypeChange();
+            });
+        });
+        
+        // 设置数据
+        function SetData(data) {
+            if (data) {
+                action = data.action || "new";
+                templateData = data.template;
+                var templateId = data.templateId;
+                
+                if (action == "edit" && (templateData || templateId)) {
+                    if (templateData) {
+                            $ ("#TemplateID").val(templateData.TemplateID);
+                            mini.get("TemplateName").setValue(templateData.TemplateName);
+                            mini.get("CategoryID").setValue(templateData.CategoryID);
+                            mini.get("Description").setValue(templateData.Description || "");
+                            mini.get("Priority").setValue(templateData.Priority);
+                            mini.get("StandardScore").setValue(templateData.StandardScore);
+                            mini.get("AssignedTo").setValue(templateData.AssignedTo || "");
+                            // 使用jQuery设置原生select元素的值
+                            $("#DeadlineType").val(templateData.DeadlineType || 0);
+                            mini.get("DeadlineValue").setValue(templateData.DeadlineValue || "");
+                            // 使用jQuery设置原生select元素的值
+                            $("#DeadlineUnit").val(templateData.DeadlineUnit || 1);
+                            // 触发类型变更事件，显示相应的输入框
+                            onDeadlineTypeChange();
+                        
+                        // 处理单选按钮
+                        var isActiveValue = templateData.IsActive != null ? templateData.IsActive : true;
+                        // 确保正确处理各种数据类型
+                        var shouldBeActive = false;
+                        if (typeof isActiveValue === 'boolean') {
+                            shouldBeActive = isActiveValue;
+                        } else if (typeof isActiveValue === 'string') {
+                            shouldBeActive = (isActiveValue.toLowerCase() === 'true' || isActiveValue === '1');
+                        } else if (typeof isActiveValue === 'number') {
+                            shouldBeActive = (isActiveValue === 1);
+                        }
+                        console.log('Setting IsActive value:', isActiveValue, 'should be active:', shouldBeActive);
+                        // 使用原生JavaScript设置选中状态
+                        var radioButtons = document.getElementsByName('IsActive');
+                        for (var i = 0; i < radioButtons.length; i++) {
+                            var radio = radioButtons[i];
+                            var shouldCheck = (radio.value === (shouldBeActive ? "1" : "0"));
+                            console.log('Radio button value:', radio.value, 'should be checked:', shouldCheck);
+                            radio.checked = shouldCheck;
+                        }
+                    } else if (templateId) {
+                        // 通过AJAX获取模板数据
+                        $.ajax({
+                            url: "/Task/GetTaskTemplateById",
+                            type: "post",
+                            data: { id: templateId },
+                            success: function (text) {
+                                var result = mini.decode(text);
+                                
+                                // 检查数据格式并适配
+                                if (result) {
+                                    if (result.length > 0) {
+                                        // 数组格式
+                                        templateData = result[0];
+                                    } else if (result.TemplateID) {
+                                        // 对象格式
+                                        templateData = result;
+                                    } else if (result.data && result.data.length > 0) {
+                                        // 包含data属性的格式
+                                        templateData = result.data[0];
+                                    }
+                                    
+                                    if (templateData) {
+                                        // 确保mini框架已初始化
+                                        if (mini && mini.get) {
+                                            // 检查每个控件是否存在
+                                            var templateNameControl = mini.get("TemplateName");
+                                            var categoryIDControl = mini.get("CategoryID");
+                                            var descriptionControl = mini.get("Description");
+                                            var priorityControl = mini.get("Priority");
+                                            var standardScoreControl = mini.get("StandardScore");
+                                            
+                                            // 设置TemplateID（使用jQuery直接设置）
+                                            $("#TemplateID").val(templateData.TemplateID);
+                                            if (templateNameControl) templateNameControl.setValue(templateData.TemplateName);
+                                            if (categoryIDControl) categoryIDControl.setValue(templateData.CategoryID);
+                                            if (descriptionControl) descriptionControl.setValue(templateData.Description || "");
+                                            if (priorityControl) priorityControl.setValue(templateData.Priority);
+                                            if (standardScoreControl) standardScoreControl.setValue(templateData.StandardScore);
+                                            var assignedToControl = mini.get("AssignedTo");
+                                            if (assignedToControl) assignedToControl.setValue(templateData.AssignedTo || "");
+                                            // 使用jQuery设置原生select元素的值
+                                            $("#DeadlineType").val(templateData.DeadlineType || 0);
+                                            var deadlineValueControl = mini.get("DeadlineValue");
+                                            if (deadlineValueControl) deadlineValueControl.setValue(templateData.DeadlineValue || "");
+                                            // 使用jQuery设置原生select元素的值
+                                            $("#DeadlineUnit").val(templateData.DeadlineUnit || 1);
+                                            // 触发类型变更事件，显示相应的输入框
+                                            onDeadlineTypeChange();
+                                            
+                                            // 处理单选按钮
+                                            var isActiveValue = templateData.IsActive != null ? templateData.IsActive : true;
+                                            // 确保正确处理各种数据类型
+                                            var shouldBeActive = false;
+                                            if (typeof isActiveValue === 'boolean') {
+                                                shouldBeActive = isActiveValue;
+                                            } else if (typeof isActiveValue === 'string') {
+                                                shouldBeActive = (isActiveValue.toLowerCase() === 'true' || isActiveValue === '1');
+                                            } else if (typeof isActiveValue === 'number') {
+                                                shouldBeActive = (isActiveValue === 1);
+                                            }
+                                            console.log('Setting IsActive value (AJAX):', isActiveValue, 'should be active:', shouldBeActive);
+                                            // 使用原生JavaScript设置选中状态
+                                            var radioButtons = document.getElementsByName('IsActive');
+                                            for (var i = 0; i < radioButtons.length; i++) {
+                                                var radio = radioButtons[i];
+                                                var shouldCheck = (radio.value === (shouldBeActive ? "1" : "0"));
+                                                console.log('Radio button value (AJAX):', radio.value, 'should be checked:', shouldCheck);
+                                                radio.checked = shouldCheck;
+                                            }
+                                            
+                                            // 处理外部URL相关字段
+                                            var externalUrlControl = mini.get("ExternalUrl");
+                                            var externalUrlParamsControl = mini.get("ExternalUrlParams");
+                                            if (externalUrlControl) externalUrlControl.setValue(templateData.ExternalUrl || "");
+                                            if (externalUrlParamsControl) externalUrlParamsControl.setValue(templateData.ExternalUrlParams || "");
+                                            
+                                            // 处理外部URL启用状态
+                                            var externalUrlEnabledValue = templateData.ExternalUrlEnabled != null ? templateData.ExternalUrlEnabled : false;
+                                            var shouldEnableExternalUrl = false;
+                                            if (typeof externalUrlEnabledValue === 'boolean') {
+                                                shouldEnableExternalUrl = externalUrlEnabledValue;
+                                            } else if (typeof externalUrlEnabledValue === 'string') {
+                                                shouldEnableExternalUrl = (externalUrlEnabledValue.toLowerCase() === 'true' || externalUrlEnabledValue === '1');
+                                            } else if (typeof externalUrlEnabledValue === 'number') {
+                                                shouldEnableExternalUrl = (externalUrlEnabledValue === 1);
+                                            }
+                                            var externalUrlEnabledRadioButtons = document.getElementsByName('ExternalUrlEnabled');
+                                            for (var j = 0; j < externalUrlEnabledRadioButtons.length; j++) {
+                                                var radio = externalUrlEnabledRadioButtons[j];
+                                                radio.checked = (radio.value === (shouldEnableExternalUrl ? "1" : "0"));
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        
+        // 加载任务分类
+        function loadCategories() {
+            $.ajax({
+                url: "/Task/GetTaskCategoryList",
+                type: "post",
+                success: function (text) {
+                    var result = mini.decode(text);
+                    var categories = result && result.data ? result.data : (result && result.length > 0 ? result : []);
+                    // 添加请选择选项
+                    categories.unshift({ CategoryID: "", CategoryName: "请选择" });
+                    mini.get("CategoryID").setData(categories);
+                }
+            });
+        }
+        
+        // 保存模板
+        function saveTemplate() {
+            form.validate();
+            if (form.isValid() === false) return;
+            
+            var data = form.getData();
+            
+            // 添加TemplateID到数据中
+            data.TemplateID = $("#TemplateID").val();
+            
+            // 手动获取原生select元素的值
+            data.DeadlineType = $("#DeadlineType").val();
+            data.DeadlineUnit = $("#DeadlineUnit").val();
+            
+            // 处理单选按钮
+            var isActiveValue = "0";
+            $("input[name='IsActive']").each(function() {
+                if ($(this).prop("checked")) {
+                    isActiveValue = $(this).val();
+                }
+            });
+            data.IsActive = isActiveValue;
+            
+            // 处理外部URL启用状态
+            var externalUrlEnabledValue = "0";
+            $("input[name='ExternalUrlEnabled']").each(function() {
+                if ($(this).prop("checked")) {
+                    externalUrlEnabledValue = $(this).val();
+                }
+            });
+            data.ExternalUrlEnabled = externalUrlEnabledValue;
+            
+            // 增加log调试信息
+            console.log("Form data:", JSON.stringify(data));
+            console.log("DeadlineType:", $("#DeadlineType").val());
+            console.log("DeadlineUnit:", $("#DeadlineUnit").val());
+            
+            var json = mini.encode(data);
+            
+            $.ajax({
+                url: "/Task/SaveTaskTemplate",
+                type: "post",
+                data: { send: json },
+                success: function (text) {
+                    var result = mini.decode(text);
+                    if (result.state == "1" || result.state == 1) {
+                        mini.alert("保存成功");
+                        CloseWindow("ok");
+                    } else {
+                        mini.alert(result.msg || "保存失败");
+                    }
+                },
+                error: function () {
+                    mini.alert("网络错误");
+                }
+            });
+        }
+        
+        function cancel() {
+            CloseWindow();
+        }
+        
+        function CloseWindow(action) {
+            if (window.CloseOwnerWindow) {
+                window.CloseOwnerWindow(action);
+            } else {
+                window.parent.CloseWindow(action);
+            }
+        }
+        
+        // 截止时间类型变更事件
+        function onDeadlineTypeChange() {
+            // 使用jQuery获取值
+            var value = $("#DeadlineType").val();
+            var intValue = parseInt(value);
+            
+            // 增加log调试信息
+            console.log("DeadlineType value:", value);
+            console.log("Parsed value:", intValue);
+            
+            // 隐藏所有容器
+            $("#deadlineValueContainer").hide();
+            $("#deadlineUnitContainer").hide();
+            
+            // 根据类型显示相应的容器
+            if (intValue === 1) { // 相对生成时间
+                console.log("Showing relative time containers");
+                $("#deadlineValueContainer").show();
+                $("#deadlineUnitContainer").show();
+                $("#DeadlineValue").attr("placeholder", "输入数值");
+            } else if (intValue === 2) { // 固定时间点
+                console.log("Showing fixed time container");
+                $("#deadlineValueContainer").show();
+                $("#DeadlineValue").attr("placeholder", "输入时间，格式：HH:mm");
+            } else {
+                console.log("Hiding all containers");
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="form-container">
+        <h2 style="text-align: center; margin-bottom: 20px;">新增/编辑任务模板</h2>
+        <form id="form1">
+            <input type="hidden" id="TemplateID" name="TemplateID" />
+            
+            <div class="form-item">
+                <label class="form-label">模板名称：</label>
+                <input id="TemplateName" name="TemplateName" class="mini-textbox" required="true" />
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">任务分类：</label>
+                <select id="CategoryID" name="CategoryID" class="mini-combobox" required="true" displayField="CategoryName" valueField="CategoryID"></select>
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">模板描述：</label>
+                <textarea id="Description" name="Description" class="mini-textarea" rows="3"></textarea>
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">优先级：</label>
+                <select id="Priority" name="Priority" class="mini-combobox">
+                    <option value="0">低</option>
+                    <option value="1">中</option>
+                    <option value="2">高</option>
+                </select>
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">标准分：</label>
+                <input id="StandardScore" name="StandardScore" class="mini-textbox" value="100" />
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">分配给：</label>
+                <input id="AssignedTo" name="AssignedTo" class="mini-textbox" placeholder="输入用户名称" />
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">截止时间类型：</label>
+                <select id="DeadlineType" name="DeadlineType" style="width: 400px; border: 1px solid #b3d9ff; border-radius: 3px; height: 35px;">
+                    <option value="0">无截止</option>
+                    <option value="1">相对生成时间</option>
+                    <option value="2">固定时间点</option>
+                    <option value="3">当天结束</option>
+                    <option value="4">次日开始工作</option>
+                </select>
+            </div>
+            
+            <div class="form-item" id="deadlineValueContainer" style="display: none;">
+                <label class="form-label">截止时间值：</label>
+                <input id="DeadlineValue" name="DeadlineValue" class="mini-textbox" placeholder="根据类型输入值" />
+            </div>
+            
+            <div class="form-item" id="deadlineUnitContainer" style="display: none;">
+                <label class="form-label">时间单位：</label>
+                <select id="DeadlineUnit" name="DeadlineUnit" style="width: 400px; border: 1px solid #b3d9ff; border-radius: 3px; height: 35px;">
+                    <option value="1">分钟</option>
+                    <option value="2">小时</option>
+                    <option value="3">天</option>
+                </select>
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">状态：</label>
+                <div style="display: inline-block; width: 400px;">
+                    <label style="margin-right: 20px;">
+                        <input type="radio" id="IsActive1" name="IsActive" value="1" checked /> 启用
+                    </label>
+                    <label>
+                        <input type="radio" id="IsActive0" name="IsActive" value="0" /> 禁用
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">外部URL：</label>
+                <input id="ExternalUrl" name="ExternalUrl" class="mini-textbox" placeholder="请输入外部URL地址" />
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">URL参数：</label>
+                <input id="ExternalUrlParams" name="ExternalUrlParams" class="mini-textbox" placeholder="请输入URL参数，如：id={BusinessId}&type={BusinessType}" />
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">启用外部URL：</label>
+                <div style="display: inline-block; width: 400px;">
+                    <label style="margin-right: 20px;">
+                        <input type="radio" id="ExternalUrlEnabled1" name="ExternalUrlEnabled" value="1" /> 是
+                    </label>
+                    <label>
+                        <input type="radio" id="ExternalUrlEnabled0" name="ExternalUrlEnabled" value="0" checked /> 否
+                    </label>
+                </div>
+            </div>
+            
+            <div class="button-container">
+                <a class="mini-button" onclick="saveTemplate()">保存</a>
+                <a class="mini-button" onclick="cancel()">取消</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

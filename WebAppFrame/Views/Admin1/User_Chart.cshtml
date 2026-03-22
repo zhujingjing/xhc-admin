@@ -433,6 +433,36 @@
             evaluateChat(uidFrom, uidTo, timeStart, coinUsed, scoreEarned, sendCount, receiveCount);
         }
 
+        function showTransactionDetails() {
+            var selectedRows = grid.getSelecteds();
+            if (selectedRows.length == 0) {
+                mini.alert("请先选择要查看交易情况的聊天记录");
+                return;
+            }
+            
+            // 只处理选中的第一行记录
+            var row = selectedRows[0];
+            var userA = row.uid_from;
+            var userB = row.uid_to;
+            
+            // 打开交易情况弹窗
+            mini.open({
+                url: "/Admin1/TransactionDetails?userA=" + userA + "&userB=" + userB,
+                showMaxButton: false,
+                title: "二人历史统计",
+                width: 980,
+                height: 720,
+                onload: function () {
+                    var iframe = this.getIFrameEl();
+                },
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        // 可以选择是否刷新列表
+                    }
+                }
+            });
+        }
+
         function onRowClick(e) {
             var item = e.record;
             $('.messages').html('');
@@ -859,7 +889,8 @@
                 <option value="tiaoshu_receive desc">接收量</option>
                 <option value="time_start2 desc">时间</option>
             </select>&nbsp;&nbsp;&nbsp;&nbsp;
-            <input id="btn_evaluate" type="button" style="background-color:#e92162; color:white; height:24px; padding:0 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;" value="评价" onclick="evaluateSelectedChats()" />
+            <input id="btn_evaluate" type="button" style="background-color:#e92162; color:white; height:24px; padding:0 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;" value="评价" onclick="evaluateSelectedChats()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_transaction" type="button" style="background-color:#4CAF50; color:white; height:24px; padding:0 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;" value="历史情况" onclick="showTransactionDetails()" />
         </div>  
 
         <table>

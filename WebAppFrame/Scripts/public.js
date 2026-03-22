@@ -156,6 +156,7 @@ var dropdownCache = {
  * @param {Function} callback - 回调函数
  */
 function loadBatchDropdownOptions(categories, callback) {
+    console.log('开始批量加载下拉框数据，分类:', categories);
     // 检查缓存
     var cachedData = {};
     var needLoad = [];
@@ -165,39 +166,56 @@ function loadBatchDropdownOptions(categories, callback) {
         var category = categories[i];
         var cached = dropdownCache.get(category);
         if (cached) {
+            console.log('从缓存获取分类数据:', category, cached);
             cachedData[category] = cached;
         } else {
             needLoad.push(category);
         }
     }
     
+    console.log('需要从服务器加载的分类:', needLoad);
+    console.log('从缓存获取的分类:', Object.keys(cachedData));
+    
     // 如果所有数据都在缓存中，直接使用
     if (needLoad.length === 0) {
+        console.log('所有数据都在缓存中，直接使用');
         if (callback) callback(cachedData);
         return;
     }
     
     // 否则请求数据
+    console.log('开始请求服务器数据');
     $.ajax({
         url: "/Admin1/GetBatchDropdownOptions",
         type: "post",
         data: { categories: needLoad.join(",") },
         success: function(data) {
-            var result = JSON.parse(data);
-            
-            // 合并缓存数据和新数据
-            for (var category in result) {
-                cachedData[category] = result[category];
+            console.log('服务器返回数据:', data);
+            try {
+                var result = JSON.parse(data);
+                console.log('解析后的数据:', result);
+                
+                // 合并缓存数据和新数据
+                for (var category in result) {
+                    cachedData[category] = result[category];
+                    console.log('合并分类数据:', category, result[category]);
+                }
+                
+                // 更新缓存
+                dropdownCache.set(cachedData);
+                console.log('更新缓存完成');
+                
+                // 执行回调
+                if (callback) callback(cachedData);
+            } catch (error) {
+                console.error('解析服务器返回数据失败:', error);
+                if (callback) callback(cachedData);
             }
-            
-            // 更新缓存
-            dropdownCache.set(cachedData);
-            
-            // 执行回调
-            if (callback) callback(cachedData);
         },
-        error: function() {
-            console.error("批量加载下拉框选项失败");
+        error: function(xhr, status, error) {
+            console.error('批量加载下拉框选项失败:', error);
+            console.error('请求状态:', status);
+            console.error('响应内容:', xhr.responseText);
             if (callback) callback(cachedData);
         }
     });
@@ -332,4 +350,35 @@ function refreshDropdownCache(category) {
     if (!category) {
         mini.alert("缓存已刷新，下次加载页面时将获取最新数据");
     }
+}
+
+/**
+ * 格式化日期时间为 yyyy-MM-dd HH:mm:ss 格式
+ * @param {string|Date} date - 日期对象或日期字符串
+ * @returns {string} 格式化后的日期时间字符串
+ */
+function formatDate(date) {
+    if (!date) return "";
+    if (typeof date === 'string') {
+        // 尝试将字符串转换为日期对象
+        var dateObj = new Date(date);
+        if (!isNaN(dateObj.getTime())) {
+            return dateObj.getFullYear() + "-" + 
+                   (dateObj.getMonth() + 1).toString().padStart(2, '0') + "-" + 
+                   dateObj.getDate().toString().padStart(2, '0') + " " + 
+                   dateObj.getHours().toString().padStart(2, '0') + ":" + 
+                   dateObj.getMinutes().toString().padStart(2, '0') + ":" + 
+                   dateObj.getSeconds().toString().padStart(2, '0');
+        }
+        return date;
+    }
+    if (date instanceof Date) {
+        return date.getFullYear() + "-" + 
+               (date.getMonth() + 1).toString().padStart(2, '0') + "-" + 
+               date.getDate().toString().padStart(2, '0') + " " + 
+               date.getHours().toString().padStart(2, '0') + ":" + 
+               date.getMinutes().toString().padStart(2, '0') + ":" + 
+               date.getSeconds().toString().padStart(2, '0');
+    }
+    return String(date);
 }

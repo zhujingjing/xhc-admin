@@ -1,0 +1,248 @@
+时间:2026/3/22 16:11:46-内容:时间:2026/3/22 16:11:46   计算毫秒数:227 , 计算周期数:2273815; 计算内容:select [id]
+                              ,user_name
+                              ,user_pwd
+                              ,type
+                              ,table_name
+                              ,other_id
+                              ,comment
+                              from dbo.sys_user
+                              where[user_name] = 'wu' and [user_pwd] = 'sijie'
+时间:2026/3/22 16:11:46-内容:时间:2026/3/22 16:11:46   计算毫秒数:35 , 计算周期数:354377; 计算内容:insert into dbo.[sys_user_record](user_name,user_id,type,login_time,ip,id) values('wu','14f56df0-3dd8-465c-9387-186127da89b0','平台管理员','2026/3/22 16:11:46','::1','1e655af7-433c-4316-8672-4a14a5f43eb7')
+时间:2026/3/22 16:11:59-内容:时间:2026/3/22 16:11:59   计算毫秒数:29 , 计算周期数:292031; 计算内容:SELECT CategoryID
+                             , CategoryName
+                             , ParentID
+                             , Description
+                             , CreateTime
+                             , UpdateTime 
+                             FROM dbo.TaskCategory 
+                             ORDER BY CreateTime DESC
+时间:2026/3/22 16:11:59-内容:时间:2026/3/22 16:11:59   计算毫秒数:194 , 计算周期数:1946523; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                             , t.BusinessType
+                             , t.BusinessId
+                             , t.FullExternalUrl 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1  AND t.AssignedTo = 'wu'
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/22 16:12:17-内容:时间:2026/3/22 16:12:17   计算毫秒数:26 , 计算周期数:260632; 计算内容:SELECT CategoryID
+                             , CategoryName
+                             , ParentID
+                             , Description
+                             , CreateTime
+                             , UpdateTime 
+                             FROM dbo.TaskCategory 
+                             ORDER BY CreateTime DESC
+时间:2026/3/22 16:12:17-内容:时间:2026/3/22 16:12:17   计算毫秒数:26 , 计算周期数:260820; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                             , t.BusinessType
+                             , t.BusinessId
+                             , t.FullExternalUrl 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1  AND t.AssignedTo = 'wu'
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/22 16:12:36-内容:时间:2026/3/22 16:12:36   计算毫秒数:81 , 计算周期数:811476; 计算内容:SELECT CategoryID
+                             , CategoryName
+                             , ParentID
+                             , Description
+                             , CreateTime
+                             , UpdateTime 
+                             FROM dbo.TaskCategory 
+                             ORDER BY CreateTime DESC
+时间:2026/3/22 16:12:36-内容:时间:2026/3/22 16:12:36   计算毫秒数:27 , 计算周期数:270040; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                             , t.BusinessType
+                             , t.BusinessId
+                             , t.FullExternalUrl 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1  AND t.AssignedTo = 'wu'
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/22 16:12:46-内容:时间:2026/3/22 16:12:46   计算毫秒数:26 , 计算周期数:268507; 计算内容:SELECT CategoryID
+                             , CategoryName
+                             , ParentID
+                             , Description
+                             , CreateTime
+                             , UpdateTime 
+                             FROM dbo.TaskCategory 
+                             ORDER BY CreateTime DESC
+时间:2026/3/22 16:12:46-内容:时间:2026/3/22 16:12:46   计算毫秒数:88 , 计算周期数:881735; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                             , t.BusinessType
+                             , t.BusinessId
+                             , t.FullExternalUrl 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1 
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/22 16:14:28-内容:时间:2026/3/22 16:14:28   计算毫秒数:27 , 计算周期数:279219; 计算内容:SELECT CategoryID
+                             , CategoryName
+                             , ParentID
+                             , Description
+                             , CreateTime
+                             , UpdateTime 
+                             FROM dbo.TaskCategory 
+                             ORDER BY CreateTime DESC
+时间:2026/3/22 16:14:28-内容:时间:2026/3/22 16:14:28   计算毫秒数:26 , 计算周期数:263131; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                             , t.BusinessType
+                             , t.BusinessId
+                             , t.FullExternalUrl 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1  AND t.AssignedTo = 'wu'
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/22 16:14:30-内容:时间:2026/3/22 16:14:30   计算毫秒数:26 , 计算周期数:261464; 计算内容:SELECT CategoryID
+                             , CategoryName
+                             , ParentID
+                             , Description
+                             , CreateTime
+                             , UpdateTime 
+                             FROM dbo.TaskCategory 
+                             ORDER BY CreateTime DESC
+时间:2026/3/22 16:14:30-内容:时间:2026/3/22 16:14:30   计算毫秒数:33 , 计算周期数:331314; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                             , t.BusinessType
+                             , t.BusinessId
+                             , t.FullExternalUrl 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1 
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/22 16:14:47-内容:时间:2026/3/22 16:14:47   计算毫秒数:26 , 计算周期数:264039; 计算内容:SELECT CategoryID
+                             , CategoryName
+                             , ParentID
+                             , Description
+                             , CreateTime
+                             , UpdateTime 
+                             FROM dbo.TaskCategory 
+                             ORDER BY CreateTime DESC
+时间:2026/3/22 16:14:48-内容:时间:2026/3/22 16:14:48   计算毫秒数:27 , 计算周期数:278774; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                             , t.BusinessType
+                             , t.BusinessId
+                             , t.FullExternalUrl 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1  AND t.AssignedTo = 'wu'
+                             ORDER BY t.CreateTime DESC

@@ -7,3 +7,4 @@ D:\小火柴项目\code-admin\BLL\bin\Debug\External.dll
 D:\小火柴项目\code-admin\BLL\obj\Debug\BLL.dll
 D:\小火柴项目\code-admin\BLL\obj\Debug\BLL.pdb
 D:\小火柴项目\code-admin\BLL\bin\Debug\Newtonsoft.Json.dll
+D:\小火柴项目\code-admin\BLL\obj\Debug\BLL.csprojResolveAssemblyReference.cache

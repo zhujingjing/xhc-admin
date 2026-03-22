@@ -5,7 +5,7 @@
     <title></title>
     <link href="~/Styles/demo.css" rel="stylesheet" type="text/css" />
     <script src="~/Scripts/jquery.min.js"></script>
-    <script src="~/Scripts/public.js"></script>
+    <script src="~/Scripts/public.js?id=1"></script>
     <style>
         .btn {
             margin-top: 20px;
@@ -51,46 +51,63 @@
 
 <script type="text/javascript">
     $(function () {
+        console.log('页面加载开始，准备加载下拉框数据');
         // 批量加载下拉框数据
         var categories = ["kill_hours", "feng_hao_reason"];
+        console.log('要加载的分类:', categories);
         loadBatchDropdownOptions(categories, function(data) {
+            console.log('获取到下拉框数据:', data);
+            console.log('kill_hours 数据:', data["kill_hours"]);
+            console.log('feng_hao_reason 数据:', data["feng_hao_reason"]);
             // 更新下拉框选项
             updateDropdown("kill_hour", data["kill_hours"], true);
             updateDropdown("kill_reason", data["feng_hao_reason"], false);
+            console.log('下拉框更新完成');
         });
         
         $("#btnok").bind("click", function () {
-            var uid = "@ViewData[\"uid\"]";
+            var uid = '@ViewData["uid"]';
             var kill_hour = $("#kill_hour").val();
             var kill_reason = $("#kill_reason").val();
+            console.log('点击封杀按钮，参数:', { uid: uid, hour: kill_hour, reason: kill_reason });
             $.ajax({
                 type: "POST",
                 url: "/Admin1/FengHao",
                 data: { "uid": uid, "hour": kill_hour, "reason": kill_reason },
                 success: function (data) {
+                    console.log('封杀请求返回:', data);
                     data = JSON.parse(data);
                     if (data.state == "1") {
                         //alert("封杀成功！");
                         //CloseWindow("ok");
                         docheck();
                     }
+                },
+                error: function(xhr, status, error) {
+                    console.error('封杀请求失败:', error);
                 }
             });
         });
     });
     function docheck() {
         var id = '@ViewData["id"]';
+        console.log('执行 docheck，id:', id);
         $.ajax({
             type: "get",
             url: "/Admin1/Update_Check_Complain2",
             data: { "id": id, "rst_check": "已封号", "rst": "成功" },
             success: function (data) {
+                console.log('Update_Check_Complain2 返回:', data);
                 CloseWindow("ok");
+            },
+            error: function(xhr, status, error) {
+                console.error('Update_Check_Complain2 请求失败:', error);
             }
         });
     }
 
     function CloseWindow(action) {
+        console.log('关闭窗口，action:', action);
         if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
         else window.close();
     }

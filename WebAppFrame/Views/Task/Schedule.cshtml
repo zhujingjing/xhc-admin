@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <title>调度配置</title>
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=12"></script>
+    <style type="text/css">
+        body {
+            font-family: tahoma, arial, sans-serif;
+            font-size: 12px;
+        }
+        .font-bold {
+            font-weight: bold;
+        }
+        .right {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .left {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+    </style>
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent).height();
+            $("#grid1").height(parentHeight - 120);
+
+            mini.parse();
+
+            grid = mini.get("grid1");
+
+            init();
+
+            // 加载任务模板
+            loadTaskTemplates();
+            // 加载调度配置数据
+            loadData();
+        })
+
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#grid1").height(parentHeight - 110);
+        }
+
+        // 获取当前登录用户名
+        function getCurrentUserName() {
+            var operator_name = "";
+            if (window.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            if (window.parent.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            return operator_name;
+        }
+
+        // 渲染状态
+        function renderIsActive(e) {
+            var value = e.value;
+            return value ? "启用" : "禁用";
+        }
+
+        // 渲染调度类型
+        function renderScheduleType(e) {
+            var value = e.value;
+            switch (value) {
+                case 1: return "每天";
+                case 2: return "每周";
+                case 3: return "每月";
+                default: return "未知";
+            }
+        }
+
+        // 渲染星期
+        function renderDayOfWeek(e) {
+            var value = e.value;
+            var scheduleType = e.record.ScheduleType;
+            if (scheduleType == 2 && value) {
+                switch (value) {
+                    case 1: return "周一";
+                    case 2: return "周二";
+                    case 3: return "周三";
+                    case 4: return "周四";
+                    case 5: return "周五";
+                    case 6: return "周六";
+                    case 7: return "周日";
+                    default: return "";
+                }
+            }
+            return "";
+        }
+
+        // 渲染日期
+        function renderDayOfMonth(e) {
+            var value = e.value;
+            return value ? value + "日" : "";
+        }
+
+        // 渲染操作按钮
+        function renderAction(e) {
+            var record = e.record;
+            var scheduleId = record.ScheduleID;
+            var isActive = record.IsActive;
+            var activeText = isActive ? "禁用" : "启用";
+            var activeFunction = isActive ? "disable('" + scheduleId + "')" : "enable('" + scheduleId + "')";
+            var activeColor = isActive ? "red" : "green";
+            
+            return '<a href="javascript:editSchedule(\'' + scheduleId + '\')" style="color:green;">编辑</a> | <a href="javascript:deleteSchedule(\'' + scheduleId + '\')" style="color:red;">删除</a> | <a href="javascript:' + activeFunction + '" style="color:' + activeColor + ';">' + activeText + '</a>';
+        }
+
+        // 加载任务模板
+        function loadTaskTemplates() {
+            $.ajax({
+                url: "/Task/GetTaskTemplateList",
+                type: "post",
+                success: function (text) {
+                    var result = mini.decode(text);
+                    var templates = result && result.data ? result.data : (result && result.length > 0 ? result : []);
+                    // 添加请选择选项
+                    templates.unshift({ TemplateID: "", TemplateName: "请选择" });
+                    mini.get("templateId").setData(templates);
+                }
+            });
+        }
+
+        // 加载数据
+        function loadData() {
+            var templateIdValue = mini.get("templateId").getValue();
+            
+            // 直接使用grid.load方法，传递参数
+            grid.load({ templateId: templateIdValue });
+        }
+
+        // 搜索
+        function search() {
+            loadData();
+        }
+
+        // 新增调度配置
+        function addSchedule() {
+            var win = mini.open({
+                url: "/Task/ScheduleAdd",
+                title: "新增调度配置",
+                width: 800,
+                height: 650,
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        loadData();
+                    }
+                }
+            });
+        }
+
+        // 编辑调度配置
+        function editSchedule(scheduleId) {
+            var win = mini.open({
+                url: "/Task/ScheduleAdd?id=" + scheduleId,
+                title: "编辑调度配置",
+                width: 800,
+                height: 650,
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        loadData();
+                    }
+                }
+            });
+        }
+
+        // 删除调度配置
+        function deleteSchedule(scheduleId) {
+            mini.confirm("确定要删除该调度配置吗？", "提示", function (action) {
+                if (action == "ok") {
+                    $.ajax({
+                        url: "/Task/DeleteTaskTemplateSchedule",
+                        type: "post",
+                        data: { id: scheduleId },
+                        success: function (text) {
+                            var result = mini.decode(text);
+                            if (result.state == "1" || result.state == 1) {
+                                mini.alert("删除成功");
+                                loadData();
+                            } else {
+                                mini.alert(result.msg || "删除失败");
+                            }
+                        },
+                        error: function () {
+                            mini.alert("网络错误");
+                        }
+                    });
+                }
+            });
+        }
+
+        // 启用调度配置
+        function enable(scheduleId) {
+            $.ajax({
+                url: "/Task/UpdateTaskTemplateScheduleStatus",
+                type: "post",
+                data: { id: scheduleId, isActive: true },
+                success: function (text) {
+                    var result = mini.decode(text);
+                    if (result.state == "1" || result.state == 1) {
+                        mini.alert("启用成功");
+                        loadData();
+                    } else {
+                        mini.alert(result.msg || "启用失败");
+                    }
+                },
+                error: function () {
+                    mini.alert("网络错误");
+                }
+            });
+        }
+
+        // 禁用调度配置
+        function disable(scheduleId) {
+            $.ajax({
+                url: "/Task/UpdateTaskTemplateScheduleStatus",
+                type: "post",
+                data: { id: scheduleId, isActive: false },
+                success: function (text) {
+                    var result = mini.decode(text);
+                    if (result.state == "1" || result.state == 1) {
+                        mini.alert("禁用成功");
+                        loadData();
+                    } else {
+                        mini.alert(result.msg || "禁用失败");
+                    }
+                },
+                error: function () {
+                    mini.alert("网络错误");
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">任务管理</a></li>
+            <li><a href="#">调度配置</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+        <div class="sys-content-border" style="padding:8px 3px;">
+            任务模板: 
+            <select id="templateId" class="mini-combobox" style="width:150px;" placeholder="任务模板" displayField="TemplateName" valueField="TemplateID"></select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_search" type="button" class="sys-btn" value="搜索" onclick="search()" style="background-color: #E3F2FD; color: #1976D2;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_add" type="button" class="sys-btn" value="新增调度" onclick="addSchedule()" style="background-color: #E8F5E9; color: #388E3C;" />
+        </div>
+        <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskTemplateScheduleList" idfield="ScheduleID" allowresize="true"
+             sizelist="[50,100,200]" pagesize="50">
+            <div property="columns">
+                <div type="checkcolumn" width="30"></div>
+                <div field="ScheduleID" width="0" visible="false"></div>
+                <div field="TemplateName" width="200" header="任务模板" allowSort="true"></div>
+                <div field="ScheduleType" width="100" header="调度类型" allowSort="true" renderer="renderScheduleType"></div>
+                <div field="DayOfWeek" width="100" header="星期" allowSort="true" renderer="renderDayOfWeek"></div>
+                <div field="DayOfMonth" width="100" header="日期" allowSort="true" renderer="renderDayOfMonth"></div>
+                <div field="ExecuteTime" width="100" header="执行时间" allowSort="true"></div>
+                <div field="IsActive" width="80" header="状态" allowSort="true" renderer="renderIsActive"></div>
+                <div field="CreateTime" width="180" header="创建时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="UpdateTime" width="180" header="更新时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="action" width="150" header="操作" align="center" renderer="renderAction"></div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

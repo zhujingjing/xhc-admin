@@ -1,0 +1,209 @@
+
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <title>时间段设置</title>
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=12"></script>
+    <style type="text/css">
+        body {
+            font-family: tahoma, arial, sans-serif;
+            font-size: 12px;
+        }
+        .font-bold {
+            font-weight: bold;
+        }
+        .right {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .left {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+    </style>
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent).height();
+            $("#grid1").height(parentHeight - 120);
+
+            mini.parse();
+
+            grid = mini.get("grid1");
+
+            init();
+
+            // 加载任务分类
+            loadCategories();
+            // 加载时间段设置数据
+            loadData();
+        })
+
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#grid1").height(parentHeight - 110);
+        }
+
+        // 获取当前登录用户名
+        function getCurrentUserName() {
+            var operator_name = "";
+            if (window.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            if (window.parent.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            return operator_name;
+        }
+
+        // 渲染状态
+        function renderIsActive(e) {
+            var value = e.value;
+            return value ? "启用" : "禁用";
+        }
+
+
+
+        // 渲染操作按钮
+        function renderAction(e) {
+            var record = e.record;
+            var settingId = record.SettingID;
+            return '<a href="javascript:editTimeSetting(\'' + settingId + '\')" style="color:green;">编辑</a> | <a href="javascript:deleteTimeSetting(\'' + settingId + '\')" style="color:red;">删除</a>';
+        }
+
+        // 加载任务分类
+        function loadCategories() {
+            $.ajax({
+                url: "/Task/GetTaskCategoryList",
+                type: "post",
+                success: function (text) {
+                    var result = mini.decode(text);
+                    var categories = result && result.data ? result.data : (result && result.length > 0 ? result : []);
+                    mini.get("categoryId").setData(categories);
+                }
+            });
+        }
+
+        // 加载数据
+        function loadData() {
+            var categoryIdValue = mini.get("categoryId").getValue();
+            
+            // 直接使用grid.load方法，传递参数
+            grid.load({ categoryId: categoryIdValue });
+        }
+
+        // 搜索
+        function search() {
+            loadData();
+        }
+
+        // 新增时间段设置
+        function addTimeSetting() {
+            var win = mini.open({
+                url: "/Task/TimeAdd",
+                title: "新增时间段设置",
+                width: 800,
+                height: 650,
+                onload: function () {
+                    var iframe = this.getIFrameEl();
+                    var data = { action: "new" };
+                    iframe.contentWindow.SetData(data);
+                },
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        loadData();
+                    }
+                }
+            });
+        }
+
+        // 编辑时间段设置
+        function editTimeSetting(settingId) {
+            var win = mini.open({
+                url: "/Task/TimeAdd?id=" + settingId,
+                title: "编辑时间段设置",
+                width: 800,
+                height: 650,
+                onload: function () {
+                    var iframe = this.getIFrameEl();
+                    var data = { action: "edit", settingId: settingId };
+                    iframe.contentWindow.SetData(data);
+                },
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        loadData();
+                    }
+                }
+            });
+        }
+
+        // 删除时间段设置
+        function deleteTimeSetting(settingId) {
+            mini.confirm("确定要删除该设置吗？", "提示", function (action) {
+                if (action == "ok") {
+                    $.ajax({
+                        url: "/Task/DeleteTaskTime",
+                        type: "post",
+                        data: { id: settingId },
+                        success: function (text) {
+                            var result = mini.decode(text);
+                            if (result.state == "1" || result.state == 1) {
+                                mini.alert("删除成功");
+                                loadData();
+                            } else {
+                                mini.alert(result.msg || "删除失败");
+                            }
+                        },
+                        error: function () {
+                            mini.alert("网络错误");
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">任务管理</a></li>
+            <li><a href="#">时间段设置</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+        <div class="sys-content-border" style="padding:8px 3px;">
+            任务分类: 
+            <select id="categoryId" class="mini-combobox" style="width:150px;" placeholder="任务分类" displayField="CategoryName" valueField="CategoryID"></select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_search" type="button" class="sys-btn" value="搜索" onclick="search()" style="background-color: #E3F2FD; color: #1976D2;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_add" type="button" class="sys-btn" value="新增时间段" onclick="addTimeSetting()" style="background-color: #E8F5E9; color: #388E3C;" />
+        </div>
+        <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskTimeList" idfield="SettingID" allowresize="true"
+             sizelist="[50,100,200]" pagesize="50">
+            <div property="columns">
+                <div type="checkcolumn" width="30"></div>
+                <div field="SettingID" width="0" visible="false"></div>
+                <div field="CategoryName" width="150" header="分类" allowSort="true"></div>
+                <div field="StartTime" width="150" header="开始时间" allowSort="true"></div>
+                <div field="EndTime" width="150" header="结束时间" allowSort="true"></div>
+                <div field="IsActive" width="80" header="状态" allowSort="true" renderer="renderIsActive"></div>
+                <div field="CreateTime" width="180" header="创建时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="action" width="150" header="操作" align="center" renderer="renderAction"></div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

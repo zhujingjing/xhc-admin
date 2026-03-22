@@ -1,0 +1,224 @@
+
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <title>任务审核</title>
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/miniui/boot.js" type="text/javascript"></script>
+    <script src="~/Scripts/Global.js"></script>
+    <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
+    <link href="~/Styles/public.css?id=1" rel="stylesheet" />
+    <script src="~/Scripts/public.js?id=12"></script>
+    <style type="text/css">
+        body {
+            font-family: tahoma, arial, sans-serif;
+            font-size: 12px;
+        }
+        .font-bold {
+            font-weight: bold;
+        }
+        .right {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .left {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+    </style>
+    <script type="text/javascript">
+        var grid;
+        $(function () {
+            //设置表格的高度
+            var parentHeight = $(window.parent).height();
+            $("#grid1").height(parentHeight - 120);
+
+            mini.parse();
+
+            grid = mini.get("grid1");
+
+            init();
+
+            // 加载任务数据
+            loadData();
+        })
+
+        function init() {
+            //设置表格的高度
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#grid1").height(parentHeight - 110);
+        }
+
+        // 获取当前登录用户名
+        function getCurrentUserName() {
+            var operator_name = "";
+            if (window.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            if (window.parent.parent.frames["topFrame"]) {
+                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
+            }
+            return operator_name;
+        }
+
+        // 渲染状态
+        function renderStatus(e) {
+            var value = e.value;
+            if (value == 2) return "待审核";
+            if (value == 3) return "已审核";
+            return value;
+        }
+
+        // 渲染操作按钮
+        function renderAction(e) {
+            var record = e.record;
+            var taskId = record.TaskID;
+            return '<a href="javascript:auditTask(\'' + taskId + '\')" style="color:green;">审核</a> | <a href="javascript:viewTask(\'' + taskId + '\')" style="color:black;">详情</a>';
+        }
+
+        // 加载数据
+        function loadData() {
+            var status = mini.get("statusFilter").getValue();
+            var taskNameValue = mini.get("taskName").getValue();
+            
+            grid.load({
+                url: "/Task/GetTaskList",
+                params: {
+                    status: status,
+                    taskName: taskNameValue
+                }
+            });
+        }
+
+        // 搜索
+        function search() {
+            loadData();
+        }
+
+        // 审核任务
+        function auditTask(taskId) {
+            var win = mini.open({
+                url: "/Task/AuditTask?id=" + taskId,
+                title: "任务审核",
+                width: 800,
+                height: 650,
+                onload: function () {
+                    var iframe = this.getIFrameEl();
+                    var data = { taskId: taskId };
+                    iframe.contentWindow.SetData(data);
+                },
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        loadData();
+                    }
+                }
+            });
+        }
+
+        // 批量审核
+        function batchAudit() {
+            var rows = grid.getSelecteds();
+            if (rows.length == 0) {
+                mini.alert("请选择要审核的任务");
+                return;
+            }
+
+            mini.prompt("请选择审核结果: <br/><select id='auditResult'><option value='true'>通过</option><option value='false'>拒绝</option></select><br/><textarea id='auditOpinion' style='width:100%;height:100px;margin-top:10px;' placeholder='请输入审核意见'></textarea>", "批量审核", function (action, value) {
+                if (action == "ok") {
+                    var auditResult = document.getElementById("auditResult").value === "true";
+                    var auditOpinion = document.getElementById("auditOpinion").value;
+                    var auditor = getCurrentUserName();
+                    var taskIds = [];
+                    for (var i = 0; i < rows.length; i++) {
+                        taskIds.push(rows[i].TaskID);
+                    }
+
+                    $.ajax({
+                        url: "/Task/BatchAuditTasks",
+                        type: "post",
+                        data: {
+                            taskIds: taskIds.join(","),
+                            auditor: auditor,
+                            auditResult: auditResult,
+                            auditOpinion: auditOpinion
+                        },
+                        success: function (text) {
+                            var result = mini.decode(text);
+                            if (result.state == "1" || result.state == 1) {
+                                mini.alert("批量审核成功");
+                                loadData();
+                            } else {
+                                mini.alert(result.msg || "审核失败");
+                            }
+                        },
+                        error: function () {
+                            mini.alert("网络错误");
+                        }
+                    });
+                }
+            }, "ok,cancel", { width: 500, height: 250 });
+        }
+
+        // 查看任务
+        function viewTask(taskId) {
+            var win = mini.open({
+                url: "/Task/Detail?id=" + taskId,
+                title: "任务详情",
+                width: "100%",
+                height: "100%",
+                ondestroy: function (action) {
+                    if (action == "ok") {
+                        loadData();
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">任务管理</a></li>
+            <li><a href="#">任务审核</a></li>
+        </ul>
+    </div>
+    <form id="form1">
+        <div class="sys-content-border" style="padding:8px 3px;">
+            状态: 
+            <select id="statusFilter" class="mini-combobox" style="width:150px;" onchange="loadData()">
+                <option value="2">待审核</option>
+                <option value="3">已审核</option>
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            任务名称: 
+            <input id="taskName" class="mini-textbox" style="width:200px;" placeholder="任务名称" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_search" type="button" class="sys-btn" value="搜索" onclick="search()" style="background-color: #E3F2FD; color: #1976D2;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_batch_audit" type="button" class="sys-btn" value="批量审核" onclick="batchAudit()" style="background-color: #FFF3E0; color: #EF6C00;" />
+        </div>
+        <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskList" idfield="TaskID" allowresize="true"
+             sizelist="[50,100,200]" pagesize="50">
+            <div property="columns">
+                <div type="checkcolumn" width="30"></div>
+                <div field="TaskID" width="0" visible="false"></div>
+                <div field="TaskName" width="200" header="任务名称" allowSort="true"></div>
+                <div field="CategoryName" width="150" header="分类" allowSort="true"></div>
+                <div field="AssignedTo" width="150" header="分配人" allowSort="true"></div>
+                <div field="Description" width="300" header="任务描述"></div>
+                <div field="Status" width="100" header="状态" allowSort="true" renderer="renderStatus"></div>
+                <div field="StandardScore" width="100" header="标准分" allowSort="true"></div>
+                <div field="ActualScore" width="100" header="实际分" allowSort="true"></div>
+                <div field="Deadline" width="180" header="截止时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="CreateTime" width="180" header="创建时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="action" width="150" header="操作" align="center" renderer="renderAction"></div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

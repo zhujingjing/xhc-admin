@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -562,6 +562,40 @@ namespace BLL
             iRtn = (int)DBHelper.SqlHelper.GetDataItemDouble(strSql);
 
             return iRtn;
+        }
+
+        public System.Data.DataTable GetCoinSourceStats(string uid)
+        {
+            string strSql = @"
+                SELECT TOP 3
+                    type_dtl as source_type,
+                    SUM(amount) as total_amount,
+                    COUNT(*) as count
+                FROM dbo.coin
+                WHERE uid_from = '{0}' AND type = '增加'
+                GROUP BY type_dtl
+                ORDER BY total_amount DESC
+            ";
+            strSql = string.Format(strSql, uid);
+            System.Data.DataTable dt = DBHelper.SqlHelper.GetDataTable(strSql);
+            return dt;
+        }
+
+        public System.Data.DataTable GetCoinConsumeStats(string uid)
+        {
+            string strSql = @"
+                SELECT TOP 3
+                    type_dtl as consume_type,
+                    SUM(amount) as total_amount,
+                    COUNT(*) as count
+                FROM dbo.coin
+                WHERE uid_from = '{0}' AND type = '减少'
+                GROUP BY type_dtl
+                ORDER BY total_amount DESC
+            ";
+            strSql = string.Format(strSql, uid);
+            System.Data.DataTable dt = DBHelper.SqlHelper.GetDataTable(strSql);
+            return dt;
         }
 
         public int GetUserScore_Left(string uid)

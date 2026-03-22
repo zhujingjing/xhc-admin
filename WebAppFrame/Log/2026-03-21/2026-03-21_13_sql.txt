@@ -1,0 +1,535 @@
+时间:2026/3/21 13:14:51-内容:时间:2026/3/21 13:14:51   计算毫秒数:141 , 计算周期数:1418177; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1  AND t.AssignedTo = 'wu'
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/21 13:15:48-内容:时间:2026/3/21 13:15:48   计算毫秒数:28 , 计算周期数:281505; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1  AND t.AssignedTo = 'wu'
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/21 13:15:52-内容:时间:2026/3/21 13:15:52   计算毫秒数:204 , 计算周期数:2046003; 计算内容:SELECT CategoryID
+                             , CategoryName
+                             , ParentID
+                             , Description
+                             , CreateTime
+                             , UpdateTime 
+                             FROM dbo.TaskCategory 
+                             ORDER BY CreateTime DESC
+时间:2026/3/21 13:15:52-内容:时间:2026/3/21 13:15:52   计算毫秒数:52 , 计算周期数:521302; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1 
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/21 13:25:47-内容:时间:2026/3/21 13:25:47   计算毫秒数:273 , 计算周期数:2739693; 计算内容:SELECT CategoryID
+                             , CategoryName
+                             , ParentID
+                             , Description
+                             , CreateTime
+                             , UpdateTime 
+                             FROM dbo.TaskCategory 
+                             ORDER BY CreateTime DESC
+时间:2026/3/21 13:25:48-内容:时间:2026/3/21 13:25:48   计算毫秒数:189 , 计算周期数:1892168; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1 
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/21 13:25:50-内容:时间:2026/3/21 13:25:50   计算毫秒数:65 , 计算周期数:655979; 计算内容:SELECT t.TaskID
+                                          , t.TaskName
+                                          , t.TemplateID
+                                          , t.CategoryID
+                                          , c.CategoryName
+                                          , tmpl.TemplateName
+                                          , t.Description
+                                          , t.AssignedTo
+                                          , t.Priority
+                                          , t.Status
+                                          , t.StandardScore
+                                          , t.ActualScore
+                                          , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                                          , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                                          , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                                          , t.Creator
+                                          , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                                          , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                                          , t.Result
+                                          , t.Remarks
+                                          , t.Images
+                                          , t.Parms 
+                                          FROM dbo.Task t
+                                          LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID
+                                          LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID
+                                          WHERE t.TaskID = '556fd19e-0ef5-4234-a42c-62c29a772afe'
+时间:2026/3/21 13:25:50-内容:时间:2026/3/21 13:25:50   计算毫秒数:42 , 计算周期数:425367; 计算内容:SELECT AuditID
+                                          , TaskID
+                                          , Auditor
+                                          , AuditResult
+                                          , AuditOpinion
+                                          , AuditTime 
+                                          FROM dbo.TaskAudit 
+                                          WHERE TaskID = '556fd19e-0ef5-4234-a42c-62c29a772afe' 
+                                          ORDER BY AuditTime DESC
+时间:2026/3/21 13:25:50-内容:时间:2026/3/21 13:25:50   计算毫秒数:31 , 计算周期数:313350; 计算内容:SELECT LogID
+                                          , TaskID
+                                          , Operator
+                                          , OperationType
+                                          , OperationContent
+                                          , OperationTime 
+                                          FROM dbo.TaskOperationLog 
+                                          WHERE TaskID = '556fd19e-0ef5-4234-a42c-62c29a772afe' 
+                                          ORDER BY OperationTime DESC
+时间:2026/3/21 13:25:54-内容:时间:2026/3/21 13:25:54   计算毫秒数:129 , 计算周期数:1299058; 计算内容:SELECT t.TaskID
+                                          , t.TaskName
+                                          , t.TemplateID
+                                          , t.CategoryID
+                                          , c.CategoryName
+                                          , tmpl.TemplateName
+                                          , t.Description
+                                          , t.AssignedTo
+                                          , t.Priority
+                                          , t.Status
+                                          , t.StandardScore
+                                          , t.ActualScore
+                                          , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                                          , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                                          , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                                          , t.Creator
+                                          , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                                          , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                                          , t.Result
+                                          , t.Remarks
+                                          , t.Images
+                                          , t.Parms 
+                                          FROM dbo.Task t
+                                          LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID
+                                          LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID
+                                          WHERE t.TaskID = 'c4ddebfe-bfe1-435a-8de2-56a95637fb52'
+时间:2026/3/21 13:25:54-内容:时间:2026/3/21 13:25:54   计算毫秒数:30 , 计算周期数:308586; 计算内容:SELECT AuditID
+                                          , TaskID
+                                          , Auditor
+                                          , AuditResult
+                                          , AuditOpinion
+                                          , AuditTime 
+                                          FROM dbo.TaskAudit 
+                                          WHERE TaskID = 'c4ddebfe-bfe1-435a-8de2-56a95637fb52' 
+                                          ORDER BY AuditTime DESC
+时间:2026/3/21 13:25:54-内容:时间:2026/3/21 13:25:54   计算毫秒数:29 , 计算周期数:294445; 计算内容:SELECT LogID
+                                          , TaskID
+                                          , Operator
+                                          , OperationType
+                                          , OperationContent
+                                          , OperationTime 
+                                          FROM dbo.TaskOperationLog 
+                                          WHERE TaskID = 'c4ddebfe-bfe1-435a-8de2-56a95637fb52' 
+                                          ORDER BY OperationTime DESC
+时间:2026/3/21 13:26:05-内容:时间:2026/3/21 13:26:05   计算毫秒数:68 , 计算周期数:687003; 计算内容:SELECT t.TaskID
+                                          , t.TaskName
+                                          , t.TemplateID
+                                          , t.CategoryID
+                                          , c.CategoryName
+                                          , tmpl.TemplateName
+                                          , t.Description
+                                          , t.AssignedTo
+                                          , t.Priority
+                                          , t.Status
+                                          , t.StandardScore
+                                          , t.ActualScore
+                                          , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                                          , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                                          , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                                          , t.Creator
+                                          , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                                          , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                                          , t.Result
+                                          , t.Remarks
+                                          , t.Images
+                                          , t.Parms 
+                                          FROM dbo.Task t
+                                          LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID
+                                          LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID
+                                          WHERE t.TaskID = 'adfe6ec6-f523-479b-9434-3630361a4819'
+时间:2026/3/21 13:26:05-内容:时间:2026/3/21 13:26:05   计算毫秒数:29 , 计算周期数:297401; 计算内容:SELECT AuditID
+                                          , TaskID
+                                          , Auditor
+                                          , AuditResult
+                                          , AuditOpinion
+                                          , AuditTime 
+                                          FROM dbo.TaskAudit 
+                                          WHERE TaskID = 'adfe6ec6-f523-479b-9434-3630361a4819' 
+                                          ORDER BY AuditTime DESC
+时间:2026/3/21 13:26:05-内容:时间:2026/3/21 13:26:05   计算毫秒数:30 , 计算周期数:307747; 计算内容:SELECT LogID
+                                          , TaskID
+                                          , Operator
+                                          , OperationType
+                                          , OperationContent
+                                          , OperationTime 
+                                          FROM dbo.TaskOperationLog 
+                                          WHERE TaskID = 'adfe6ec6-f523-479b-9434-3630361a4819' 
+                                          ORDER BY OperationTime DESC
+时间:2026/3/21 13:26:12-内容:时间:2026/3/21 13:26:12   计算毫秒数:229 , 计算周期数:2299041; 计算内容:SELECT t.TaskID
+                                          , t.TaskName
+                                          , t.TemplateID
+                                          , t.CategoryID
+                                          , c.CategoryName
+                                          , tmpl.TemplateName
+                                          , t.Description
+                                          , t.AssignedTo
+                                          , t.Priority
+                                          , t.Status
+                                          , t.StandardScore
+                                          , t.ActualScore
+                                          , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                                          , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                                          , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                                          , t.Creator
+                                          , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                                          , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                                          , t.Result
+                                          , t.Remarks
+                                          , t.Images
+                                          , t.Parms 
+                                          FROM dbo.Task t
+                                          LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID
+                                          LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID
+                                          WHERE t.TaskID = '4cc7ae00-74e7-4401-a23b-45f260fbb68a'
+时间:2026/3/21 13:26:12-内容:时间:2026/3/21 13:26:12   计算毫秒数:29 , 计算周期数:292735; 计算内容:SELECT AuditID
+                                          , TaskID
+                                          , Auditor
+                                          , AuditResult
+                                          , AuditOpinion
+                                          , AuditTime 
+                                          FROM dbo.TaskAudit 
+                                          WHERE TaskID = '4cc7ae00-74e7-4401-a23b-45f260fbb68a' 
+                                          ORDER BY AuditTime DESC
+时间:2026/3/21 13:26:12-内容:时间:2026/3/21 13:26:12   计算毫秒数:30 , 计算周期数:309778; 计算内容:SELECT LogID
+                                          , TaskID
+                                          , Operator
+                                          , OperationType
+                                          , OperationContent
+                                          , OperationTime 
+                                          FROM dbo.TaskOperationLog 
+                                          WHERE TaskID = '4cc7ae00-74e7-4401-a23b-45f260fbb68a' 
+                                          ORDER BY OperationTime DESC
+时间:2026/3/21 13:33:09-内容:时间:2026/3/21 13:33:09   计算毫秒数:249 , 计算周期数:2493300; 计算内容:SELECT CategoryID
+                             , CategoryName
+                             , ParentID
+                             , Description
+                             , CreateTime
+                             , UpdateTime 
+                             FROM dbo.TaskCategory 
+                             ORDER BY CreateTime DESC
+时间:2026/3/21 13:33:09-内容:时间:2026/3/21 13:33:09   计算毫秒数:110 , 计算周期数:1102599; 计算内容:SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1 
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/21 13:33:12-内容:时间:2026/3/21 13:33:12   计算毫秒数:26 , 计算周期数:261212; 计算内容:SELECT t.TaskID
+                                          , t.TaskName
+                                          , t.TemplateID
+                                          , t.CategoryID
+                                          , c.CategoryName
+                                          , tmpl.TemplateName
+                                          , t.Description
+                                          , t.AssignedTo
+                                          , t.Priority
+                                          , t.Status
+                                          , t.StandardScore
+                                          , t.ActualScore
+                                          , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                                          , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                                          , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                                          , t.Creator
+                                          , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                                          , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                                          , t.Result
+                                          , t.Remarks
+                                          , t.Images
+                                          , t.Parms 
+                                          FROM dbo.Task t
+                                          LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID
+                                          LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID
+                                          WHERE t.TaskID = '556fd19e-0ef5-4234-a42c-62c29a772afe'
+时间:2026/3/21 13:33:12-内容:时间:2026/3/21 13:33:12   计算毫秒数:30 , 计算周期数:302028; 计算内容:SELECT AuditID
+                                          , TaskID
+                                          , Auditor
+                                          , AuditResult
+                                          , AuditOpinion
+                                          , AuditTime 
+                                          FROM dbo.TaskAudit 
+                                          WHERE TaskID = '556fd19e-0ef5-4234-a42c-62c29a772afe' 
+                                          ORDER BY AuditTime DESC
+时间:2026/3/21 13:33:12-内容:时间:2026/3/21 13:33:12   计算毫秒数:26 , 计算周期数:268619; 计算内容:SELECT LogID
+                                          , TaskID
+                                          , Operator
+                                          , OperationType
+                                          , OperationContent
+                                          , OperationTime 
+                                          FROM dbo.TaskOperationLog 
+                                          WHERE TaskID = '556fd19e-0ef5-4234-a42c-62c29a772afe' 
+                                          ORDER BY OperationTime DESC
+时间:2026/3/21 13:33:15-内容:时间:2026/3/21 13:33:15   计算毫秒数:71 , 计算周期数:711493; 计算内容:SELECT LogID
+                                          , TaskID
+                                          , Operator
+                                          , OperationType
+                                          , OperationContent
+                                          , OperationTime 
+                                          FROM dbo.TaskOperationLog 
+                                          WHERE TaskID = 'adfe6ec6-f523-479b-9434-3630361a4819' 
+                                          ORDER BY OperationTime DESC
+时间:2026/3/21 13:33:15-内容:时间:2026/3/21 13:33:15   计算毫秒数:29 , 计算周期数:293195; 计算内容:SELECT t.TaskID
+                                          , t.TaskName
+                                          , t.TemplateID
+                                          , t.CategoryID
+                                          , c.CategoryName
+                                          , tmpl.TemplateName
+                                          , t.Description
+                                          , t.AssignedTo
+                                          , t.Priority
+                                          , t.Status
+                                          , t.StandardScore
+                                          , t.ActualScore
+                                          , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                                          , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                                          , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                                          , t.Creator
+                                          , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                                          , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                                          , t.Result
+                                          , t.Remarks
+                                          , t.Images
+                                          , t.Parms 
+                                          FROM dbo.Task t
+                                          LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID
+                                          LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID
+                                          WHERE t.TaskID = 'adfe6ec6-f523-479b-9434-3630361a4819'
+时间:2026/3/21 13:33:15-内容:时间:2026/3/21 13:33:15   计算毫秒数:81 , 计算周期数:811326; 计算内容:SELECT AuditID
+                                          , TaskID
+                                          , Auditor
+                                          , AuditResult
+                                          , AuditOpinion
+                                          , AuditTime 
+                                          FROM dbo.TaskAudit 
+                                          WHERE TaskID = 'adfe6ec6-f523-479b-9434-3630361a4819' 
+                                          ORDER BY AuditTime DESC
+时间:2026/3/21 13:33:17-内容:时间:2026/3/21 13:33:17   计算毫秒数:25 , 计算周期数:252842; 计算内容:SELECT t.TaskID
+                                          , t.TaskName
+                                          , t.TemplateID
+                                          , t.CategoryID
+                                          , c.CategoryName
+                                          , tmpl.TemplateName
+                                          , t.Description
+                                          , t.AssignedTo
+                                          , t.Priority
+                                          , t.Status
+                                          , t.StandardScore
+                                          , t.ActualScore
+                                          , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                                          , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                                          , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                                          , t.Creator
+                                          , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                                          , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                                          , t.Result
+                                          , t.Remarks
+                                          , t.Images
+                                          , t.Parms 
+                                          FROM dbo.Task t
+                                          LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID
+                                          LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID
+                                          WHERE t.TaskID = '4cc7ae00-74e7-4401-a23b-45f260fbb68a'
+时间:2026/3/21 13:33:17-内容:时间:2026/3/21 13:33:17   计算毫秒数:26 , 计算周期数:261791; 计算内容:SELECT LogID
+                                          , TaskID
+                                          , Operator
+                                          , OperationType
+                                          , OperationContent
+                                          , OperationTime 
+                                          FROM dbo.TaskOperationLog 
+                                          WHERE TaskID = '4cc7ae00-74e7-4401-a23b-45f260fbb68a' 
+                                          ORDER BY OperationTime DESC
+时间:2026/3/21 13:33:18-内容:时间:2026/3/21 13:33:18   计算毫秒数:47 , 计算周期数:471955; 计算内容:SELECT AuditID
+                                          , TaskID
+                                          , Auditor
+                                          , AuditResult
+                                          , AuditOpinion
+                                          , AuditTime 
+                                          FROM dbo.TaskAudit 
+                                          WHERE TaskID = '4cc7ae00-74e7-4401-a23b-45f260fbb68a' 
+                                          ORDER BY AuditTime DESC
+时间:2026/3/21 13:33:23-内容:时间:2026/3/21 13:33:23   计算毫秒数:24 , 计算周期数:244777; 计算内容:SELECT t.TaskID
+                                          , t.TaskName
+                                          , t.TemplateID
+                                          , t.CategoryID
+                                          , c.CategoryName
+                                          , tmpl.TemplateName
+                                          , t.Description
+                                          , t.AssignedTo
+                                          , t.Priority
+                                          , t.Status
+                                          , t.StandardScore
+                                          , t.ActualScore
+                                          , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                                          , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                                          , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                                          , t.Creator
+                                          , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                                          , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                                          , t.Result
+                                          , t.Remarks
+                                          , t.Images
+                                          , t.Parms 
+                                          FROM dbo.Task t
+                                          LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID
+                                          LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID
+                                          WHERE t.TaskID = 'c4ddebfe-bfe1-435a-8de2-56a95637fb52'
+时间:2026/3/21 13:33:23-内容:时间:2026/3/21 13:33:23   计算毫秒数:24 , 计算周期数:248097; 计算内容:SELECT AuditID
+                                          , TaskID
+                                          , Auditor
+                                          , AuditResult
+                                          , AuditOpinion
+                                          , AuditTime 
+                                          FROM dbo.TaskAudit 
+                                          WHERE TaskID = 'c4ddebfe-bfe1-435a-8de2-56a95637fb52' 
+                                          ORDER BY AuditTime DESC
+时间:2026/3/21 13:33:23-内容:时间:2026/3/21 13:33:23   计算毫秒数:25 , 计算周期数:255937; 计算内容:SELECT LogID
+                                          , TaskID
+                                          , Operator
+                                          , OperationType
+                                          , OperationContent
+                                          , OperationTime 
+                                          FROM dbo.TaskOperationLog 
+                                          WHERE TaskID = 'c4ddebfe-bfe1-435a-8de2-56a95637fb52' 
+                                          ORDER BY OperationTime DESC
+时间:2026/3/21 13:33:26-内容:时间:2026/3/21 13:33:26   计算毫秒数:36 , 计算周期数:361323; 计算内容:SELECT t.TaskID
+                                          , t.TaskName
+                                          , t.TemplateID
+                                          , t.CategoryID
+                                          , c.CategoryName
+                                          , tmpl.TemplateName
+                                          , t.Description
+                                          , t.AssignedTo
+                                          , t.Priority
+                                          , t.Status
+                                          , t.StandardScore
+                                          , t.ActualScore
+                                          , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                                          , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                                          , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                                          , t.Creator
+                                          , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                                          , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                                          , t.Result
+                                          , t.Remarks
+                                          , t.Images
+                                          , t.Parms 
+                                          FROM dbo.Task t
+                                          LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID
+                                          LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID
+                                          WHERE t.TaskID = 'ca924e44-3faf-4301-9dfc-d068ac3b150c'
+时间:2026/3/21 13:33:26-内容:时间:2026/3/21 13:33:26   计算毫秒数:28 , 计算周期数:283554; 计算内容:SELECT LogID
+                                          , TaskID
+                                          , Operator
+                                          , OperationType
+                                          , OperationContent
+                                          , OperationTime 
+                                          FROM dbo.TaskOperationLog 
+                                          WHERE TaskID = 'ca924e44-3faf-4301-9dfc-d068ac3b150c' 
+                                          ORDER BY OperationTime DESC
+时间:2026/3/21 13:33:26-内容:时间:2026/3/21 13:33:26   计算毫秒数:30 , 计算周期数:304961; 计算内容:SELECT AuditID
+                                          , TaskID
+                                          , Auditor
+                                          , AuditResult
+                                          , AuditOpinion
+                                          , AuditTime 
+                                          FROM dbo.TaskAudit 
+                                          WHERE TaskID = 'ca924e44-3faf-4301-9dfc-d068ac3b150c' 
+                                          ORDER BY AuditTime DESC

@@ -8,49 +8,68 @@
     <script src="~/Scripts/laydate/laydate.js"></script>
     <script src="~/Scripts/public.js"></script>
     <style>
-        .btn {
-            margin-top: 20px;
-            color: white;
-            font-weight: 500;
-            font-size: 18px;
-            line-height: 18px;
-            bottom: 0;
-            border: 1px solid RGB(62,175,224);
-            border-radius: 5px;
-            width: 200px;
-            cursor: pointer;
-        }
-
-        .ok {
-            background-color: RGB(62,175,224);
-        }
-
         .main {
-            margin-top: 35px;
-            display: flex;
-            justify-content: center;
+            margin-top: 15px;
+            padding: 0 20px;
         }
 
         #form1 {
-            text-align: center;
+            width: 100%;
         }
 
-        select {
-            width: 200px;
-            height: 28px;
-            line-height: 28px;
-            border-radius: 5px;
-            outline: none;
+        #form1 div {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
         }
 
-        input {
-            width: 200px;
-            height: 28px;
-            line-height: 28px;
+        #form1 span {
+            width: 80px;
+            text-align: right;
+            margin-right: 15px;
+        }
+
+        #form1 select,
+        #form1 input:not(.btn) {
+            flex: 1;
+            max-width: 400px;
+            height: 32px;
+            line-height: 32px;
             border-radius: 5px;
             outline: none;
             border: 1px solid #767676;
-            padding: 5px 8px;
+            padding: 0 10px;
+        }
+
+        #form1 .btn {
+            margin-top: 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 16px;
+            line-height: 32px;
+            border: 1px solid RGB(62,175,224);
+            border-radius: 5px;
+            width: 120px;
+            height: 32px;
+            cursor: pointer;
+            background-color: RGB(62,175,224);
+        }
+
+        #form1 .amount-container {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        #form1 .amount-container input {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        #form1 .amount-container span {
+            width: auto;
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -58,46 +77,43 @@
     <div class="main">
         <form id="form1">
             <div>
-                <span>操作:&nbsp;&nbsp;</span>
+                <span>操作:</span>
                 <select id="type">
                     <option value="">请选择</option>
                 </select>
             </div>
-            <br />
             <div>
-                <span>详情:&nbsp;&nbsp;</span>
+                <span>详情:</span>
                 <select id="type_dtl">
                     <option value="">请选择</option>
                 </select>
             </div>
-            <br />
             <div>
-                <span>时间:&nbsp;&nbsp;</span>
-                <input type="text" class="txt" placeholder="请选择日期" id="time">
+                <span>时间:</span>
+                <input type="text" placeholder="请选择日期" id="time" />
             </div>
-            <br />
             <div>
-                <span>数量:&nbsp;&nbsp;</span>
-                <input type="text" id="amount" style="width:170px; height:28px; line-height:28px;" />
-                <span>&nbsp;-&nbsp;</span>
-                <span id="amount_num"></span>
+                <span>数量:</span>
+                <div class="amount-container">
+                    <input type="text" id="amount" />
+                    <span>-</span>
+                    <span id="amount_num">0</span>
+                </div>
             </div>
-            <br />
             <div>
-                <span>备注:&nbsp;&nbsp;</span>
+                <span>备注:</span>
                 <select id="sel_com">
                     <option value="">请选择</option>
                 </select>
-               
             </div>
             <div>
-                <span>备注:&nbsp;&nbsp;</span>
-                <input type="text" id="comment" style="width:200px; height:28px; line-height:28px;" />
+                <span>备注:</span>
+                <input type="text" id="comment" />
             </div>
-           
+            
             <div>
-                <span>操作:&nbsp;&nbsp;</span>
-                <input type="button" id="btn_ok" class="btn ok" value="修改" />
+                <span>操作:</span>
+                <input type="button" id="btn_ok" class="btn" value="修改" />
             </div>
         </form>
     </div>
@@ -110,6 +126,18 @@
             elem: '#time' //指定元素
         });
 
+        // 先绑定事件
+        $("#type").change(function () {
+            var type = $("#type").val();
+            var type_dtl = "平台操作-" + type;
+            $("#type_dtl").val(type_dtl);
+        });
+
+        $("#sel_com").change(function () {
+            var txt = $("#sel_com").val();
+            $("#comment").val(txt);
+        });
+
         // 批量加载下拉框数据
         var categories = ["action_score_type", "action_score_type_dtl", "action_score_comment"];
         loadBatchDropdownOptions(categories, function(data) {
@@ -117,6 +145,21 @@
             updateDropdown("type", data["action_score_type"], false);
             updateDropdown("type_dtl", data["action_score_type_dtl"], false);
             updateDropdown("sel_com", data["action_score_comment"], false);
+
+            // 在下拉框加载完成后设置comment值
+            var comment = "@ViewData["comment"]";
+            if (comment != "") {
+                $("#sel_com").val(comment);
+                $("#comment").val(comment);
+            }
+
+            // 设置type值
+            var type = "@ViewData["type"]";
+            if (type != "") {
+                $("#type").val(type);
+                // 触发change事件以更新type_dtl
+                $("#type").trigger("change");
+            }
         });
 
         $("#btn_ok").bind("click", function () {
@@ -159,23 +202,6 @@
             });
 
         });
-
-        $("#sel_com").change(function () {
-            var txt = $("#sel_com").val();
-            $("#comment").val(txt);
-        });
-
-        $("#type").change(function () {
-            var type = $("#type").val();
-            var type_dtl = "平台操作-" + type;
-            $("#type_dtl").val(type_dtl);
-        });
-        
-        var comment = "@ViewData["comment"]";
-        if (comment != "") {
-            $("#sel_com").val(comment);
-            $("#comment").val(comment);
-        }
 
         function updateAmountDisplay() {
             var amountVal = $('#amount').val();
