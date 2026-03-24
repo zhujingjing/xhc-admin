@@ -281,7 +281,7 @@ namespace WebAppFrame.Controllers
         }
 
         // 获取任务列表
-        public string GetTaskList(string assignedTo, string status, string priority, string categoryId)
+        public string GetTaskList(string assignedTo, string status, string priority, string categoryId, string timeFilter)
         {
             // 权限检查：普通客服只能查看自己的任务
             BLL.Data_Sys_User user = (BLL.Data_Sys_User)Session["Data_Sys_User"];
@@ -289,7 +289,7 @@ namespace WebAppFrame.Controllers
                 assignedTo = user.User_Name;
             }
             
-            DataTable dt = taskBll.GetTaskList(assignedTo, status, priority, categoryId);
+            DataTable dt = taskBll.GetTaskList(assignedTo, status, priority, categoryId, timeFilter);
             string data = CommonTool.JsonHelper.DataTableToJSON(dt);
             return commonBll.GetMiniUIData2(dt.Rows.Count.ToString(), data);
         }

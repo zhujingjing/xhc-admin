@@ -453,8 +453,9 @@ namespace BLL
         /// <param name="status"></param>
         /// <param name="priority"></param>
         /// <param name="categoryId"></param>
+        /// <param name="timeFilter"></param>
         /// <returns></returns>
-        public DataTable GetTaskList(string assignedTo, string status, string priority, string categoryId)
+        public DataTable GetTaskList(string assignedTo, string status, string priority, string categoryId, string timeFilter)
         {
             string strWhere = "";
 
@@ -478,6 +479,11 @@ namespace BLL
             if (!string.IsNullOrEmpty(categoryId))
             {
                 strWhere += string.Format(" AND t.CategoryID = '{0}'", categoryId);
+            }
+
+            if (!string.IsNullOrEmpty(timeFilter))
+            {
+                strWhere += string.Format(" AND t.Deadline >= '{0}'", timeFilter);
             }
 
             string strSql = string.Format(@"SELECT t.TaskID
@@ -508,6 +514,19 @@ namespace BLL
                              WHERE 1=1 {0}
                              ORDER BY t.CreateTime DESC", strWhere);
             return DBHelper.SqlHelper.GetDataTable(strSql);
+        }
+
+        /// <summary>
+        /// 获取任务列表（兼容旧版）
+        /// </summary>
+        /// <param name="assignedTo"></param>
+        /// <param name="status"></param>
+        /// <param name="priority"></param>
+        /// <param name="categoryId"></param>
+        /// <returns></returns>
+        public DataTable GetTaskList(string assignedTo, string status, string priority, string categoryId)
+        {
+            return GetTaskList(assignedTo, status, priority, categoryId, null);
         }
 
         /// <summary>
@@ -1588,8 +1607,8 @@ namespace BLL
                 // 拼装其他信息
                 string otherInfo = GetOtherInfo(businessType, businessId, businessParams);
 
-                // 生成任务名称，格式：{模板名称}-{用户昵称（用户备注）}-{其他信息}
-                string taskName = string.Format("{0}-{1}-{2}", templateName, userNickname, otherInfo);
+                // 生成任务名称，格式：{用户昵称（用户备注）}-{其他信息}
+                string taskName = string.Format("{0}-{1}", userNickname, otherInfo);
 
                 // 生成任务描述，包含业务参数
                 string taskDescription = description;
@@ -1708,11 +1727,12 @@ namespace BLL
                         otherInfo = "上传了照片";
                         break;
                     case "消息预警":
-                        string level = businessParams.ContainsKey("level") ? businessParams["level"] : "";
-                        string msgs = businessParams.ContainsKey("msgs") ? businessParams["msgs"] : "";
-                        string words = businessParams.ContainsKey("words") ? businessParams["words"] : "";
-                        string msg_dtm = businessParams.ContainsKey("msg_dtm") ? businessParams["msg_dtm"] : "";
-                        otherInfo = string.Format("{0}-{1}-{2}-{3}", level, msgs, words, msg_dtm);
+                        //string level = businessParams.ContainsKey("level") ? businessParams["level"] : "";
+                        //string msgs = businessParams.ContainsKey("msgs") ? businessParams["msgs"] : "";
+                        //string words = businessParams.ContainsKey("words") ? businessParams["words"] : "";
+                        //string msg_dtm = businessParams.ContainsKey("msg_dtm") ? businessParams["msg_dtm"] : "";
+                        //otherInfo = string.Format("{0}-{1}-{2}-{3}", level, msgs, words, msg_dtm);
+                        otherInfo = businessParams.ContainsKey("msgs") ? businessParams["msgs"] : "";
                         break;
                 }
             }

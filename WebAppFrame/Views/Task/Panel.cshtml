@@ -1,5 +1,4 @@
 ﻿
-
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -43,6 +42,12 @@
 
             init();
 
+            // 设置截止时间默认值为昨天
+            var yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            var formattedDate = yesterday.toISOString().split('T')[0];
+            document.getElementById("timeFilter").value = formattedDate;
+
             // 加载任务分类列表
             loadTaskCategories();
             
@@ -85,11 +90,56 @@
         // 渲染状态
         function renderStatus(e) {
             var value = e.value;
-            if (value == 0) return '<span style="color: red;">待处理</span>';
-            if (value == 1) return '<span style="color: orange;">处理中</span>';
-            if (value == 2) return '<span style="color: blue;">已完成</span>';
-            if (value == 3) return '<span style="color: green;">已审核</span>';
-            return value;
+            var statusText = '';
+            if (value == 0) statusText = '<span style="color: red;">待处理</span>';
+            else if (value == 1) statusText = '<span style="color: orange;">处理中</span>';
+            else if (value == 2) statusText = '<span style="color: blue;">已完成</span>';
+            else if (value == 3) statusText = '<span style="color: green;">已审核</span>';
+            else statusText = value;
+            
+            // 只有待处理和处理中的任务显示剩余时间和进度条
+            if (value == 0 || value == 1) {
+                var record = e.record;
+                var deadline = record.Deadline;
+                if (deadline) {
+                    var now = new Date();
+                    var deadlineDate = new Date(deadline);
+                    var totalTime = deadlineDate.getTime() - now.getTime();
+                    
+                    // 计算剩余时间（分钟）
+                    var minutes = Math.round(totalTime / (1000 * 60));
+                    var timeText = '';
+                    if (minutes <= 0) {
+                        timeText = '<span style="font-size: 10px; color: red; float: right;">超' + Math.abs(minutes) + '分钟</span>';
+                    } else {
+                        timeText = '<span style="font-size: 10px; color: green; float: right;">剩' + minutes + '分钟</span>';
+                    }
+                    
+                    // 只有待处理和处理中的任务显示进度条
+                    var progressBar = '';
+                    if (totalTime <= 0) {
+                        progressBar = '<div style="width: 100%; height: 8px; background-color: #f0f0f0;  margin-top: 4px;">' +
+                                   '<div style="width: 100%; height: 100%; background-color: #ff4d4f;  text-align: center; line-height: 8px; font-size: 6px; color: white;">100%</div>' +
+                                   '</div>';
+                    } else {
+                        var createTime = record.CreateTime;
+                        var createDate = new Date(createTime);
+                        var totalDuration = deadlineDate.getTime() - createDate.getTime();
+                        var passedTime = now.getTime() - createDate.getTime();
+                        var passedPercentage = Math.min(100, Math.max(0, (passedTime / totalDuration) * 100));
+                        var remainingPercentage = 100 - passedPercentage;
+                        
+                        progressBar = '<div style="width: 100%; height: 8px; background-color: #f0f0f0;  position: relative; margin-top: 4px;">' +
+                                   '<div style="width: ' + passedPercentage + '%; height: 100%; background-color: #ff4d4f;  position: absolute; left: 0; top: 0;"></div>' +
+                                   '<div style="width: ' + remainingPercentage + '%; height: 100%; background-color: #52c41a;  position: absolute; right: 0; top: 0;"></div>' +
+                                   '<div style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; text-align: center; line-height: 8px; font-size: 6px; color: white; text-shadow: 1px 1px 1px rgba(0,0,0,0.5);">' + Math.round(passedPercentage) + '%</div>' +
+                                   '</div>';
+                    }
+                    return '<div>' + statusText + timeText + progressBar + '</div>';
+                }
+            }
+            
+            return statusText;
         }
 
         // 渲染任务名称，添加点击事件
@@ -109,6 +159,33 @@
             }
             return '';
         }
+
+        // 渲染序号
+        function renderIndex(e) {
+            return e.rowIndex + 1;
+        }
+
+        // 渲染创建时间（分两行显示）
+        function renderCreateTime(e) {
+            var value = e.value;
+            if (!value) return '';
+            var date = new Date(value);
+            var dateStr = date.toLocaleDateString('zh-CN');
+            var timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
+        }
+
+        // 渲染截止时间（分两行显示）
+        function renderDeadline(e) {
+            var value = e.value;
+            if (!value) return '';
+            var date = new Date(value);
+            var dateStr = date.toLocaleDateString('zh-CN');
+            var timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
+        }
+
+
 
         // 加载任务分类列表
         function loadTaskCategories() {
@@ -193,6 +270,7 @@
             var status = document.getElementById("statusFilter").value || "";
             var priority = document.getElementById("priorityFilter").value || "";
             var categoryId = document.getElementById("categoryFilter").value || "";
+            var timeFilter = document.getElementById("timeFilter").value || "";
             var assignedTo = getCurrentUserName();
             
             // 直接传递参数对象，不需要指定url
@@ -200,7 +278,8 @@
                 assignedTo: assignedTo,
                 status: status,
                 priority: priority,
-                categoryId: categoryId
+                categoryId: categoryId,
+                timeFilter: timeFilter
             }, function(data) {
                 // 加载完成后根据设置过滤数据
                 filterTasksBySettings();
@@ -317,16 +396,41 @@
                 return;
             }
 
+            // 检查选中任务的状态是否一致
+            var firstStatus = rows[0].Status;
+            var allStatusSame = true;
+            for (var i = 1; i < rows.length; i++) {
+                if (rows[i].Status != firstStatus) {
+                    allStatusSame = false;
+                    break;
+                }
+            }
+
+            if (!allStatusSame) {
+                mini.alert("选中的任务状态必须保持一致");
+                return;
+            }
+
+            // 检查任务状态是否为待处理或进行中
+            if (firstStatus != 0 && firstStatus != 1) {
+                mini.alert("只能选择待处理和进行中的任务做批量操作");
+                return;
+            }
+
+            // 自动选择操作类型为完成任务
+            var operationType = "2";
+            var status = 2;
+
             // 创建自定义弹窗
             var html = '<div style="padding: 20px;">' +
-                '<h4 style="margin-bottom: 15px;">请选择操作类型：</h4>' +
+                '<h4 style="margin-bottom: 15px;">批量操作：</h4>' +
                 '<div style="margin-bottom: 10px;">' +
-                '<input type="radio" name="operationType" value="1" checked> 开始任务<br/>' +
-                '<input type="radio" name="operationType" value="2"> 完成任务' +
+                '<input type="radio" name="operationType" value="1" disabled> 开始任务<br/>' +
+                '<input type="radio" name="operationType" value="2" checked> 完成任务' +
                 '</div>' +
                 '<div style="text-align: right; margin-top: 20px;">' +
-                '<button id="btnOk" style="margin-right: 10px; padding: 5px 15px; background-color: #E3F2FD; color: #1976D2; border: 1px solid #BBDEFB; cursor: pointer;">确定</button>' +
-                '<button id="btnCancel" style="padding: 5px 15px; background-color: #FFF; color: #333; border: 1px solid #DDD; cursor: pointer;">取消</button>' +
+                '<span id="btnOk" style="margin-right: 10px; padding: 5px 15px; background-color: #E3F2FD; color: #1976D2; border: 1px solid #BBDEFB; cursor: pointer; display: inline-block;">确定</span>' +
+                '<span id="btnCancel" style="padding: 5px 15px; background-color: #FFF; color: #333; border: 1px solid #DDD; cursor: pointer; display: inline-block;">取消</span>' +
                 '</div>' +
                 '</div>';
 
@@ -344,8 +448,6 @@
                     
                     // 绑定事件
                     iframe.contentDocument.getElementById("btnOk").onclick = function() {
-                        var operationType = iframe.contentDocument.querySelector('input[name="operationType"]:checked').value;
-                        var status = operationType == "1" ? 1 : 2;
                         var ids = [];
                         for (var i = 0; i < rows.length; i++) {
                             ids.push(rows[i].TaskID);
@@ -464,6 +566,13 @@
     </div>
     <form id="form1">
         <div class="sys-content-border" style="padding:8px 3px;">
+            分类: 
+            <select id="categoryFilter" style="width:150px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;" onchange="loadData()">
+                <option value="">全部分类</option>
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_batch" type="button" class="sys-btn" value="批量操作" onclick="batchOperation()" style="background-color: #FFF3E0; color: #EF6C00;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
             状态: 
             <select id="statusFilter" style="width:150px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;">
                 <option value="">全部状态</option>
@@ -481,33 +590,33 @@
                 <option value="2">高</option>
             </select>
             &nbsp;&nbsp;&nbsp;&nbsp;
+            截止时间: 
+            <input id="timeFilter" type="date" style="width:120px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 20px;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
             <input id="btn_refresh" type="button" class="sys-btn" value="刷新" onclick="loadData()" style="background-color: #E3F2FD; color: #1976D2;" />
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <input id="btn_batch" type="button" class="sys-btn" value="批量操作" onclick="batchOperation()" style="background-color: #FFF3E0; color: #EF6C00;" />
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            分类: 
-            <select id="categoryFilter" style="width:150px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;" onchange="loadData()">
-                <option value="">全部分类</option>
-            </select>
-            &nbsp;&nbsp;&nbsp;&nbsp;
+            
+            
             <input id="btn_hide_settings" type="button" class="sys-btn" value="不显示设置" onclick="showHideSettingsPanel()" style="background-color: #E8F5E8; color: #2E7D32;" />
         </div>
         <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskList" idfield="TaskID" allowresize="true" multiselect="true"
              sizelist="[50,100,200]" pagesize="50">
             <div property="columns">
-                <div type="checkcolumn" width="30"></div>
                 <div field="TaskID" width="0" visible="false"></div>
-                <div field="Status" width="60" header="状态" allowSort="true" renderer="renderStatus"></div>
+                <div field="Index" width="30" header="序号" align="center" renderer="renderIndex"></div>
+                <div type="checkcolumn" width="30"></div>
+                
+                <div field="Status" width="120" header="状态" allowSort="true" renderer="renderStatus"></div>
+                <div field="CategoryName" width="80" header="分类" allowSort="true"></div>
                 <div field="TaskName" width="200" header="任务名称" allowSort="true" renderer="renderTaskName"></div>
                 <div field="FullExternalUrl" width="60" header="外部链接" renderer="renderExternalUrl"></div>
                 <div field="Result" width="100" header="结果" allowSort="true"></div>
-                <div field="CategoryName" width="80" header="分类" allowSort="true"></div>
+                
                 <div field="Description" width="300" header="任务描述"></div>
                 <div field="Priority" width="60" header="优先级" allowSort="true" renderer="renderPriority"></div>
-                
-                <div field="Deadline" width="120" header="截止时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="Deadline" width="80" header="截止时间" allowSort="true" renderer="renderDeadline"></div>
+                <div field="CreateTime" width="80" header="创建时间" allowSort="true" renderer="renderCreateTime"></div>
                 <div field="Creator" width="80" header="创建人" allowSort="true"></div>
-                <div field="CreateTime" width="80" header="创建时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
 
             </div>
         </div>
