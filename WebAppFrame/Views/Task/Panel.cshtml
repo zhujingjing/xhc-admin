@@ -9,7 +9,7 @@
     <script src="~/Scripts/Global.js"></script>
     <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
     <link href="~/Styles/public.css?id=1" rel="stylesheet" />
-    <script src="~/Scripts/public.js?id=12"></script>
+    <script src="~/Scripts/public.js?id=100"></script>
     <style type="text/css">
         body {
             font-family: tahoma, arial, sans-serif;
@@ -63,20 +63,10 @@
         function init() {
             //设置表格的高度
             var parentHeight = $(window.parent.document).find("#rightFrame").height();
-            $("#grid1").height(parentHeight - 110);
+            $("#grid1").height(parentHeight - 120);
         }
 
-        // 获取当前登录用户名
-        function getCurrentUserName() {
-            var operator_name = "";
-            if (window.parent.frames["topFrame"]) {
-                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
-            }
-            if (window.parent.parent.frames["topFrame"]) {
-                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
-            }
-            return operator_name;
-        }
+
 
         // 渲染优先级
         function renderPriority(e) {
@@ -167,6 +157,26 @@
 
         // 渲染创建时间（分两行显示）
         function renderCreateTime(e) {
+            var value = e.value;
+            if (!value) return '';
+            var date = new Date(value);
+            var dateStr = date.toLocaleDateString('zh-CN');
+            var timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
+        }
+
+        // 渲染开始时间（分两行显示）
+        function renderStartTime(e) {
+            var value = e.value;
+            if (!value) return '';
+            var date = new Date(value);
+            var dateStr = date.toLocaleDateString('zh-CN');
+            var timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
+        }
+
+        // 渲染完成时间（分两行显示）
+        function renderEndTime(e) {
             var value = e.value;
             if (!value) return '';
             var date = new Date(value);
@@ -271,7 +281,7 @@
             var priority = document.getElementById("priorityFilter").value || "";
             var categoryId = document.getElementById("categoryFilter").value || "";
             var timeFilter = document.getElementById("timeFilter").value || "";
-            var assignedTo = getCurrentUserName();
+            var assignedTo = getCurrentOperator();
             
             // 直接传递参数对象，不需要指定url
             grid.load({
@@ -322,7 +332,7 @@
         function startTask(taskId) {
             mini.confirm("确定要开始该任务吗？", "提示", function (action) {
                 if (action == "ok") {
-                    var operatorName = getCurrentUserName();
+                    var operatorName = getCurrentOperator();
                     $.ajax({
                         url: "/Task/UpdateTaskStatus",
                         type: "post",
@@ -348,7 +358,7 @@
         function completeTask(taskId) {
             mini.confirm("确定要完成该任务吗？", "提示", function (action) {
                 if (action == "ok") {
-                    var operatorName = getCurrentUserName();
+                    var operatorName = getCurrentOperator();
                     $.ajax({
                         url: "/Task/UpdateTaskStatus",
                         type: "post",
@@ -452,7 +462,7 @@
                         for (var i = 0; i < rows.length; i++) {
                             ids.push(rows[i].TaskID);
                         }
-                        var operatorName = getCurrentUserName();
+                        var operatorName = getCurrentOperator();
 
                         $.ajax({
                             url: "/Task/BatchUpdateTaskStatus",
@@ -614,6 +624,8 @@
                 
                 <div field="Description" width="300" header="任务描述"></div>
                 <div field="Priority" width="60" header="优先级" allowSort="true" renderer="renderPriority"></div>
+                <div field="StartTime" width="80" header="开始时间" allowSort="true" renderer="renderStartTime"></div>
+                <div field="EndTime" width="80" header="完成时间" allowSort="true" renderer="renderEndTime"></div>
                 <div field="Deadline" width="80" header="截止时间" allowSort="true" renderer="renderDeadline"></div>
                 <div field="CreateTime" width="80" header="创建时间" allowSort="true" renderer="renderCreateTime"></div>
                 <div field="Creator" width="80" header="创建人" allowSort="true"></div>

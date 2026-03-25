@@ -1,4 +1,4 @@
-﻿<html xmlns="http://www.w3.org/1999/xhtml">
+﻿﻿<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title></title>
@@ -80,6 +80,7 @@
 </html>
 
 <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+<script src="~/Scripts/public.js?id=100"></script>
 
 <script type="text/javascript">
 
@@ -115,10 +116,14 @@
     function doUpdate(id, state) {
         var reason = $("#reason").html();
         var pay_mny = $("#txt_pay_mny").val().trim();
+        
+        // 获取当前登录者信息
+        var operator_name = getCurrentOperator();
+        
         $.ajax({
             type: "POST",
             url: "/Check/UpdateApply_Tx",
-            data: { "id": id, "state": state, "reason": reason, "pay_mny": pay_mny },
+            data: { "id": id, "state": state, "reason": reason, "pay_mny": pay_mny, "operatorName": operator_name },
             success: function (data) {
                 data = JSON.parse(data);
                 if (data.state = "1") {

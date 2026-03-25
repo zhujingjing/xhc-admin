@@ -10,7 +10,7 @@
     <script src="~/Scripts/Global.js"></script>
     <link href="~/Styles/Style_chart.css" rel="stylesheet" />
     <link href="~/Styles/public.css" rel="stylesheet" />
-    <script src="~/Scripts/public.js"></script>
+    <script src="~/Scripts/public.js?id=100"></script>
     <style type="text/css">
         body {
             font-family: tahoma, arial, sans-serif;
@@ -74,17 +74,7 @@
             loadTemplates();
         });
 
-        // 获取当前登录用户名
-        function getCurrentUserName() {
-            var operator_name = "";
-            if (window.parent.frames["topFrame"]) {
-                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
-            }
-            if (window.parent.parent.frames["topFrame"]) {
-                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
-            }
-            return operator_name;
-        }
+
 
         // 设置数据
         function SetData(data) {
@@ -175,7 +165,7 @@
                     }
                 } else {
                     // 新增
-                    mini.get("Creator").setValue(getCurrentUserName());
+                    mini.get("Creator").setValue(getCurrentOperator());
                 }
             }
         }
@@ -209,17 +199,7 @@
         }
 
         // 保存任务
-        // 获取当前登录用户名
-        function getCurrentUserName() {
-            var operator_name = "";
-            if (window.parent.frames["topFrame"]) {
-                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
-            }
-            if (window.parent.parent.frames["topFrame"]) {
-                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
-            }
-            return operator_name;
-        }
+
 
         function saveTask() {
             form.validate();
@@ -241,7 +221,7 @@
             }
             
             // 添加操作人信息
-            formData.Operator = getCurrentUserName();
+            formData.Operator = getCurrentOperator();
 
             $.ajax({
                 url: "/Task/SaveTask",

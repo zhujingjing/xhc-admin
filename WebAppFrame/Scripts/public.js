@@ -382,3 +382,21 @@ function formatDate(date) {
     }
     return String(date);
 }
+
+/**
+ * 获取当前操作人信息
+ * @returns {string} 当前操作人名称，获取失败则返回"系统"
+ */
+function getCurrentOperator() {
+    var operator_name = "";
+    try {
+        operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
+    } catch (e) {
+        try {
+            operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
+        } catch (e2) {
+            operator_name = "系统";
+        }
+    }
+    return operator_name || "系统";
+}

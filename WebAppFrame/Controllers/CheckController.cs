@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -553,7 +553,7 @@ group by uid_from, uid_to, type_dtl";
             strRtn = CommonTool.JsonHelper.DataTableToJSON(dt);
             return strRtn;
         }
-        public string Check_Seek_people(string id, string state)
+        public string Check_Seek_people(string id, string state, string operatorName = "")
         {
 
             CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
@@ -565,6 +565,15 @@ group by uid_from, uid_to, type_dtl";
             int tag = DBHelper.SqlHelper.ExecuteSql(strSql);
             if (tag > 0)
             {
+                // 集成任务状态更新
+                BLL.Task taskBll = new BLL.Task();
+                // 优先使用前端传递的操作者信息
+                if (string.IsNullOrEmpty(operatorName))
+                {
+                    operatorName = Session["sys_user_name"] != null ? Session["sys_user_name"].ToString() : "系统";
+                }
+                taskBll.UpdateTaskStatusByBusiness("寻人区审核", id, 2, operatorName);
+                
                 info.State = "1";
                 info.Msg = "修改成功";
             }
@@ -670,7 +679,7 @@ group by uid_from, uid_to, type_dtl";
             strRtn = comm.GetMiniUIData(strSql, strSort, index, size);
             return strRtn;
         }
-        public string Update_UserInfo(string id, string state)
+        public string Update_UserInfo(string id, string state, string operatorName = "")
         {
             CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
 
@@ -688,6 +697,15 @@ group by uid_from, uid_to, type_dtl";
             int tag = DBHelper.SqlHelper.ExecuteSql(strSql);
             if (tag > 0)
             {
+                // 集成任务状态更新
+                BLL.Task taskBll = new BLL.Task();
+                // 优先使用前端传递的操作者信息
+                if (string.IsNullOrEmpty(operatorName))
+                {
+                    operatorName = Session["sys_user_name"] != null ? Session["sys_user_name"].ToString() : "系统";
+                }
+                taskBll.UpdateTaskStatusByBusiness("头像昵称审核", id, 2, operatorName);
+                
                 info.State = "1";
                 info.Msg = "修改成功";
             }
@@ -832,7 +850,7 @@ group by uid_from, uid_to, type_dtl";
             ViewData["pay_mny"] = pay_mny;
             return View();
         }
-        public string UpdateApply_Tx(string id, string state, string reason, string pay_mny)
+        public string UpdateApply_Tx(string id, string state, string reason, string pay_mny, string operatorName = "")
         {
             CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
 
@@ -842,6 +860,21 @@ group by uid_from, uid_to, type_dtl";
             int tag = DBHelper.SqlHelper.ExecuteSql(strSql);
             if (tag > 0)
             {
+                // 集成任务状态更新
+                BLL.Task taskBll = new BLL.Task();
+                // 优先使用前端传递的操作者信息
+                if (string.IsNullOrEmpty(operatorName))
+                {
+                    operatorName = Session["sys_user_name"] != null ? Session["sys_user_name"].ToString() : "系统";
+                }
+                
+                // 根据提现 id 查询 apply_no
+                string getApplyNoSql = string.Format("SELECT apply_no FROM dbo.score_tx WHERE id = '{0}'", id);
+                string applyNo = DBHelper.SqlHelper.GetDataItemString(getApplyNoSql);
+                
+                // 使用 apply_no 作为业务 ID
+                taskBll.UpdateTaskStatusByBusiness("提现", applyNo, 2, operatorName);
+                
                 info.State = "1";
                 info.Msg = "成功";
             }
@@ -980,7 +1013,7 @@ group by uid_from, uid_to, type_dtl";
             ViewData["id"] = id;
             return View();
         }
-        public string Update_Gift_Check(string id, string rst_check, string rst)
+        public string Update_Gift_Check(string id, string rst_check, string rst, string operatorName = "")
         {
             CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
             string strSql = @"update dbo.tousu_gift
@@ -992,6 +1025,15 @@ group by uid_from, uid_to, type_dtl";
             int tag = DBHelper.SqlHelper.ExecuteSql(strSql);
             if (tag > 0)
             {
+                // 集成任务状态更新
+                BLL.Task taskBll = new BLL.Task();
+                // 优先使用前端传递的操作者信息
+                if (string.IsNullOrEmpty(operatorName))
+                {
+                    operatorName = Session["sys_user_name"] != null ? Session["sys_user_name"].ToString() : "系统";
+                }
+                taskBll.UpdateTaskStatusByBusiness("礼物投诉", id, 2, operatorName);
+                
                 info.State = "1";
                 info.Msg = "成功";
             }
@@ -1070,7 +1112,7 @@ group by uid_from, uid_to, type_dtl";
             ViewData["id"] = id;
             return View();
         }
-        public string Update_Check_TouSu(string id, string rst_check, string rst)
+        public string Update_Check_TouSu(string id, string rst_check, string rst, string operatorName = "")
         {
             CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
             string strSql = @"update dbo.tousu
@@ -1082,6 +1124,15 @@ group by uid_from, uid_to, type_dtl";
             int tag = DBHelper.SqlHelper.ExecuteSql(strSql);
             if (tag > 0)
             {
+                // 集成任务状态更新
+                BLL.Task taskBll = new BLL.Task();
+                // 优先使用前端传递的操作者信息
+                if (string.IsNullOrEmpty(operatorName))
+                {
+                    operatorName = Session["sys_user_name"] != null ? Session["sys_user_name"].ToString() : "系统";
+                }
+                taskBll.UpdateTaskStatusByBusiness("用户反馈", id, 2, operatorName);
+                
                 info.State = "1";
                 info.Msg = "成功";
             }
@@ -1193,7 +1244,7 @@ group by uid_from, uid_to, type_dtl";
             return strRtn;
         }
 
-        public string Check_Album(string id, string state)
+        public string Check_Album(string id, string state, string operatorName = "")
         {
 
             CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
@@ -1205,6 +1256,15 @@ group by uid_from, uid_to, type_dtl";
             int tag = DBHelper.SqlHelper.ExecuteSql(strSql);
             if (tag > 0)
             {
+                // 集成任务状态更新
+                BLL.Task taskBll = new BLL.Task();
+                // 优先使用前端传递的操作者信息
+                if (string.IsNullOrEmpty(operatorName))
+                {
+                    operatorName = Session["sys_user_name"] != null ? Session["sys_user_name"].ToString() : "系统";
+                }
+                taskBll.UpdateTaskStatusByBusiness("相册审核", id, 2, operatorName);
+                
                 info.State = "1";
                 info.Msg = "修改成功";
             }

@@ -1,4 +1,4 @@
-
+﻿
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -10,7 +10,7 @@
     <script src="~/Scripts/Global.js"></script>
     <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
     <link href="~/Styles/public.css?id=1" rel="stylesheet" />
-    <script src="~/Scripts/public.js?id=12"></script>
+    <script src="~/Scripts/public.js?id=100"></script>
     <style type="text/css">
         body {
             font-family: tahoma, arial, sans-serif;
@@ -34,7 +34,7 @@
         var grid;
         $(function () {
             //设置表格的高度
-            var parentHeight = $(window.parent).height();
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
             $("#grid1").height(parentHeight - 120);
 
             mini.parse();
@@ -42,6 +42,12 @@
             grid = mini.get("grid1");
 
             init();
+
+            // 设置截止时间默认值为昨天
+            var yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            var formattedDate = yesterday.toISOString().split('T')[0];
+            document.getElementById("timeFilter").value = formattedDate;
 
             // 加载任务分类
             loadCategories();
@@ -52,20 +58,10 @@
         function init() {
             //设置表格的高度
             var parentHeight = $(window.parent.document).find("#rightFrame").height();
-            $("#grid1").height(parentHeight - 110);
+            $("#grid1").height(parentHeight - 120);
         }
 
-        // 获取当前登录用户名
-        function getCurrentUserName() {
-            var operator_name = "";
-            if (window.parent.frames["topFrame"]) {
-                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
-            }
-            if (window.parent.parent.frames["topFrame"]) {
-                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
-            }
-            return operator_name;
-        }
+
 
         // 渲染优先级
         function renderPriority(e) {
@@ -99,6 +95,106 @@
             var record = e.record;
             var taskId = record.TaskID;
             return '<a href="javascript:editTask(\'' + taskId + '\')" style="color:green;">编辑</a> | <a href="javascript:deleteTask(\'' + taskId + '\')" style="color:red;">删除</a> | <a href="javascript:viewTask(\'' + taskId + '\')" style="color:black;">详情</a>';
+        }
+
+        // 渲染序号
+        function renderIndex(e) {
+            return e.rowIndex + 1;
+        }
+
+        // 渲染状态（带进度条）
+        function renderStatus(e) {
+            var value = e.value;
+            var statusText = '';
+            if (value == 0) statusText = '<span style="color: red;">待处理</span>';
+            else if (value == 1) statusText = '<span style="color: orange;">处理中</span>';
+            else if (value == 2) statusText = '<span style="color: blue;">已完成</span>';
+            else if (value == 3) statusText = '<span style="color: green;">已审核</span>';
+            else statusText = value;
+            
+            // 只有待处理和处理中的任务显示剩余时间和进度条
+            if (value == 0 || value == 1) {
+                var record = e.record;
+                var deadline = record.Deadline;
+                if (deadline) {
+                    var now = new Date();
+                    var deadlineDate = new Date(deadline);
+                    var totalTime = deadlineDate.getTime() - now.getTime();
+                    
+                    // 计算剩余时间（分钟）
+                    var minutes = Math.round(totalTime / (1000 * 60));
+                    var timeText = '';
+                    if (minutes <= 0) {
+                        timeText = '<span style="font-size: 10px; color: red; float: right;">超' + Math.abs(minutes) + '分钟</span>';
+                    } else {
+                        timeText = '<span style="font-size: 10px; color: green; float: right;">剩' + minutes + '分钟</span>';
+                    }
+                    
+                    // 只有待处理和处理中的任务显示进度条
+                    var progressBar = '';
+                    if (totalTime <= 0) {
+                        progressBar = '<div style="width: 100%; height: 8px; background-color: #f0f0f0;  margin-top: 4px;">' +
+                                   '<div style="width: 100%; height: 100%; background-color: #ff4d4f;  text-align: center; line-height: 8px; font-size: 6px; color: white;">100%</div>' +
+                                   '</div>';
+                    } else {
+                        var createTime = record.CreateTime;
+                        var createDate = new Date(createTime);
+                        var totalDuration = deadlineDate.getTime() - createDate.getTime();
+                        var passedTime = now.getTime() - createDate.getTime();
+                        var passedPercentage = Math.min(100, Math.max(0, (passedTime / totalDuration) * 100));
+                        var remainingPercentage = 100 - passedPercentage;
+                        
+                        progressBar = '<div style="width: 100%; height: 8px; background-color: #f0f0f0;  position: relative; margin-top: 4px;">' +
+                                   '<div style="width: ' + passedPercentage + '%; height: 100%; background-color: #ff4d4f;  position: absolute; left: 0; top: 0;"></div>' +
+                                   '<div style="width: ' + remainingPercentage + '%; height: 100%; background-color: #52c41a;  position: absolute; right: 0; top: 0;"></div>' +
+                                   '<div style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; text-align: center; line-height: 8px; font-size: 6px; color: white; text-shadow: 1px 1px 1px rgba(0,0,0,0.5);">' + Math.round(passedPercentage) + '%</div>' +
+                                   '</div>';
+                    }
+                    return '<div>' + statusText + timeText + progressBar + '</div>';
+                }
+            }
+            
+            return statusText;
+        }
+
+        // 渲染创建时间（分两行显示）
+        function renderCreateTime(e) {
+            var value = e.value;
+            if (!value) return '';
+            var date = new Date(value);
+            var dateStr = date.toLocaleDateString('zh-CN');
+            var timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
+        }
+
+        // 渲染截止时间（分两行显示）
+        function renderDeadline(e) {
+            var value = e.value;
+            if (!value) return '';
+            var date = new Date(value);
+            var dateStr = date.toLocaleDateString('zh-CN');
+            var timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
+        }
+
+        // 渲染开始时间（分两行显示）
+        function renderStartTime(e) {
+            var value = e.value;
+            if (!value) return '';
+            var date = new Date(value);
+            var dateStr = date.toLocaleDateString('zh-CN');
+            var timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
+        }
+
+        // 渲染完成时间（分两行显示）
+        function renderCompleteTime(e) {
+            var value = e.value;
+            if (!value) return '';
+            var date = new Date(value);
+            var dateStr = date.toLocaleDateString('zh-CN');
+            var timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
         }
 
         // 渲染外部链接
@@ -141,12 +237,14 @@
             var priority = document.getElementById("priorityFilter").value || "";
             var categoryId = document.getElementById("categoryFilter").value || "";
             var assignedTo = document.getElementById("assignedToFilter").value || "";
+            var timeFilter = document.getElementById("timeFilter").value || "";
             
             grid.load({
                 status: status,
                 priority: priority,
                 categoryId: categoryId,
-                assignedTo: assignedTo
+                assignedTo: assignedTo,
+                timeFilter: timeFilter
             });
         }
 
@@ -279,7 +377,7 @@
                         for (var i = 0; i < rows.length; i++) {
                             ids.push(rows[i].TaskID);
                         }
-                        var operatorName = getCurrentUserName();
+                        var operatorName = getCurrentOperator();
 
                         $.ajax({
                             url: "/Task/BatchUpdateTaskStatus",
@@ -319,6 +417,13 @@
     </div>
     <form id="form1">
         <div class="sys-content-border" style="padding:8px 3px;">
+            分类: 
+            <select id="categoryFilter" style="width:150px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;" onchange="loadData()">
+                <option value="">全部分类</option>
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_batch" type="button" class="sys-btn" value="批量操作" onclick="batchOperation()" style="background-color: #FFF3E0; color: #EF6C00;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
             状态: 
             <select id="statusFilter" style="width:150px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;">
                 <option value="">全部状态</option>
@@ -336,11 +441,6 @@
                 <option value="2">高</option>
             </select>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            分类: 
-            <select id="categoryFilter" style="width:150px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;" onchange="loadData()">
-                <option value="">全部分类</option>
-            </select>
-            &nbsp;&nbsp;&nbsp;&nbsp;
             分配人: 
             <select id="assignedToFilter" style="width:150px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;">
                 <option value="">全部分配人</option>
@@ -349,9 +449,10 @@
                 <option value="wu">wu</option>
             </select>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <input id="btn_refresh" type="button" class="sys-btn" value="刷新" onclick="loadData()" style="background-color: #E3F2FD; color: #1976D2;" />
+            截止时间: 
+            <input id="timeFilter" type="date" style="width:120px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 20px;" />
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <input id="btn_batch" type="button" class="sys-btn" value="批量操作" onclick="batchOperation()" style="background-color: #FFF3E0; color: #EF6C00;" />
+            <input id="btn_refresh" type="button" class="sys-btn" value="刷新" onclick="loadData()" style="background-color: #E3F2FD; color: #1976D2;" />
             &nbsp;&nbsp;&nbsp;&nbsp;
             <input id="btn_add" type="button" class="sys-btn" value="新增任务" onclick="addTask()" style="background-color: #E8F5E9; color: #388E3C;" />
         </div>
@@ -360,20 +461,23 @@
             <div property="columns">
                 <div type="checkcolumn" width="30"></div>
                 <div field="TaskID" width="0" visible="false"></div>
-                <div field="Status" width="60" header="状态" allowSort="true" renderer="renderStatus"></div>
+                <div field="Index" width="30" header="序号" align="center" renderer="renderIndex"></div>
+                <div field="Status" width="120" header="状态" allowSort="true" renderer="renderStatus"></div>
+                <div field="CategoryName" width="80" header="分类" allowSort="true"></div>
                 <div field="TaskName" width="200" header="任务名称" allowSort="true" renderer="renderTaskName"></div>
                 <div field="FullExternalUrl" width="60" header="外部链接" renderer="renderExternalUrl"></div>
                 <div field="Result" width="100" header="结果" allowSort="true"></div>
-                <div field="CategoryName" width="80" header="分类" allowSort="true"></div>
-                <div field="Description" width="300" header="任务描述"></div>
+                <div field="Description" width="200" header="任务描述"></div>
                 <div field="Priority" width="60" header="优先级" allowSort="true" renderer="renderPriority"></div>
-                <div field="AssignedTo" width="80" header="分配人" allowSort="true"></div>
-                <div field="StandardScore" width="80" header="标准分" allowSort="true"></div>
-                <div field="ActualScore" width="80" header="实际分" allowSort="true"></div>
-                <div field="Deadline" width="120" header="截止时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="AssignedTo" width="60" header="分配人" allowSort="true"></div>
+                <div field="StandardScore" width="50" header="标准分" allowSort="true"></div>
+                <div field="ActualScore" width="50" header="实际分" allowSort="true"></div>
+                <div field="StartTime" width="80" header="开始时间" allowSort="true" renderer="renderStartTime"></div>
+                <div field="EndTime" width="80" header="完成时间" allowsort="true" renderer="renderCompleteTime"></div>
+                <div field="Deadline" width="80" header="截止时间" allowSort="true" renderer="renderDeadline"></div>
+                <div field="CreateTime" width="80" header="创建时间" allowSort="true" renderer="renderCreateTime"></div>
                 <div field="Creator" width="80" header="创建人" allowSort="true"></div>
-                <div field="CreateTime" width="80" header="创建时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
-                <div field="action" width="150" header="操作" align="center" renderer="renderAction"></div>
+                <div field="action" width="80" header="操作" align="center" renderer="renderAction"></div>
             </div>
         </div>
     </form>

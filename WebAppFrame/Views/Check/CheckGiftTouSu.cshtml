@@ -1,4 +1,4 @@
-﻿<html xmlns="http://www.w3.org/1999/xhtml">
+﻿﻿<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title></title>
@@ -76,6 +76,7 @@
 </html>
 
 <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+<script src="~/Scripts/public.js?id=100"></script>
 
 <script type="text/javascript">
     $(function () {
@@ -102,10 +103,14 @@
     function doCheck(rst) {
         var id = '@ViewData["id"]';
         var rst_check = $("#reason").val();
+        
+        // 获取当前登录者信息
+        var operator_name = getCurrentOperator();
+        
         $.ajax({
             type: "get",
             url: "/Check/Update_Gift_Check",
-            data: { "id": id, "rst_check": rst_check, "rst": rst },
+            data: { "id": id, "rst_check": rst_check, "rst": rst, "operatorName": operator_name },
             success: function (data) {
                 var data = JSON.parse(data);
                 if (data.state == "1") {

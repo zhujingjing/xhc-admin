@@ -447,7 +447,85 @@ namespace BLL
 
         #region 任务相关
         /// <summary>
-        /// 获取任务列表
+        /// 获取任务列表（带分页）
+        /// </summary>
+        /// <param name="assignedTo"></param>
+        /// <param name="status"></param>
+        /// <param name="priority"></param>
+        /// <param name="categoryId"></param>
+        /// <param name="timeFilter"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="sortField"></param>
+        /// <returns></returns>
+        public string GetTaskList(string assignedTo, string status, string priority, string categoryId, string timeFilter, int pageIndex, int pageSize, string sortField)
+        {
+            string strWhere = "";
+
+            if (!string.IsNullOrEmpty(assignedTo))
+            {
+                strWhere += string.Format(" AND t.AssignedTo = '{0}'", assignedTo);
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                int statusInt = Convert.ToInt32(status);
+                strWhere += string.Format(" AND t.Status = {0}", statusInt);
+            }
+
+            if (!string.IsNullOrEmpty(priority))
+            {
+                int priorityInt = Convert.ToInt32(priority);
+                strWhere += string.Format(" AND t.Priority = {0}", priorityInt);
+            }
+
+            if (!string.IsNullOrEmpty(categoryId))
+            {
+                strWhere += string.Format(" AND t.CategoryID = '{0}'", categoryId);
+            }
+
+            if (!string.IsNullOrEmpty(timeFilter))
+            {
+                strWhere += string.Format(" AND t.Deadline >= '{0}'", timeFilter);
+            }
+
+            string strSql = string.Format(@"SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , t.Result
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                             , t.BusinessType
+                             , t.BusinessId
+                             , t.FullExternalUrl 
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1 {0}", strWhere);
+
+            // 如果没有传入排序字段，使用默认排序
+            string orderBy = !string.IsNullOrEmpty(sortField) ? sortField : "CreateTime DESC";
+
+            Common comm = new Common();
+            string strRtn = comm.GetMiniUIData(strSql, orderBy, pageIndex, pageSize);
+            return strRtn;
+        }
+
+        /// <summary>
+        /// 获取任务列表（兼容旧版）
         /// </summary>
         /// <param name="assignedTo"></param>
         /// <param name="status"></param>
@@ -1335,9 +1413,9 @@ namespace BLL
         /// <param name="deadlineValue"></param>
         /// <param name="deadlineUnit"></param>
         /// <returns></returns>
-        public DateTime CalculateDeadline(int deadlineType, string deadlineValue, int deadlineUnit)
+        public DateTime CalculateDeadline(int deadlineType, string deadlineValue, int deadlineUnit, string categoryId = null, DateTime? startTime = null)
         {
-            DateTime now = DateTime.Now;
+            DateTime now = startTime ?? DateTime.Now;
 
             switch (deadlineType)
             {
@@ -1347,15 +1425,21 @@ namespace BLL
                     int value;
                     if (int.TryParse(deadlineValue, out value))
                     {
+                        DateTime baseDeadline = now;
                         switch (deadlineUnit)
                         {
                             case 1: // 分钟
-                                return now.AddMinutes(value);
+                                baseDeadline = now.AddMinutes(value);
+                                break;
                             case 2: // 小时
-                                return now.AddHours(value);
+                                baseDeadline = now.AddHours(value);
+                                break;
                             case 3: // 天
-                                return now.AddDays(value);
+                                baseDeadline = now.AddDays(value);
+                                break;
                         }
+                        // 调整到工作时间内
+                        return AdjustToWorkingHours(baseDeadline, categoryId);
                     }
                     break;
                 case 2: // 固定时间点
@@ -1364,7 +1448,17 @@ namespace BLL
                         try
                         {
                             DateTime deadlineTime = DateTime.Parse(deadlineValue);
-                            return new DateTime(now.Year, now.Month, now.Day, deadlineTime.Hour, deadlineTime.Minute, 0);
+                            DateTime baseDeadline = new DateTime(now.Year, now.Month, now.Day, deadlineTime.Hour, deadlineTime.Minute, 0);
+                            // 检查是否在工作时间内
+                            if (IsInWorkingHours(baseDeadline, categoryId))
+                            {
+                                return baseDeadline;
+                            }
+                            else
+                            {
+                                // 不在工作时间内，推移到当天23:59:59
+                                return new DateTime(now.Year, now.Month, now.Day, 23, 59, 59);
+                            }
                         }
                         catch { }
                     }
@@ -1373,7 +1467,19 @@ namespace BLL
                     return new DateTime(now.Year, now.Month, now.Day, 23, 59, 59);
                 case 4: // 次日开始工作
                     DateTime tomorrow = now.AddDays(1);
-                    return new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 9, 0, 0); // 假设9点开始工作
+                    // 不考虑休息日，每天都是工作日
+                    // 获取工作时间配置
+                    List<WorkingHour> workingHours = GetWorkingHours(categoryId);
+                    if (workingHours.Count > 0)
+                    {
+                        WorkingHour firstWorkingHour = workingHours[0];
+                        return new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, firstWorkingHour.StartTime.Hours, firstWorkingHour.StartTime.Minutes, 0);
+                    }
+                    else
+                    {
+                        // 如果没有工作时间配置，使用9:00
+                        return new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 9, 0, 0);
+                    }
             }
 
             return DateTime.MinValue;
@@ -1405,7 +1511,9 @@ namespace BLL
             taskData.Add("Priority", priority.ToString());
             taskData.Add("StandardScore", standardScore.ToString());
             taskData.Add("Status", "0"); // 待处理
-            taskData.Add("StartTime", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            // 调整开始时间到工作时间内
+            DateTime adjustedStartTime = AdjustToWorkingHours(DateTime.Now, categoryId);
+            taskData.Add("StartTime", adjustedStartTime.ToString("yyyy-MM-dd HH:mm:ss"));
             taskData.Add("Creator", "系统");
             taskData.Add("Operator", "系统");
 
@@ -1469,8 +1577,10 @@ namespace BLL
                         continue; // 当天已生成过任务，跳过
                     }
 
-                    // 计算截止时间
-                    DateTime deadline = CalculateDeadline(deadlineType, deadlineValue, deadlineUnit);
+                    // 计算调整后的开始时间
+                    DateTime adjustedStartTime = AdjustToWorkingHours(DateTime.Now, categoryId);
+                    // 计算截止时间（以调整后的开始时间为基准）
+                    DateTime deadline = CalculateDeadline(deadlineType, deadlineValue, deadlineUnit, categoryId, adjustedStartTime);
 
                     // 生成任务名称
                     string taskName = string.Format("{0} - {1}", templateName, DateTime.Now.ToString("yyyy-MM-dd"));
@@ -1523,16 +1633,18 @@ namespace BLL
                     deadlineType = Convert.ToInt32(row["DeadlineType"]);
                     deadlineValue = row["DeadlineValue"] == DBNull.Value ? null : row["DeadlineValue"].ToString();
                     if (row.Table.Columns.Contains("DeadlineUnit"))
-                    {
-                        deadlineUnit = row["DeadlineUnit"] == DBNull.Value ? 0 : Convert.ToInt32(row["DeadlineUnit"]);
-                    }
+                {
+                    deadlineUnit = row["DeadlineUnit"] == DBNull.Value ? 0 : Convert.ToInt32(row["DeadlineUnit"]);
                 }
+            }
 
-                // 计算截止时间
-                DateTime deadline = CalculateDeadline(deadlineType, deadlineValue, deadlineUnit);
+            // 计算调整后的开始时间
+            DateTime adjustedStartTime = AdjustToWorkingHours(DateTime.Now, categoryId);
+            // 计算截止时间（以调整后的开始时间为基准）
+            DateTime deadline = CalculateDeadline(deadlineType, deadlineValue, deadlineUnit, categoryId, adjustedStartTime);
 
-                // 生成任务名称
-                string taskName = string.Format("{0} - 手动触发 - {1}", templateName, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            // 生成任务名称
+            string taskName = string.Format("{0} - 手动触发 - {1}", templateName, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
                 // 生成任务
                 return GenerateTask(templateId, taskName, categoryId, description, assignedTo, priority, standardScore, deadline, null, null, null);
@@ -1593,8 +1705,10 @@ namespace BLL
                     }
                 }
 
-                // 计算截止时间
-                DateTime deadline = CalculateDeadline(deadlineType, deadlineValue, deadlineUnit);
+                // 计算调整后的开始时间
+                DateTime adjustedStartTime = AdjustToWorkingHours(DateTime.Now, categoryId);
+                // 计算截止时间（以调整后的开始时间为基准）
+                DateTime deadline = CalculateDeadline(deadlineType, deadlineValue, deadlineUnit, categoryId, adjustedStartTime);
 
                 // 获取用户昵称（用户备注）
                 string userNickname = "";
@@ -1608,7 +1722,15 @@ namespace BLL
                 string otherInfo = GetOtherInfo(businessType, businessId, businessParams);
 
                 // 生成任务名称，格式：{用户昵称（用户备注）}-{其他信息}
-                string taskName = string.Format("{0}-{1}", userNickname, otherInfo);
+                string taskName;
+                if (!string.IsNullOrEmpty(userNickname))
+                {
+                    taskName = string.Format("{0}-{1}", userNickname, otherInfo);
+                }
+                else
+                {
+                    taskName = otherInfo;
+                }
 
                 // 生成任务描述，包含业务参数
                 string taskDescription = description;
@@ -1771,6 +1893,176 @@ namespace BLL
                     return null;
             }
         }
+
+        /// <summary>
+        /// 根据业务类型和业务ID更新任务状态
+        /// </summary>
+        /// <param name="businessType">业务类型</param>
+        /// <param name="businessId">业务ID</param>
+        /// <param name="status">状态值</param>
+        /// <param name="operator">操作人</param>
+        /// <returns></returns>
+        public bool UpdateTaskStatusByBusiness(string businessType, string businessId, int status, string @operator)
+        {
+            try
+            {
+                // 根据业务类型和业务ID查询任务
+                string sql = string.Format("SELECT TaskID FROM Task WHERE BusinessType = '{0}' AND BusinessId = '{1}'", businessType, businessId);
+                string taskId = DBHelper.SqlHelper.GetDataItemString(sql);
+                
+                if (!string.IsNullOrEmpty(taskId))
+                {
+                    // 调用现有的 UpdateTaskStatus 方法，复用任务状态更新逻辑
+                    return UpdateTaskStatus(taskId, status, @operator);
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                CommonTool.WriteLog.Write("UpdateTaskStatusByBusiness error: " + ex.Message);
+                return false;
+            }
+        }
+        #endregion
+
+        #region 工作时间相关
+
+        /// <summary>
+        /// 工作时间类
+        /// </summary>
+        private class WorkingHour
+        {
+            public TimeSpan StartTime { get; set; }
+            public TimeSpan EndTime { get; set; }
+        }
+
+        /// <summary>
+        /// 获取工作时间配置
+        /// </summary>
+        /// <param name="categoryId">分类ID</param>
+        /// <returns></returns>
+        private List<WorkingHour> GetWorkingHours(string categoryId)
+        {
+            List<WorkingHour> workingHours = new List<WorkingHour>();
+            string strSql = "";
+
+            if (!string.IsNullOrEmpty(categoryId))
+            {
+                // 先检查特定分类的时间段设置
+                strSql = string.Format(@"SELECT StartTime, EndTime 
+                                          FROM dbo.Task_Time 
+                                          WHERE (CategoryID = '{0}' OR CategoryID IS NULL) 
+                                          AND IsActive = 1 
+                                          ORDER BY CASE WHEN CategoryID = '{0}' THEN 0 ELSE 1 END", categoryId);
+            }
+            else
+            {
+                // 检查全局时间段设置
+                strSql = @"SELECT StartTime, EndTime 
+                            FROM dbo.Task_Time 
+                            WHERE CategoryID IS NULL 
+                            AND IsActive = 1";
+            }
+
+            DataTable dt = DBHelper.SqlHelper.GetDataTable(strSql);
+            foreach (DataRow row in dt.Rows)
+            {
+                WorkingHour wh = new WorkingHour
+                {
+                    StartTime = (TimeSpan)row["StartTime"],
+                    EndTime = (TimeSpan)row["EndTime"]
+                };
+                workingHours.Add(wh);
+            }
+
+            // 如果没有配置，使用默认工作时间
+            if (workingHours.Count == 0)
+            {
+                // 默认工作时间：上午9:00-12:30，下午14:00-18:30
+                workingHours.Add(new WorkingHour { StartTime = new TimeSpan(9, 0, 0), EndTime = new TimeSpan(12, 30, 0) });
+                workingHours.Add(new WorkingHour { StartTime = new TimeSpan(14, 0, 0), EndTime = new TimeSpan(18, 30, 0) });
+            }
+
+            return workingHours;
+        }
+
+        /// <summary>
+        /// 判断给定时间是否在工作时间内
+        /// </summary>
+        /// <param name="time">时间</param>
+        /// <param name="categoryId">分类ID</param>
+        /// <returns></returns>
+        private bool IsInWorkingHours(DateTime time, string categoryId)
+        {
+            List<WorkingHour> workingHours = GetWorkingHours(categoryId);
+            TimeSpan timeOfDay = time.TimeOfDay;
+
+            foreach (WorkingHour wh in workingHours)
+            {
+                if (timeOfDay >= wh.StartTime && timeOfDay <= wh.EndTime)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 获取下一个工作时间点
+        /// </summary>
+        /// <param name="currentTime">当前时间</param>
+        /// <param name="categoryId">分类ID</param>
+        /// <returns></returns>
+        private DateTime GetNextWorkingTime(DateTime currentTime, string categoryId)
+        {
+            List<WorkingHour> workingHours = GetWorkingHours(categoryId);
+            DateTime nextTime = currentTime;
+            TimeSpan timeOfDay = nextTime.TimeOfDay;
+
+            // 检查当天是否还有工作时间
+            foreach (WorkingHour wh in workingHours)
+            {
+                if (timeOfDay < wh.StartTime)
+                {
+                    // 当天还有工作时间
+                    return new DateTime(nextTime.Year, nextTime.Month, nextTime.Day, wh.StartTime.Hours, wh.StartTime.Minutes, 0);
+                }
+            }
+
+            // 当天没有工作时间了，检查第二天
+            nextTime = nextTime.AddDays(1);
+            // 不考虑休息日，每天都是工作日
+
+            // 返回第二天的第一个工作时间
+            if (workingHours.Count > 0)
+            {
+                WorkingHour firstWorkingHour = workingHours[0];
+                return new DateTime(nextTime.Year, nextTime.Month, nextTime.Day, firstWorkingHour.StartTime.Hours, firstWorkingHour.StartTime.Minutes, 0);
+            }
+
+            // 如果没有工作时间配置，返回第二天9:00
+            return new DateTime(nextTime.Year, nextTime.Month, nextTime.Day, 9, 0, 0);
+        }
+
+        /// <summary>
+        /// 将时间调整到工作时间内
+        /// </summary>
+        /// <param name="time">时间</param>
+        /// <param name="categoryId">分类ID</param>
+        /// <returns></returns>
+        private DateTime AdjustToWorkingHours(DateTime time, string categoryId)
+        {
+            if (IsInWorkingHours(time, categoryId))
+            {
+                return time;
+            }
+            else
+            {
+                return GetNextWorkingTime(time, categoryId);
+            }
+        }
+
         #endregion
     }
 }

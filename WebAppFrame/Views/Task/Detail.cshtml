@@ -10,7 +10,7 @@
     <script src="~/Scripts/Global.js"></script>
     <link href="~/Styles/style2.css?id=0" rel="stylesheet" />
     <link href="~/Styles/public.css?id=1" rel="stylesheet" />
-    <script src="~/Scripts/public.js?id=14"></script>
+    <script src="~/Scripts/public.js?id=100"></script>
     <script src="~/Scripts/imageUpload.js?id=1"></script>
     <style type="text/css">
         * {
@@ -375,17 +375,7 @@
             return null;
         }
 
-        // 获取当前登录用户名
-        function getCurrentUserName() {
-            var operator_name = "";
-            if (window.parent.frames["topFrame"]) {
-                operator_name = $(window.parent.frames["topFrame"].document).find("#sys_user_name").val();
-            }
-            if (window.parent.parent.frames["topFrame"]) {
-                operator_name = $(window.parent.parent.frames["topFrame"].document).find("#sys_user_name").val();
-            }
-            return operator_name;
-        }
+
 
         // 开始任务
         function startTask() {
@@ -394,7 +384,7 @@
             
             mini.confirm("确定要开始该任务吗？", "提示", function (action) {
                 if (action == "ok") {
-                    var operatorName = getCurrentUserName();
+                    var operatorName = getCurrentOperator();
                     $.ajax({
                         url: "/Task/UpdateTaskStatus",
                         type: "post",
@@ -423,7 +413,7 @@
             
             mini.confirm("确定要完成该任务吗？", "提示", function (action) {
                 if (action == "ok") {
-                    var operatorName = getCurrentUserName();
+                    var operatorName = getCurrentOperator();
                     $.ajax({
                         url: "/Task/UpdateTaskStatus",
                         type: "post",
@@ -701,7 +691,7 @@
                 Result: $("#inputResult").val(),
                 Remarks: $("#inputRemarks").val(),
                 Images: $("#inputImages").val(),
-                Operator: getCurrentUserName()
+                Operator: getCurrentOperator()
             };
         console.log(JSON.stringify(formData));
             $.ajax({

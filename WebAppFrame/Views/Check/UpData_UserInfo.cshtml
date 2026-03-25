@@ -1,4 +1,4 @@
-﻿
+
 
 <!DOCTYPE html>
 
@@ -12,7 +12,7 @@
     <script src="~/Scripts/Global.js"></script>
 
     <link href="~/Styles/public.css?id=" rel="stylesheet" />
-    <script src="~/Scripts/public.js?id=15"></script>
+    <script src="~/Scripts/public.js?id=100"></script>
 
     <style>
         select {
@@ -259,10 +259,13 @@
                 return false;
             }
 
+            // 获取当前登录者信息
+            var operator_name = getCurrentOperator();
+
             $.ajax({
                 type: "get",
                 url: "/Check/Update_UserInfo",
-                data: { "id": id, "state": state },
+                data: { "id": id, "state": state, "operatorName": operator_name },
                 success: function (data) {
                     var data = JSON.parse(data);
                     if (data.state == '1') {
