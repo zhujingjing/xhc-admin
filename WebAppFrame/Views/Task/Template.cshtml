@@ -1,4 +1,4 @@
-
+﻿
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -43,8 +43,6 @@
 
             init();
 
-            // 加载任务分类
-            loadCategories();
             // 加载模板数据
             loadData();
         })
@@ -89,28 +87,54 @@
             return '<a href="javascript:editTemplate(\'' + templateId + '\')" style="color:green;">编辑</a> | <a href="javascript:deleteTemplate(\'' + templateId + '\')" style="color:red;">删除</a>';
         }
 
-        // 加载任务分类
-        function loadCategories() {
-            $.ajax({
-                url: "/Task/GetTaskCategoryList",
-                type: "post",
-                success: function (text) {
-                    var result = mini.decode(text);
-                    mini.get("categoryId").setData(result.data);
-                }
-            });
+        // 渲染截止时间
+        function renderDeadline(e) {
+            var record = e.record;
+            var deadlineType = record.DeadlineType;
+            var deadlineValue = record.DeadlineValue;
+            var deadlineUnit = record.DeadlineUnit;
+            
+            switch (deadlineType) {
+                case 0:
+                    return '无截止';
+                case 1: // 相对时间
+                    if (!deadlineValue) return '';
+                    var unitText = '';
+                    switch (deadlineUnit) {
+                        case 1: unitText = '分钟'; break;
+                        case 2: unitText = '小时'; break;
+                        case 3: unitText = '天'; break;
+                        default: unitText = '分钟';
+                    }
+                    return '相对时间 ' + deadlineValue + unitText;
+                case 2: // 固定时间
+                    return '固定时间 ' + (deadlineValue || '');
+                case 3: // 当天结束
+                    return '当天结束';
+                case 4: // 次日开始
+                    return '次日开始';
+                default:
+                    return '';
+            }
         }
+
+        // 渲染模板名称（可点击）
+        function renderTemplateName(e) {
+            var record = e.record;
+            var templateId = record.TemplateID;
+            var templateName = record.TemplateName;
+            return '<a href="javascript:editTemplate(\'' + templateId + '\')" style="color:blue; text-decoration:underline; cursor:pointer;">' + templateName + '</a>';
+        }
+
+        
 
         // 加载数据
         function loadData() {
             var templateNameValue = mini.get("templateName").getValue();
-            var categoryIdValue = mini.get("categoryId").getValue();
-            
             grid.load({
                 url: "/Task/GetTaskTemplateList",
                 params: {
-                    templateName: templateNameValue,
-                    categoryId: categoryIdValue
+                    templateName: templateNameValue
                 }
             });
         }
@@ -126,7 +150,7 @@
                 url: "/Task/TemplateAdd",
                 title: "新增任务模板",
                 width: 800,
-                height: 650,
+                height: 820,
                 onload: function () {
                     var iframe = this.getIFrameEl();
                     var data = { action: "new", operator: getCurrentOperator() };
@@ -146,7 +170,7 @@
                 url: "/Task/TemplateAdd?id=" + templateId,
                 title: "编辑任务模板",
                 width: 800,
-                height: 650,
+                height: 820,
                 onload: function () {
                     var iframe = this.getIFrameEl();
                     var data = { action: "edit", templateId: templateId, operator: getCurrentOperator() };
@@ -199,9 +223,6 @@
             模板名称: 
             <input id="templateName" class="mini-textbox" style="width:200px;" placeholder="模板名称" />
             &nbsp;&nbsp;&nbsp;&nbsp;
-            任务分类: 
-            <select id="categoryId" class="mini-combobox" style="width:150px;" placeholder="任务分类"></select>
-            &nbsp;&nbsp;&nbsp;&nbsp;
             <input id="btn_search" type="button" class="sys-btn" value="搜索" onclick="search()" style="background-color: #E3F2FD; color: #1976D2;" />
             &nbsp;&nbsp;&nbsp;&nbsp;
             <input id="btn_add" type="button" class="sys-btn" value="新增模板" onclick="addTemplate()" style="background-color: #E8F5E9; color: #388E3C;" />
@@ -209,17 +230,22 @@
         <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskTemplateList" idfield="TemplateID" allowresize="true"
              sizelist="[50,100,200]" pagesize="50">
             <div property="columns">
-                <div type="checkcolumn" width="30"></div>
-                <div field="TemplateID" width="0" visible="false"></div>
-                <div field="TemplateName" width="200" header="模板名称" allowSort="true"></div>
-                <div field="CategoryName" width="150" header="分类" allowSort="true"></div>
-                <div field="Description" width="300" header="模板描述"></div>
-                <div field="Priority" width="80" header="优先级" allowSort="true" renderer="renderPriority"></div>
-                <div field="StandardScore" width="100" header="标准分" allowSort="true"></div>
-                <div field="ExecutionCycle" width="100" header="执行周期" allowSort="true" renderer="renderExecutionCycle"></div>
-                <div field="IsActive" width="80" header="状态" allowSort="true" renderer="renderIsActive"></div>
-                <div field="CreateTime" width="180" header="创建时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
-                <div field="action" width="150" header="操作" align="center" renderer="renderAction"></div>
+                <div field="TemplateID" width="120" header="模板ID" allowSort="true"></div>
+                <div field="TemplateName" width="120" header="模板名称" allowSort="true" renderer="renderTemplateName"></div>
+                <div field="CategoryName" width="80" header="分类" allowSort="true"></div>
+                <div field="Description" width="120" header="模板描述"></div>
+                <div field="Priority" width="40" header="优先级" allowSort="true" renderer="renderPriority"></div>
+                <div field="StandardScore" width="40" header="标准分" allowSort="true"></div>
+                <div field="AssignedTo" width="60" header="分配人" allowSort="true"></div>
+                <div field="deadline" width="120" header="截止时间" allowSort="true" renderer="renderDeadline"></div>
+                <div field="ExternalUrl" width="80" header="外部URL" allowSort="true"></div>
+                <div field="DelayPenaltyRule" width="120" header="惩罚规则" allowSort="true"></div>
+                <div field="EarlyRewardRule" width="120" header="奖励规则" allowSort="true"></div>
+                <div field="MaxDelayPenalty" width="60" header="最大惩罚" allowSort="true"></div>
+                <div field="MaxEarlyReward" width="60" header="最大奖励" allowSort="true"></div>
+                <div field="IsActive" width="40" header="状态" allowSort="true" renderer="renderIsActive"></div>
+                <div field="CreateTime" width="80" header="创建时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="action" width="100" header="操作" align="center" renderer="renderAction"></div>
             </div>
         </div>
     </form>

@@ -28,24 +28,101 @@
             justify-content: flex-start;
             align-items: center;
         }
+        /* 今日得分浮动窗口 */
+        .today-score-window {
+            position: fixed;
+            top: 2px;
+            right: 8px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.1),
+                0 10px 20px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            z-index: 1000;
+            min-width: 180px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            transform: perspective(1000px) rotateX(5deg) rotateY(-5deg);
+            transition: transform 0.3s ease;
+        }
+        
+        .today-score-window:hover {
+            transform: perspective(1000px) rotateX(0) rotateY(0);
+        }
+        .today-score-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            letter-spacing: 1px;
+        }
+        .today-score-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #52c41a;
+            text-shadow: 
+                0 2px 4px rgba(82, 196, 26, 0.3),
+                0 1px 2px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        /* 得分动画元素 */
+        .score-animation {
+            position: fixed;
+            font-size: 36px;
+            font-weight: bold;
+            color: #52c41a;
+            z-index: 1001;
+            pointer-events: none;
+            animation: scoreFloat 1.5s ease-out forwards;
+        }
+        @@keyframes scoreFloat {
+            0% {
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                top: 20px;
+                right: 20px;
+                transform: translate(0, 0) scale(0.5);
+                opacity: 0;
+            }
+        }
+        /* 数字跳动动画 */
+        @@keyframes countUp {
+            from {
+                opacity: 0.5;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .counting {
+            animation: countUp 0.5s ease-in-out;
+        }
     </style>
     <script type="text/javascript">
         var grid;
+        var currentTodayScore = 0;
+        
         $(function () {
             //设置表格的高度
-            var parentHeight = $(window.parent).height();
-            $("#grid1").height(parentHeight - 120);
+            var parentHeight = $(window.parent.document).find("#rightFrame").height();
+            $("#grid1").height(parentHeight - 130);
 
             mini.parse();
 
             grid = mini.get("grid1");
 
-            init();
-
-            // 设置截止时间默认值为昨天
-            var yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            var formattedDate = yesterday.toISOString().split('T')[0];
+            // 设置截止时间默认值为当天
+            var today = new Date();
+            var formattedDate = today.toISOString().split('T')[0];
             document.getElementById("timeFilter").value = formattedDate;
 
             // 加载任务分类列表
@@ -54,18 +131,88 @@
             // 加载任务数据
             loadData();
             
+            // 获取今日得分和进度条数据
+            getTaskPanelData();
+            
             // 绑定面板按钮事件
             document.getElementById("btn_close_panel").onclick = hideHideSettingsPanel;
             document.getElementById("btn_cancel_settings").onclick = hideHideSettingsPanel;
             document.getElementById("btn_save_settings").onclick = saveHideSettings;
         })
 
-        function init() {
-            //设置表格的高度
-            var parentHeight = $(window.parent.document).find("#rightFrame").height();
-            $("#grid1").height(parentHeight - 120);
+        // 获取今日得分和进度条数据
+        function getTaskPanelData() {
+            var userName = getCurrentOperator();
+            console.log("当前用户:", userName);
+            $.ajax({
+                url: "/Task/GetTaskPanelProgress",
+                type: "get",
+                data: { userName: userName },
+                success: function (text) {
+                    console.log("获取到的任务面板数据:", text);
+                    try {
+                        var result = mini.decode(text);
+                        console.log("解析后的结果:", result);
+                        if (result.state == "1" || result.state == 1) {
+                            // 更新今日得分
+                            var newScore = parseFloat(result.todayScore) || 0;
+                            if (newScore > currentTodayScore) {
+                                // 有新得分，显示动画
+                                showScoreAnimation(newScore - currentTodayScore);
+                            }
+                            // 更新当前得分
+                            currentTodayScore = newScore;
+                            // 更新得分显示
+                            updateTodayScoreDisplay();
+                            
+                            // 更新进度条
+                            updateProgressBarWithData(result);
+                        } else {
+                            console.log("接口返回失败:", result.msg);
+                        }
+                    } catch (e) {
+                        console.log("解析数据失败:", e);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("获取任务面板数据失败:", error);
+                }
+            });
         }
 
+        // 显示得分动画
+        function showScoreAnimation(scoreIncrease) {
+            // 创建动画元素
+            var animationElement = document.createElement("div");
+            animationElement.className = "score-animation";
+            animationElement.textContent = "+" + scoreIncrease.toFixed(2);
+            document.body.appendChild(animationElement);
+
+            // 动画结束后移除元素
+            setTimeout(function() {
+                document.body.removeChild(animationElement);
+            }, 1500);
+        }
+
+        // 更新今日得分显示
+        function updateTodayScoreDisplay() {
+            var scoreElement = document.getElementById("todayScoreValue");
+            // 添加动画类
+            scoreElement.classList.add("counting");
+            // 更新数值
+            scoreElement.textContent = currentTodayScore.toFixed(2);
+            // 移除动画类
+            setTimeout(function() {
+                scoreElement.classList.remove("counting");
+            }, 500);
+        }
+
+        // 汇总行渲染函数
+        function summaryRenderer(e) {
+            var field = e.field;
+            var value = e.value;
+            return value.toFixed(2);
+        }
 
 
         // 渲染优先级
@@ -182,7 +329,18 @@
             var date = new Date(value);
             var dateStr = date.toLocaleDateString('zh-CN');
             var timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-            return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
+            
+            // 检查是否超时
+            var record = e.record;
+            var deadline = record.Deadline;
+            var isOverdue = false;
+            if (deadline) {
+                var deadlineDate = new Date(deadline);
+                isOverdue = date > deadlineDate;
+            }
+            
+            var color = isOverdue ? 'red' : 'black';
+            return '<div style="text-align: center; color: ' + color + ';"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
         }
 
         // 渲染截止时间（分两行显示）
@@ -194,6 +352,16 @@
             var timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
             return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
         }
+
+        // 渲染实际得分，根据与标准得分的关系显示不同颜色
+        function renderActualScore(e) {
+            var actualScore = e.value || 0;
+            var standardScore = e.record.StandardScore || 0;
+            var color = actualScore >= standardScore ? 'green' : 'red';
+            return '<span style="color: ' + color + '; font-weight: bold;">' + actualScore + '</span>';
+        }
+
+
 
 
 
@@ -293,7 +461,53 @@
             }, function(data) {
                 // 加载完成后根据设置过滤数据
                 filterTasksBySettings();
+                // 表格刷新后获取最新今日得分和进度条数据
+                console.log("表格加载完成，开始获取进度条和得分数据");
+                getTaskPanelData();
             });
+        }
+        
+        // 更新任务完成进度条（基于表格数据）
+        function updateProgressBar() {
+            var data = grid.getData();
+            if (data.length === 0) {
+                document.getElementById("progressFill").style.width = "0%";
+                document.getElementById("progressFill").style.backgroundColor = "#52c41a";
+                document.getElementById("progressText").textContent = "0%";
+                return;
+            }
+            
+            var totalTasks = data.length;
+            var completedTasks = 0;
+            
+            for (var i = 0; i < data.length; i++) {
+                var task = data[i];
+                if (task.Status === 2 || task.Status === 3) { // 已完成或已审核
+                    completedTasks++;
+                }
+            }
+            
+            var progressPercentage = Math.round((completedTasks / totalTasks) * 100);
+            document.getElementById("progressFill").style.width = progressPercentage + "%";
+            document.getElementById("progressText").textContent = progressPercentage + "%";
+        }
+
+        // 更新任务完成进度条（基于接口数据）
+        function updateProgressBarWithData(data) {
+            var totalTasks = parseInt(data.totalTasks) || 0;
+            var completedTasks = parseInt(data.completedTasks) || 0;
+            var uncompletedTasks = parseInt(data.uncompletedTasks) || 0;
+            
+            if (totalTasks === 0) {
+                document.getElementById("progressFill").style.width = "0%";
+                document.getElementById("progressFill").style.backgroundColor = "#52c41a";
+                document.getElementById("progressText").textContent = "0%";
+                return;
+            }
+            
+            var progressPercentage = Math.round((completedTasks / totalTasks) * 100);
+            document.getElementById("progressFill").style.width = progressPercentage + "%";
+            document.getElementById("progressText").textContent = progressPercentage + "%";
         }
 
         // 根据设置过滤任务
@@ -368,6 +582,10 @@
                             if (result.state == "1" || result.state == 1) {
                                 mini.alert("任务已完成");
                                 loadData();
+                                // 任务完成后获取最新今日得分和进度条数据
+                                setTimeout(function() {
+                                    getTaskPanelData();
+                                }, 500);
                             } else {
                                 mini.alert(result.msg || "操作失败");
                             }
@@ -473,6 +691,10 @@
                                 if (result.state == "1" || result.state == 1) {
                                     mini.alert("批量操作成功");
                                     loadData();
+                                    // 批量完成任务后获取最新今日得分和进度条数据
+                                    setTimeout(function() {
+                                        getTaskPanelData();
+                                    }, 500);
                                 } else {
                                     mini.alert(result.msg || "操作失败");
                                 }
@@ -574,6 +796,12 @@
             <li><a href="#">任务面板</a></li>
         </ul>
     </div>
+    <!-- 今日得分浮动窗口 -->
+    <div class="today-score-window">
+        <div class="today-score-title">今日得分</div>
+        <div class="today-score-value" id="todayScoreValue">0</div>
+    </div>
+    
     <form id="form1">
         <div class="sys-content-border" style="padding:8px 3px;">
             分类: 
@@ -600,7 +828,7 @@
                 <option value="2">高</option>
             </select>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            截止时间: 
+            截止时间大于: 
             <input id="timeFilter" type="date" style="width:120px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 20px;" />
             &nbsp;&nbsp;&nbsp;&nbsp;
             <input id="btn_refresh" type="button" class="sys-btn" value="刷新" onclick="loadData()" style="background-color: #E3F2FD; color: #1976D2;" />
@@ -609,8 +837,15 @@
             
             <input id="btn_hide_settings" type="button" class="sys-btn" value="不显示设置" onclick="showHideSettingsPanel()" style="background-color: #E8F5E8; color: #2E7D32;" />
         </div>
+        <!-- 任务完成进度条 -->
+        <div style="width:100%; margin-top:5px; margin-bottom:5px;">
+            <div style="width:100%; height:10px; background-color: #ff4d4f; position: relative;" id="progressBar">
+                <div style="height:100%; background-color: #52c41a; position: absolute; left: 0; top: 0; transition: width 0.5s ease-in-out;" id="progressFill"></div>
+                <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; text-align: center; line-height: 10px; font-size: 8px; color: white; text-shadow: 1px 1px 1px rgba(0,0,0,0.5);" id="progressText">0%</div>
+            </div>
+        </div>
         <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskList" idfield="TaskID" allowresize="true" multiselect="true"
-             sizelist="[50,100,200]" pagesize="50">
+             sizelist="[50,100,500]" pagesize="50" showSummaryRow="true">
             <div property="columns">
                 <div field="TaskID" width="0" visible="false"></div>
                 <div field="Index" width="30" header="序号" align="center" renderer="renderIndex"></div>
@@ -629,7 +864,8 @@
                 <div field="Deadline" width="80" header="截止时间" allowSort="true" renderer="renderDeadline"></div>
                 <div field="CreateTime" width="80" header="创建时间" allowSort="true" renderer="renderCreateTime"></div>
                 <div field="Creator" width="80" header="创建人" allowSort="true"></div>
-
+                <div field="StandardScore" width="50" header="标准分" allowSort="true" summaryType="sum" summaryRenderer="summaryRenderer"></div>
+                <div field="ActualScore" width="50" header="实际分" allowSort="true" renderer="renderActualScore" summaryType="sum" summaryRenderer="summaryRenderer"></div>
             </div>
         </div>
         

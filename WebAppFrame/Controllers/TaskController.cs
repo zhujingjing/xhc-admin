@@ -14,6 +14,156 @@ namespace WebAppFrame.Controllers
         BLL.Task taskBll = new BLL.Task();
         BLL.Common commonBll = new BLL.Common();
 
+        // 执行任务自动生成（供外部调用，每分钟调用一次---触发来源是消息处理的cmd程序）
+        public string ExecuteTaskGeneration()
+        {
+            CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
+            try
+            {
+                int generatedCount = taskBll.ExecuteTaskGeneration();
+                info.State = "1";
+                info.Msg = "成功生成【" + generatedCount + "】个任务";
+                //info.Data = generatedCount.ToString();
+            }
+            catch (Exception ex)
+            {
+                info.State = "0";
+                info.Msg = "执行失败: " + ex.Message;
+            }
+            return info.ToString();
+        }
+
+        // 外部系统触发任务生成API （小火柴appData接口调用-提现、头像昵称审核、相册审核等8大审核，消息处理web端调用-消息预警）
+        [HttpPost]
+        public string ExternalTaskGeneration()
+        {
+            CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
+            try
+            {
+                // 读取请求体
+                string requestBody;
+                using (var reader = new System.IO.StreamReader(Request.InputStream))
+                {
+                    requestBody = reader.ReadToEnd();
+                }
+
+                if (string.IsNullOrEmpty(requestBody))
+                {
+                    info.State = "0";
+                    info.Msg = "请求体不能为空";
+                    return info.ToString();
+                }
+
+                // 解析JSON请求体
+                Dictionary<string, string> fullParams = CommonTool.JsonHelper.GetParms2(requestBody);
+
+                // 提取业务类型
+                string businessType = "";
+                if (fullParams.ContainsKey("businessType"))
+                {
+                    businessType = fullParams["businessType"];
+                }
+
+                // 提取业务ID
+                string businessId = "";
+                if (fullParams.ContainsKey("businessId"))
+                {
+                    businessId = fullParams["businessId"];
+                }
+
+                // 提取业务参数
+                string businessParams = "";
+                if (fullParams.ContainsKey("parameters"))
+                {
+                    businessParams = fullParams["parameters"];
+                }
+
+                // 打印解析到的参数
+                CommonTool.WriteLog.Write(string.Format("ExternalTaskGeneration - businessType: {0}, businessId: {1}, parameters: {2}", businessType, businessId, businessParams));
+
+                // 参数验证
+                if (string.IsNullOrEmpty(businessType))
+                {
+                    info.State = "0";
+                    info.Msg = "业务类型不能为空";
+                    return info.ToString();
+                }
+
+                if (string.IsNullOrEmpty(businessId))
+                {
+                    info.State = "0";
+                    info.Msg = "业务ID不能为空";
+                    return info.ToString();
+                }
+
+                // 解析业务参数
+                Dictionary<string, string> businessParamsDict = null;
+                if (!string.IsNullOrEmpty(businessParams))
+                {
+                    try
+                    {
+                        businessParamsDict = CommonTool.JsonHelper.GetParms2(businessParams);
+                    }
+                    catch (Exception ex)
+                    {
+                        info.State = "0";
+                        info.Msg = "业务参数格式错误: " + ex.Message;
+                        return info.ToString();
+                    }
+                }
+
+                // 调用BLL方法生成任务
+                bool result = taskBll.GenerateExternalTask(businessType, businessId, businessParamsDict);
+                if (result)
+                {
+                    info.State = "1";
+                    info.Msg = "任务生成成功";
+                }
+                else
+                {
+                    info.State = "0";
+                    info.Msg = "任务生成失败";
+                }
+            }
+            catch (Exception ex)
+            {
+                info.State = "0";
+                info.Msg = "任务生成失败: " + ex.Message;
+            }
+
+            // 直接返回标准格式
+            return info.ToString();
+        }
+
+
+        // 外部触发任务生成
+        [HttpPost]
+        public string TriggerTaskGeneration(string templateId)
+        {
+            CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
+            try
+            {
+                bool result = taskBll.TriggerTaskGeneration(templateId);
+                if (result)
+                {
+                    info.State = "1";
+                    info.Msg = "成功";
+                }
+                else
+                {
+                    info.State = "0";
+                    info.Msg = "触发失败";
+                }
+            }
+            catch (Exception ex)
+            {
+                info.State = "0";
+                info.Msg = "触发失败: " + ex.Message;
+            }
+            return info.ToString();
+        }
+
+
         // 任务面板
         public ActionResult Panel()
         {
@@ -157,9 +307,9 @@ namespace WebAppFrame.Controllers
         }
 
         // 获取任务模板列表
-        public string GetTaskTemplateList()
+        public string GetTaskTemplateList(string templateName)
         {
-            DataTable dt = taskBll.GetTaskTemplateList();
+            DataTable dt = taskBll.GetTaskTemplateList(templateName);
             string data = CommonTool.JsonHelper.DataTableToJSON(dt);
             return commonBll.GetMiniUIData2(dt.Rows.Count.ToString(), data);
         }
@@ -499,154 +649,7 @@ namespace WebAppFrame.Controllers
             return CommonTool.JsonHelper.DataTableToJSON(dt);
         }
 
-        // 执行任务自动生成
-        public string ExecuteTaskGeneration()
-        {
-            CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
-            try
-            {
-                int generatedCount = taskBll.ExecuteTaskGeneration();
-                info.State = "1";
-                info.Msg = "成功生成【" + generatedCount + "】个任务";
-                //info.Data = generatedCount.ToString();
-            }
-            catch (Exception ex)
-            {
-                info.State = "0";
-                info.Msg = "执行失败: " + ex.Message;
-            }
-            return info.ToString();
-        }
-
-        // 外部触发任务生成
-        [HttpPost]
-        public string TriggerTaskGeneration(string templateId)
-        {
-            CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
-            try
-            {
-                bool result = taskBll.TriggerTaskGeneration(templateId);
-                if (result)
-                {
-                    info.State = "1";
-                    info.Msg = "成功";
-                }
-                else
-                {
-                    info.State = "0";
-                    info.Msg = "触发失败";
-                }
-            }
-            catch (Exception ex)
-            {
-                info.State = "0";
-                info.Msg = "触发失败: " + ex.Message;
-            }
-            return info.ToString();
-        }
-
-        // 外部系统触发任务生成API
-        [HttpPost]
-        public string ExternalTaskGeneration()
-        {
-            CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
-            try
-            {
-                // 读取请求体
-                string requestBody;
-                using (var reader = new System.IO.StreamReader(Request.InputStream))
-                {
-                    requestBody = reader.ReadToEnd();
-                }
-                
-                if (string.IsNullOrEmpty(requestBody))
-                {
-                    info.State = "0";
-                    info.Msg = "请求体不能为空";
-                    return info.ToString();
-                }
-                
-                // 解析JSON请求体
-                Dictionary<string, string> fullParams = CommonTool.JsonHelper.GetParms2(requestBody);
-                
-                // 提取业务类型
-                string businessType = "";
-                if (fullParams.ContainsKey("businessType"))
-                {
-                    businessType = fullParams["businessType"];
-                }
-                
-                // 提取业务ID
-                string businessId = "";
-                if (fullParams.ContainsKey("businessId"))
-                {
-                    businessId = fullParams["businessId"];
-                }
-                
-                // 提取业务参数
-                string businessParams = "";
-                if (fullParams.ContainsKey("parameters"))
-                {
-                    businessParams = fullParams["parameters"];
-                }
-                
-                // 打印解析到的参数
-                CommonTool.WriteLog.Write(string.Format("ExternalTaskGeneration - businessType: {0}, businessId: {1}, parameters: {2}", businessType, businessId, businessParams));
-                
-                // 参数验证
-                if (string.IsNullOrEmpty(businessType))
-                {
-                    info.State = "0";
-                    info.Msg = "业务类型不能为空";
-                    return info.ToString();
-                }
-                
-                if (string.IsNullOrEmpty(businessId))
-                {
-                    info.State = "0";
-                    info.Msg = "业务ID不能为空";
-                    return info.ToString();
-                }
-                
-                // 解析业务参数
-                Dictionary<string, string> businessParamsDict = null;
-                if (!string.IsNullOrEmpty(businessParams))
-                {
-                    try
-                    {
-                        businessParamsDict = CommonTool.JsonHelper.GetParms2(businessParams);
-                    }
-                    catch (Exception ex)
-                    {
-                        info.State = "0";
-                        info.Msg = "业务参数格式错误: " + ex.Message;
-                        return info.ToString();
-                    }
-                }
-                
-                // 调用BLL方法生成任务
-                bool result = taskBll.GenerateExternalTask(businessType, businessId, businessParamsDict);
-                if (result)
-                {
-                    info.State = "1";
-                    info.Msg = "任务生成成功";
-                }
-                else
-                {
-                    info.State = "0";
-                    info.Msg = "任务生成失败";
-                }
-            }
-            catch (Exception ex)
-            {
-                info.State = "0";
-                info.Msg = "任务生成失败: " + ex.Message;
-            }
-            
-            // 直接返回标准格式
-            return info.ToString();
-        }
-
+        
         // 调度配置页面
         public ActionResult Schedule()
         {
@@ -732,6 +735,78 @@ namespace WebAppFrame.Controllers
             {
                 info.State = "0";
                 info.Msg = "数据库操作失败";
+            }
+            return info.ToString();
+        }
+
+        // 获取今日得分
+        public string GetTodayScore(string userName)
+        {
+            CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
+            try
+            {
+                // 验证用户参数
+                if (string.IsNullOrEmpty(userName))
+                {
+                    info.State = "0";
+                    info.Msg = "用户名称不能为空";
+                    return info.ToString();
+                }
+
+                // 计算今日得分
+                decimal todayScore = taskBll.GetTodayScore(userName);
+                info.State = "1";
+                info.Msg = "成功";
+                info.DicParm.Add("todayScore", todayScore.ToString());
+            }
+            catch (Exception ex)
+            {
+                info.State = "0";
+                info.Msg = "获取今日得分失败: " + ex.Message;
+            }
+            return info.ToString();
+        }
+
+        // 获取任务面板顶部进度条数据
+        public string GetTaskPanelProgress(string userName)
+        {
+            CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
+            try
+            {
+                // 验证用户参数
+                if (string.IsNullOrEmpty(userName))
+                {
+                    info.State = "0";
+                    info.Msg = "用户名称不能为空";
+                    return info.ToString();
+                }
+
+                // 获取进度条数据
+                DataTable dt = taskBll.GetTaskPanelProgress(userName);
+                if (dt.Rows.Count > 0)
+                {
+                    DataRow row = dt.Rows[0];
+                    info.State = "1";
+                    info.Msg = "成功";
+                    info.DicParm.Add("totalTasks", row["TotalTasks"].ToString());
+                    info.DicParm.Add("uncompletedTasks", row["UncompletedTasks"].ToString());
+                    info.DicParm.Add("completedTasks", row["CompletedTasks"].ToString());
+                    info.DicParm.Add("todayScore", row["TodayScore"].ToString());
+                }
+                else
+                {
+                    info.State = "1";
+                    info.Msg = "成功";
+                    info.DicParm.Add("totalTasks", "0");
+                    info.DicParm.Add("uncompletedTasks", "0");
+                    info.DicParm.Add("completedTasks", "0");
+                    info.DicParm.Add("todayScore", "0");
+                }
+            }
+            catch (Exception ex)
+            {
+                info.State = "0";
+                info.Msg = "获取进度条数据失败: " + ex.Message;
             }
             return info.ToString();
         }

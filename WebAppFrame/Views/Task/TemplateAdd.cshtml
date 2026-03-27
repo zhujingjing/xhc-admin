@@ -1,4 +1,4 @@
-
+﻿
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -121,6 +121,17 @@
                             console.log('Radio button value:', radio.value, 'should be checked:', shouldCheck);
                             radio.checked = shouldCheck;
                         }
+                        
+                        // 处理得分规则字段
+                        var delayPenaltyRuleControl = mini.get("DelayPenaltyRule");
+                        var earlyRewardRuleControl = mini.get("EarlyRewardRule");
+                        var maxDelayPenaltyControl = mini.get("MaxDelayPenalty");
+                        var maxEarlyRewardControl = mini.get("MaxEarlyReward");
+                        
+                        if (delayPenaltyRuleControl) delayPenaltyRuleControl.setValue(templateData.DelayPenaltyRule || "");
+                        if (earlyRewardRuleControl) earlyRewardRuleControl.setValue(templateData.EarlyRewardRule || "");
+                        if (maxDelayPenaltyControl) maxDelayPenaltyControl.setValue(templateData.MaxDelayPenalty || "");
+                        if (maxEarlyRewardControl) maxEarlyRewardControl.setValue(templateData.MaxEarlyReward || "");
                     } else if (templateId) {
                         // 通过AJAX获取模板数据
                         $.ajax({
@@ -213,6 +224,17 @@
                                                 var radio = externalUrlEnabledRadioButtons[j];
                                                 radio.checked = (radio.value === (shouldEnableExternalUrl ? "1" : "0"));
                                             }
+                                            
+                                            // 处理得分规则字段
+                                            var delayPenaltyRuleControl = mini.get("DelayPenaltyRule");
+                                            var earlyRewardRuleControl = mini.get("EarlyRewardRule");
+                                            var maxDelayPenaltyControl = mini.get("MaxDelayPenalty");
+                                            var maxEarlyRewardControl = mini.get("MaxEarlyReward");
+                                            
+                                            if (delayPenaltyRuleControl) delayPenaltyRuleControl.setValue(templateData.DelayPenaltyRule || "");
+                                            if (earlyRewardRuleControl) earlyRewardRuleControl.setValue(templateData.EarlyRewardRule || "");
+                                            if (maxDelayPenaltyControl) maxDelayPenaltyControl.setValue(templateData.MaxDelayPenalty || "");
+                                            if (maxEarlyRewardControl) maxEarlyRewardControl.setValue(templateData.MaxEarlyReward || "");
                                         }
                                     }
                                 }
@@ -342,7 +364,6 @@
 </head>
 <body>
     <div class="form-container">
-        <h2 style="text-align: center; margin-bottom: 20px;">新增/编辑任务模板</h2>
         <form id="form1">
             <input type="hidden" id="TemplateID" name="TemplateID" />
             
@@ -381,13 +402,13 @@
             </div>
             
             <div class="form-item">
-                <label class="form-label">截止时间类型：</label>
+                <label class="form-label">截止时间：</label>
                 <select id="DeadlineType" name="DeadlineType" style="width: 400px; border: 1px solid #b3d9ff; border-radius: 3px; height: 35px;">
                     <option value="0">无截止</option>
-                    <option value="1">相对生成时间</option>
-                    <option value="2">固定时间点</option>
+                    <option value="1">相对时间</option>
+                    <option value="2">固定时间</option>
                     <option value="3">当天结束</option>
-                    <option value="4">次日开始工作</option>
+                    <option value="4">次日开始</option>
                 </select>
             </div>
             
@@ -437,6 +458,26 @@
                         <input type="radio" id="ExternalUrlEnabled0" name="ExternalUrlEnabled" value="0" checked /> 否
                     </label>
                 </div>
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">超时惩罚规则：</label>
+                <textarea id="DelayPenaltyRule" name="DelayPenaltyRule" class="mini-textarea" placeholder='JSON格式，例如：[{"minutes":30,"penalty":5},{"minutes":60,"penalty":10}]'></textarea>
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">提前奖励规则：</label>
+                <textarea id="EarlyRewardRule" name="EarlyRewardRule" class="mini-textarea" placeholder='JSON格式，例如：[{"minutes":30,"reward":3},{"minutes":60,"reward":6}]'></textarea>
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">最大惩罚分数：</label>
+                <input id="MaxDelayPenalty" name="MaxDelayPenalty" class="mini-textbox" placeholder="输入最大惩罚分数" />
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">最大奖励分数：</label>
+                <input id="MaxEarlyReward" name="MaxEarlyReward" class="mini-textbox" placeholder="输入最大奖励分数" />
             </div>
             
             <div class="button-container">

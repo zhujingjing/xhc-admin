@@ -161,9 +161,16 @@ namespace BLL
         /// <summary>
         /// 获取任务模板列表
         /// </summary>
+        /// <param name="templateName"></param>
         /// <returns></returns>
-        public DataTable GetTaskTemplateList()
+        public DataTable GetTaskTemplateList(string templateName)
         {
+            string strWhere = "";
+            if (!string.IsNullOrEmpty(templateName))
+            {
+                strWhere = string.Format(" WHERE t.TemplateName LIKE '%{0}%'", templateName);
+            }
+            
             string strSql = @"SELECT t.TemplateID
                              , t.TemplateName
                              , t.CategoryID
@@ -177,12 +184,14 @@ namespace BLL
                              , t.DeadlineValue
                              , t.DeadlineUnit
                              , t.ExternalUrl
-                             , t.ExternalUrlParams
-                             , t.ExternalUrlEnabled
+                             , t.DelayPenaltyRule
+                             , t.EarlyRewardRule
+                             , t.MaxDelayPenalty
+                             , t.MaxEarlyReward
                              , t.CreateTime
                              , t.UpdateTime 
                              FROM dbo.TaskTemplate t 
-                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID " + strWhere + @"
                              ORDER BY t.CreateTime DESC";
             return DBHelper.SqlHelper.GetDataTable(strSql);
         }
@@ -208,6 +217,10 @@ namespace BLL
                                           , ExternalUrl
                                           , ExternalUrlParams
                                           , ExternalUrlEnabled
+                                          , DelayPenaltyRule
+                                          , EarlyRewardRule
+                                          , MaxDelayPenalty
+                                          , MaxEarlyReward
                                           , CreateTime
                                           , UpdateTime 
                                           FROM dbo.TaskTemplate 
@@ -501,6 +514,7 @@ namespace BLL
                              , t.Status
                              , t.StandardScore
                              , t.ActualScore
+                             , t.AuditScore
                              , t.Result
                              , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
                              , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
@@ -790,6 +804,14 @@ namespace BLL
 
             bool result = DBHelper.SqlHelper.ExecuteSql(strSql) > 0;
             
+            // 任务完成时计算得分
+            if (result && status == 2)
+            {
+                decimal score = CalculateTaskScore(id);
+                string updateScoreSql = string.Format("UPDATE dbo.Task SET ActualScore = {0}, FinalScore = {0}, UpdateTime = GETDATE() WHERE TaskID = '{1}'", score, id);
+                DBHelper.SqlHelper.ExecuteSql(updateScoreSql);
+            }
+            
             // 记录操作日志
             if (result && oldStatus != status)
             {
@@ -865,7 +887,6 @@ namespace BLL
 
             DataRow row = dt.Rows[0];
             decimal standardScore = Convert.ToDecimal(row["StandardScore"]);
-            DateTime startTime = Convert.ToDateTime(row["StartTime"]);
             DateTime endTime = row["EndTime"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(row["EndTime"]);
             DateTime deadline = row["Deadline"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(row["Deadline"]);
 
@@ -874,32 +895,350 @@ namespace BLL
                 return 0;
             }
 
-            TimeSpan duration = endTime - startTime;
             decimal score = standardScore;
 
-            // 根据完成时间计算得分
+            // 根据完成时间和截止时间的差值计算得分
             if (deadline != DateTime.MinValue)
             {
-                TimeSpan deadlineDuration = deadline - startTime;
-                if (duration < deadlineDuration)
+                TimeSpan timeDiff = endTime - deadline;
+                double minutesDiff = timeDiff.TotalMinutes;
+                
+                if (minutesDiff < 0)
                 {
                     // 提前完成，加分
-                    double earlyRatio = (deadlineDuration.TotalMinutes - duration.TotalMinutes) / deadlineDuration.TotalMinutes;
-                    score += standardScore * (decimal)(earlyRatio * 0.2); // 最多加20%
+                    double earlyMinutes = Math.Abs(minutesDiff);
+                    score += CalculateEarlyReward(taskId, earlyMinutes);
                 }
-                else if (duration > deadlineDuration)
+                else if (minutesDiff > 0)
                 {
                     // 超时完成，减分
-                    double delayRatio = (duration.TotalMinutes - deadlineDuration.TotalMinutes) / deadlineDuration.TotalMinutes;
-                    score -= standardScore * (decimal)(delayRatio * 0.3); // 最多减30%
-                    if (score < 0)
-                    {
-                        score = 0;
-                    }
+                    double delayMinutes = minutesDiff;
+                    score -= CalculateDelayPenalty(taskId, delayMinutes);
                 }
             }
 
             return Math.Round(score, 2);
+        }
+
+        /// <summary>
+        /// 计算提前完成奖励得分
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="earlyMinutes"></param>
+        /// <returns></returns>
+        private decimal CalculateEarlyReward(string taskId, double earlyMinutes)
+        {
+            try
+            {
+                // 获取任务模板ID
+                string templateId = GetTaskTemplateId(taskId);
+                if (string.IsNullOrEmpty(templateId))
+                {
+                    return 0;
+                }
+
+                // 获取模板的提前奖励规则和最大奖励分数
+                string earlyRewardRule = GetTemplateEarlyRewardRule(templateId);
+                decimal maxEarlyReward = GetTemplateMaxEarlyReward(templateId);
+                
+                decimal reward = 0;
+                
+                if (!string.IsNullOrEmpty(earlyRewardRule))
+                {
+                    // 解析JSON规则（简单字符串解析）
+                    try
+                    {
+                        // 分割规则
+                        string[] ruleStrings = earlyRewardRule.Split(new string[] { "}", "{" }, System.StringSplitOptions.RemoveEmptyEntries);
+
+                        decimal maxReward = 0;
+                        foreach (string ruleStr in ruleStrings)
+                        {
+                            if (string.IsNullOrEmpty(ruleStr)) continue;
+
+                            // 提取minutes和reward
+                            try
+                            {
+                                // 处理minutes
+                                int minutesPos = ruleStr.IndexOf("minutes");
+                                if (minutesPos != -1)
+                                {
+                                    int colonPos = ruleStr.IndexOf(":", minutesPos);
+                                    int commaPos = ruleStr.IndexOf(",", colonPos);
+                                    if (colonPos != -1 && commaPos != -1)
+                                    {
+                                        string minutesStr = ruleStr.Substring(colonPos + 1, commaPos - colonPos - 1).Trim();
+                                        int minutes = int.Parse(minutesStr);
+
+                                        // 处理reward
+                                        int rewardPos = ruleStr.IndexOf("reward");
+                                        if (rewardPos != -1)
+                                        {
+                                            int rewardColonPos = ruleStr.IndexOf(":", rewardPos);
+                                            int rewardEndPos = ruleStr.IndexOf("}", rewardColonPos);
+                                            if (rewardEndPos == -1)
+                                            {
+                                                rewardEndPos = ruleStr.Length;
+                                            }
+                                            string rewardStr = ruleStr.Substring(rewardColonPos + 1, rewardEndPos - rewardColonPos - 1).Trim();
+                                            decimal ruleReward = decimal.Parse(rewardStr);
+
+                                            if (earlyMinutes >= minutes && ruleReward > maxReward)
+                                            {
+                                                maxReward = ruleReward;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                // 解析单个规则失败，继续处理下一个
+                                continue;
+                            }
+                        }
+                        reward = maxReward;
+                    }
+                    catch
+                    {
+                        // 解析失败，返回默认值
+                        return 0;
+                    }
+                }
+                
+                // 应用最大奖励限制
+                if (maxEarlyReward > 0 && reward > maxEarlyReward)
+                {
+                    reward = maxEarlyReward;
+                }
+                
+                return reward;
+            }
+            catch (Exception ex)
+            {
+                CommonTool.WriteLog.Write("CalculateEarlyReward error: " + ex.Message);
+            }
+            return 0;
+        }
+        
+        /// <summary>
+        /// 获取模板的最大提前奖励分数
+        /// </summary>
+        /// <param name="templateId"></param>
+        /// <returns></returns>
+        private decimal GetTemplateMaxEarlyReward(string templateId)
+        {
+            string strSql = string.Format("SELECT ISNULL(MaxEarlyReward, 0) FROM dbo.TaskTemplate WHERE TemplateID = '{0}'", templateId);
+            string value = DBHelper.SqlHelper.GetDataItemString(strSql);
+            decimal result = 0;
+            decimal.TryParse(value, out result);
+            return result;
+        }
+
+        /// <summary>
+        /// 计算超时完成惩罚得分
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="delayMinutes"></param>
+        /// <returns></returns>
+        private decimal CalculateDelayPenalty(string taskId, double delayMinutes)
+        {
+            try
+            {
+                // 获取任务模板ID
+                string templateId = GetTaskTemplateId(taskId);
+                if (string.IsNullOrEmpty(templateId))
+                {
+                    return 0;
+                }
+
+                // 获取模板的超时惩罚规则和最大惩罚分数
+                string delayPenaltyRule = GetTemplateDelayPenaltyRule(templateId);
+                decimal maxDelayPenalty = GetTemplateMaxDelayPenalty(templateId);
+                
+                decimal penalty = 0;
+                
+                if (!string.IsNullOrEmpty(delayPenaltyRule))
+                {
+                    // 解析JSON规则（简单字符串解析）
+                    try
+                    {
+                        // 分割规则
+                        string[] ruleStrings = delayPenaltyRule.Split(new string[] { "}", "{" }, System.StringSplitOptions.RemoveEmptyEntries);
+
+                        decimal maxPenalty = 0;
+                        foreach (string ruleStr in ruleStrings)
+                        {
+                            if (string.IsNullOrEmpty(ruleStr)) continue;
+
+                            // 提取minutes和penalty
+                            try
+                            {
+                                // 处理minutes
+                                int minutesPos = ruleStr.IndexOf("minutes");
+                                if (minutesPos != -1)
+                                {
+                                    int colonPos = ruleStr.IndexOf(":", minutesPos);
+                                    int commaPos = ruleStr.IndexOf(",", colonPos);
+                                    if (colonPos != -1 && commaPos != -1)
+                                    {
+                                        string minutesStr = ruleStr.Substring(colonPos + 1, commaPos - colonPos - 1).Trim();
+                                        int minutes = int.Parse(minutesStr);
+
+                                        // 处理penalty
+                                        int penaltyPos = ruleStr.IndexOf("penalty");
+                                        if (penaltyPos != -1)
+                                        {
+                                            int penaltyColonPos = ruleStr.IndexOf(":", penaltyPos);
+                                            int penaltyEndPos = ruleStr.IndexOf("}", penaltyColonPos);
+                                            if (penaltyEndPos == -1)
+                                            {
+                                                penaltyEndPos = ruleStr.Length;
+                                            }
+                                            string penaltyStr = ruleStr.Substring(penaltyColonPos + 1, penaltyEndPos - penaltyColonPos - 1).Trim();
+                                            decimal rulePenalty = decimal.Parse(penaltyStr);
+
+                                            if (delayMinutes >= minutes && rulePenalty > maxPenalty)
+                                            {
+                                                maxPenalty = rulePenalty;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                // 解析单个规则失败，继续处理下一个
+                                continue;
+                            }
+                        }
+                        penalty = maxPenalty;
+                    }
+                    catch
+                    {
+                        // 解析失败，返回默认值
+                        return 0;
+                    }
+                }
+                
+                // 应用最大惩罚限制
+                if (maxDelayPenalty > 0 && penalty > maxDelayPenalty)
+                {
+                    penalty = maxDelayPenalty;
+                }
+                
+                return penalty;
+            }
+            catch (Exception ex)
+            {
+                CommonTool.WriteLog.Write("CalculateDelayPenalty error: " + ex.Message);
+            }
+            return 0;
+        }
+        
+        /// <summary>
+        /// 获取模板的最大超时惩罚分数
+        /// </summary>
+        /// <param name="templateId"></param>
+        /// <returns></returns>
+        private decimal GetTemplateMaxDelayPenalty(string templateId)
+        {
+            string strSql = string.Format("SELECT ISNULL(MaxDelayPenalty, 0) FROM dbo.TaskTemplate WHERE TemplateID = '{0}'", templateId);
+            string value = DBHelper.SqlHelper.GetDataItemString(strSql);
+            decimal result = 0;
+            decimal.TryParse(value, out result);
+            return result;
+        }
+
+        /// <summary>
+        /// 获取任务的模板ID
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <returns></returns>
+        private string GetTaskTemplateId(string taskId)
+        {
+            string strSql = string.Format("SELECT TemplateID FROM dbo.Task WHERE TaskID = '{0}'", taskId);
+            return DBHelper.SqlHelper.GetDataItemString(strSql);
+        }
+
+        /// <summary>
+        /// 获取模板的提前奖励规则
+        /// </summary>
+        /// <param name="templateId"></param>
+        /// <returns></returns>
+        private string GetTemplateEarlyRewardRule(string templateId)
+        {
+            string strSql = string.Format("SELECT EarlyRewardRule FROM dbo.TaskTemplate WHERE TemplateID = '{0}'", templateId);
+            return DBHelper.SqlHelper.GetDataItemString(strSql);
+        }
+
+        /// <summary>
+        /// 获取模板的超时惩罚规则
+        /// </summary>
+        /// <param name="templateId"></param>
+        /// <returns></returns>
+        private string GetTemplateDelayPenaltyRule(string templateId)
+        {
+            string strSql = string.Format("SELECT DelayPenaltyRule FROM dbo.TaskTemplate WHERE TemplateID = '{0}'", templateId);
+            return DBHelper.SqlHelper.GetDataItemString(strSql);
+        }
+
+        /// <summary>
+        /// 计算任务最终得分
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <returns></returns>
+        public decimal CalculateFinalScore(string taskId)
+        {
+            // 先检查是否有审核得分
+            string strSql = string.Format("SELECT AuditScore FROM dbo.Task WHERE TaskID = '{0}'", taskId);
+            string auditScoreStr = DBHelper.SqlHelper.GetDataItemString(strSql);
+            if (!string.IsNullOrEmpty(auditScoreStr))
+            {
+                decimal auditScore;
+                if (decimal.TryParse(auditScoreStr, out auditScore))
+                {
+                    return auditScore;
+                }
+            }
+
+            // 没有审核得分，使用时间计算得分
+            return CalculateTaskScore(taskId);
+        }
+
+        /// <summary>
+        /// 获取用户今日得分
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        public decimal GetTodayScore(string userName)
+        {
+            string today = DateTime.Now.ToString("yyyy-MM-dd");
+            string strSql = string.Format(@"SELECT ISNULL(SUM(ActualScore), 0) AS TodayScore 
+                                           FROM dbo.Task 
+                                           WHERE AssignedTo = '{0}' 
+                                           AND CONVERT(DATE, EndTime) = '{1}' 
+                                           AND Status IN (2, 3)", userName, today);
+            string scoreStr = DBHelper.SqlHelper.GetDataItemString(strSql);
+            decimal score = 0;
+            decimal.TryParse(scoreStr, out score);
+            return score;
+        }
+
+        /// <summary>
+        /// 获取任务面板顶部进度条数据
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns>返回包含总任务数、未完成任务数、完成任务数和今日得分的DataTable</returns>
+        public DataTable GetTaskPanelProgress(string userName)
+        {
+            string today = DateTime.Now.ToString("yyyy-MM-dd");
+            string strSql = string.Format(@"SELECT 
+                                               (SELECT COUNT(*) FROM dbo.Task WHERE AssignedTo = '{0}' AND CONVERT(DATE, Deadline) = '{1}') AS TotalTasks,
+                                               (SELECT COUNT(*) FROM dbo.Task WHERE AssignedTo = '{0}' AND CONVERT(DATE, Deadline) = '{1}' AND Status NOT IN (2, 3)) AS UncompletedTasks,
+                                               (SELECT COUNT(*) FROM dbo.Task WHERE AssignedTo = '{0}' AND CONVERT(DATE, Deadline) = '{1}' AND Status IN (2, 3)) AS CompletedTasks,
+                                               (SELECT ISNULL(SUM(ActualScore), 0) FROM dbo.Task WHERE AssignedTo = '{0}' AND CONVERT(DATE, EndTime) = '{1}' AND Status IN (2, 3)) AS TodayScore", userName, today);
+            return DBHelper.SqlHelper.GetDataTable(strSql);
         }
         #endregion
 
@@ -936,6 +1275,7 @@ namespace BLL
                 string auditor = dic.ContainsKey("Auditor") ? dic["Auditor"] : "";
                 bool auditResult = dic.ContainsKey("AuditResult") ? Convert.ToBoolean(dic["AuditResult"]) : false;
                 string auditOpinion = dic.ContainsKey("AuditOpinion") ? dic["AuditOpinion"] : "";
+                decimal auditScore = dic.ContainsKey("AuditScore") ? Convert.ToDecimal(dic["AuditScore"]) : 0;
 
                 // 获取任务信息
                 DataTable dt = GetTaskById(taskId);
@@ -954,6 +1294,7 @@ namespace BLL
                 auditModel.ListFieldItem.Add(new DBHelper.FieldItem("Auditor", auditor));
                 auditModel.ListFieldItem.Add(new DBHelper.FieldItem("AuditResult", auditResult ? "1" : "0", CommonTool.JsonValueType.Number));
                 auditModel.ListFieldItem.Add(new DBHelper.FieldItem("AuditOpinion", auditOpinion));
+                auditModel.ListFieldItem.Add(new DBHelper.FieldItem("AuditScore", auditScore.ToString(), CommonTool.JsonValueType.Number));
                 auditModel.ListFieldItem.Add(new DBHelper.FieldItem("AuditTime", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
                 auditModel.Execute();
 
@@ -962,7 +1303,7 @@ namespace BLL
                 decimal score = 0;
                 if (auditResult)
                 {
-                    score = CalculateTaskScore(taskId);
+                    score = auditScore > 0 ? auditScore : CalculateTaskScore(taskId);
                 }
 
                 DBHelper.DataModal taskModel = new DBHelper.DataModal();
@@ -972,6 +1313,8 @@ namespace BLL
                 taskModel.OnlyFlag = taskId;
                 taskModel.ListFieldItem.Add(new DBHelper.FieldItem("Status", status.ToString(), CommonTool.JsonValueType.Number));
                 taskModel.ListFieldItem.Add(new DBHelper.FieldItem("ActualScore", score.ToString(), CommonTool.JsonValueType.Number));
+                taskModel.ListFieldItem.Add(new DBHelper.FieldItem("AuditScore", auditScore.ToString(), CommonTool.JsonValueType.Number));
+                taskModel.ListFieldItem.Add(new DBHelper.FieldItem("FinalScore", score.ToString(), CommonTool.JsonValueType.Number));
                 taskModel.ListFieldItem.Add(new DBHelper.FieldItem("UpdateTime", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
                 taskModel.Execute();
 
@@ -1008,8 +1351,9 @@ namespace BLL
         /// <param name="auditor"></param>
         /// <param name="auditResult"></param>
         /// <param name="auditOpinion"></param>
+        /// <param name="auditScore"></param>
         /// <returns></returns>
-        public bool BatchAuditTasks(string[] taskIds, string auditor, bool auditResult, string auditOpinion)
+        public bool BatchAuditTasks(string[] taskIds, string auditor, bool auditResult, string auditOpinion, decimal auditScore = 0)
         {
             bool result = true;
             foreach (string taskId in taskIds)
@@ -1019,6 +1363,7 @@ namespace BLL
                 dic.Add("Auditor", auditor);
                 dic.Add("AuditResult", auditResult.ToString());
                 dic.Add("AuditOpinion", auditOpinion);
+                dic.Add("AuditScore", auditScore.ToString());
                 
                 if (!SaveTaskAudit(dic))
                 {
@@ -1438,8 +1783,14 @@ namespace BLL
                                 baseDeadline = now.AddDays(value);
                                 break;
                         }
-                        // 调整到工作时间内
-                        return AdjustToWorkingHours(baseDeadline, categoryId);
+                        // 开始时间在工作时间内，允许截止时间在非工作时间
+                        // 只确保截止时间在开始时间之后
+                        if (baseDeadline <= now)
+                        {
+                            // 如果计算出的截止时间早于或等于开始时间，延长到开始时间后1分钟
+                            baseDeadline = now.AddMinutes(1);
+                        }
+                        return baseDeadline;
                     }
                     break;
                 case 2: // 固定时间点
@@ -1449,16 +1800,9 @@ namespace BLL
                         {
                             DateTime deadlineTime = DateTime.Parse(deadlineValue);
                             DateTime baseDeadline = new DateTime(now.Year, now.Month, now.Day, deadlineTime.Hour, deadlineTime.Minute, 0);
-                            // 检查是否在工作时间内
-                            if (IsInWorkingHours(baseDeadline, categoryId))
-                            {
-                                return baseDeadline;
-                            }
-                            else
-                            {
-                                // 不在工作时间内，推移到当天23:59:59
-                                return new DateTime(now.Year, now.Month, now.Day, 23, 59, 59);
-                            }
+                            // 开始时间在工作时间内，允许截止时间在非工作时间
+                            // 直接返回固定时间点，不做工作时间检查
+                            return baseDeadline;
                         }
                         catch { }
                     }
@@ -1546,6 +1890,55 @@ namespace BLL
         }
 
         /// <summary>
+        /// 检查新订单并生成任务
+        /// </summary>
+        /// <returns>生成的任务数量</returns>
+        public int CheckNewOrders()
+        {
+            int generatedCount = 0;
+
+            try
+            {
+                // 获取最近1分钟内的新订单
+                string strSql = @"SELECT o.uid, o.order_no, o.order_mny, o.create_time 
+                                 FROM dbo.sys_order o 
+                                 WHERE o.create_time >= DATEADD(MINUTE, -1, GETDATE())
+                                 AND NOT EXISTS (
+                                     SELECT 1 FROM dbo.Task t 
+                                     WHERE t.BusinessType = '订单' 
+                                     AND t.BusinessId = o.order_no
+                                 )";
+
+                DataTable orders = DBHelper.SqlHelper.GetDataTable(strSql);
+
+                foreach (DataRow row in orders.Rows)
+                {
+                    string orderId = row["order_no"].ToString();
+                    string uid = row["uid"].ToString();
+                    string orderMny = row["order_mny"].ToString();
+
+                    // 构建业务参数
+                    Dictionary<string, string> businessParams = new Dictionary<string, string>();
+                    businessParams.Add("uid", uid);
+                    businessParams.Add("pay_mny", orderMny);
+                    businessParams.Add("order_no", orderId);
+
+                    // 生成外部任务
+                    if (GenerateExternalTask("新订单", orderId, businessParams))
+                    {
+                        generatedCount++;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CommonTool.WriteLog.Write("CheckNewOrders error: " + ex.Message);
+            }
+
+            return generatedCount;
+        }
+
+        /// <summary>
         /// 执行任务自动生成
         /// </summary>
         /// <returns></returns>
@@ -1555,6 +1948,9 @@ namespace BLL
 
             try
             {
+                // 检查新订单
+                generatedCount += CheckNewOrders();
+
                 // 获取当前需要执行的调度记录
                 DataTable schedules = GetCurrentSchedules();
 
@@ -1856,6 +2252,12 @@ namespace BLL
                         //otherInfo = string.Format("{0}-{1}-{2}-{3}", level, msgs, words, msg_dtm);
                         otherInfo = businessParams.ContainsKey("msgs") ? businessParams["msgs"] : "";
                         break;
+                    case "新订单":
+                        if (businessParams.ContainsKey("pay_mny"))
+                        {
+                            otherInfo = string.Format("下单了【{0}元】", businessParams["pay_mny"]);
+                        }
+                        break;
                 }
             }
             return otherInfo;
@@ -1889,6 +2291,8 @@ namespace BLL
                     return "4E7DF9C8-615F-42ED-B662-BBF09FDE08D6"; // 实际项目中应该替换为真实的模板ID
                 case "消息预警":
                     return "DF92A5E9-052D-4EFD-9060-019EB90F1596"; // 实际项目中应该替换为真实的模板ID
+                case "新订单":
+                    return "F7BA1DE8-155A-40C9-BE85-D399CF47F55D"; // 新订单提醒模板ID
                 default:
                     return null;
             }
@@ -1951,9 +2355,35 @@ namespace BLL
                 // 先检查特定分类的时间段设置
                 strSql = string.Format(@"SELECT StartTime, EndTime 
                                           FROM dbo.Task_Time 
-                                          WHERE (CategoryID = '{0}' OR CategoryID IS NULL) 
-                                          AND IsActive = 1 
-                                          ORDER BY CASE WHEN CategoryID = '{0}' THEN 0 ELSE 1 END", categoryId);
+                                          WHERE CategoryID = '{0}' 
+                                          AND IsActive = 1", categoryId);
+                
+                DataTable dt = DBHelper.SqlHelper.GetDataTable(strSql);
+                foreach (DataRow row in dt.Rows)
+                {
+                    WorkingHour wh = new WorkingHour
+                    {
+                        StartTime = (TimeSpan)row["StartTime"],
+                        EndTime = (TimeSpan)row["EndTime"]
+                    };
+                    workingHours.Add(wh);
+                }
+                
+                // 如果特定分类没有工作时间配置，再检查全局设置
+                if (workingHours.Count == 0)
+                {
+                    strSql = @"SELECT StartTime, EndTime 
+                                FROM dbo.Task_Time 
+                                WHERE CategoryID IS NULL 
+                                AND IsActive = 1";
+                }
+                else
+                {
+                    // 特定分类有工作时间配置，直接返回
+                    // 按照开始时间排序
+                    workingHours.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+                    return workingHours;
+                }
             }
             else
             {
@@ -1964,8 +2394,8 @@ namespace BLL
                             AND IsActive = 1";
             }
 
-            DataTable dt = DBHelper.SqlHelper.GetDataTable(strSql);
-            foreach (DataRow row in dt.Rows)
+            DataTable globalDt = DBHelper.SqlHelper.GetDataTable(strSql);
+            foreach (DataRow row in globalDt.Rows)
             {
                 WorkingHour wh = new WorkingHour
                 {
@@ -1974,6 +2404,9 @@ namespace BLL
                 };
                 workingHours.Add(wh);
             }
+            
+            // 按照开始时间排序，确保上午的时间在前，下午的时间在后
+            workingHours.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
 
             // 如果没有配置，使用默认工作时间
             if (workingHours.Count == 0)
@@ -2059,6 +2492,7 @@ namespace BLL
             }
             else
             {
+                // 获取下一个工作时间，确保返回的时间在给定时间之后
                 return GetNextWorkingTime(time, categoryId);
             }
         }

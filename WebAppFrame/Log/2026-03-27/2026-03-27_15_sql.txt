@@ -1,0 +1,66 @@
+时间:2026/3/27 15:23:17-内容:时间:2026/3/27 15:23:17   计算毫秒数:241 , 计算周期数:2413940; 计算内容:SELECT t.TemplateID
+                             , t.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.Priority
+                             , t.StandardScore
+                             , t.IsActive
+                             , t.AssignedTo
+                             , t.DeadlineType
+                             , t.DeadlineValue
+                             , t.DeadlineUnit
+                             , t.ExternalUrl
+                             , t.DelayPenaltyRule
+                             , t.EarlyRewardRule
+                             , t.MaxDelayPenalty
+                             , t.MaxEarlyReward
+                             , t.CreateTime
+                             , t.UpdateTime 
+                             FROM dbo.TaskTemplate t 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/27 15:23:31-内容:时间:2026/3/27 15:23:31   计算毫秒数:45 , 计算周期数:456386; 计算内容:SELECT t.TemplateID
+                             , t.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.Priority
+                             , t.StandardScore
+                             , t.IsActive
+                             , t.AssignedTo
+                             , t.DeadlineType
+                             , t.DeadlineValue
+                             , t.DeadlineUnit
+                             , t.ExternalUrl
+                             , t.DelayPenaltyRule
+                             , t.EarlyRewardRule
+                             , t.MaxDelayPenalty
+                             , t.MaxEarlyReward
+                             , t.CreateTime
+                             , t.UpdateTime 
+                             FROM dbo.TaskTemplate t 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             ORDER BY t.CreateTime DESC
+时间:2026/3/27 15:23:42-内容:时间:2026/3/27 15:23:42   计算毫秒数:30 , 计算周期数:306973; 计算内容:SELECT t.TemplateID
+                             , t.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.Priority
+                             , t.StandardScore
+                             , t.IsActive
+                             , t.AssignedTo
+                             , t.DeadlineType
+                             , t.DeadlineValue
+                             , t.DeadlineUnit
+                             , t.ExternalUrl
+                             , t.DelayPenaltyRule
+                             , t.EarlyRewardRule
+                             , t.MaxDelayPenalty
+                             , t.MaxEarlyReward
+                             , t.CreateTime
+                             , t.UpdateTime 
+                             FROM dbo.TaskTemplate t 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             ORDER BY t.CreateTime DESC

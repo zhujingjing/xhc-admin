@@ -1,0 +1,32 @@
+时间:2026/3/27 11:04:36-内容:读取数据库配置文件并进行xml转化解析
+时间:2026/3/27 11:30:23-内容:读取数据库配置文件并进行xml转化解析
+时间:2026/3/27 11:34:06-内容:将字符串转换为 uniqueidentifier 时失败。 - sql: SELECT t.TaskID
+                                          , t.TaskName
+                                          , t.TemplateID
+                                          , t.CategoryID
+                                          , c.CategoryName
+                                          , tmpl.TemplateName
+                                          , t.Description
+                                          , t.AssignedTo
+                                          , t.Priority
+                                          , t.Status
+                                          , t.StandardScore
+                                          , t.ActualScore
+                                          , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                                          , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                                          , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                                          , t.Creator
+                                          , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                                          , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                                          , t.Result
+                                          , t.Remarks
+                                          , t.Images
+                                          , t.Parms
+                                          , t.BusinessType
+                                          , t.BusinessId
+                                          , t.FullExternalUrl 
+                                          FROM dbo.Task t
+                                          LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID
+                                          LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID
+                                          WHERE t.TaskID = ''
+时间:2026/3/27 11:34:06-内容:将字符串转换为 uniqueidentifier 时失败。 - sql: UPDATE dbo.Task SET Status = 0, UpdateTime = GETDATE() WHERE TaskID = ''

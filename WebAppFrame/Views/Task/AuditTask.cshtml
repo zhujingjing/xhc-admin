@@ -173,6 +173,9 @@
             // 获取审核意见
             var auditOpinion = mini.get("AuditOpinion").getValue();
             
+            // 获取审核得分
+            var auditScore = mini.get("AuditScore").getValue() || 0;
+            
             // 获取审核人
             var auditor = getCurrentOperator();
             
@@ -183,7 +186,8 @@
                     taskId: taskId,
                     auditor: auditor,
                     auditResult: auditResult,
-                    auditOpinion: auditOpinion
+                    auditOpinion: auditOpinion,
+                    auditScore: auditScore
                 },
                 success: function (text) {
                     var result = mini.decode(text);
@@ -287,6 +291,11 @@
                         <input type="radio" class="audit-result" name="AuditResult" value="false" /> 拒绝
                     </label>
                 </div>
+            </div>
+            
+            <div class="form-item">
+                <span class="form-label">审核得分：</span>
+                <input id="AuditScore" name="AuditScore" class="mini-textbox" placeholder="请输入审核得分，不输入则使用系统计算得分" />
             </div>
             
             <div class="form-item">
