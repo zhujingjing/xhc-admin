@@ -252,6 +252,33 @@ namespace WebAppFrame.Controllers
             return commonBll.GetMiniUIData2(dt.Rows.Count.ToString(), data);
         }
 
+        // 删除任务分类（支持批量删除）
+        public string DeleteTaskCategory(string id)
+        {
+            CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
+            try
+            {
+                string[] ids = id.Split(',');
+                foreach (string categoryId in ids)
+                {
+                    if (!taskBll.DeleteTaskCategory(categoryId))
+                    {
+                        info.State = "0";
+                        info.Msg = "删除失败，部分分类可能已被引用";
+                        return info.ToString();
+                    }
+                }
+                info.State = "1";
+                info.Msg = "删除成功";
+            }
+            catch (Exception ex)
+            {
+                info.State = "0";
+                info.Msg = "删除失败：" + ex.Message;
+            }
+            return info.ToString();
+        }
+
         // 根据ID获取任务分类
         public string GetTaskCategoryById(string id)
         {
@@ -288,23 +315,7 @@ namespace WebAppFrame.Controllers
             return info.ToString();
         }
 
-        // 删除任务分类
-        public string DeleteTaskCategory(string id)
-        {
-            CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
-            bool tag = taskBll.DeleteTaskCategory(id);
-            if (tag)
-            {
-                info.State = "1";
-                info.Msg = "成功";
-            }
-            else
-            {
-                info.State = "0";
-                info.Msg = "该分类已被任务、模板或时间段设置引用，无法删除";
-            }
-            return info.ToString();
-        }
+
 
         // 获取任务模板列表
         public string GetTaskTemplateList(string templateName)
@@ -412,21 +423,22 @@ namespace WebAppFrame.Controllers
             return info.ToString();
         }
 
-        // 删除时间段设置
+        // 删除时间段设置（支持批量删除）
         public string DeleteTaskTime(string id)
         {
             CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
-            bool tag = taskBll.DeleteTaskTime(id);
-            if (tag)
+            string[] ids = id.Split(',');
+            foreach (string settingId in ids)
             {
-                info.State = "1";
-                info.Msg = "成功";
+                if (!taskBll.DeleteTaskTime(settingId))
+                {
+                    info.State = "0";
+                    info.Msg = "删除失败";
+                    return info.ToString();
+                }
             }
-            else
-            {
-                info.State = "0";
-                info.Msg = "数据库操作失败";
-            }
+            info.State = "1";
+            info.Msg = "成功";
             return info.ToString();
         }
 
@@ -726,6 +738,24 @@ namespace WebAppFrame.Controllers
         {
             CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
             bool tag = taskBll.UpdateTaskTemplateScheduleStatus(id, Convert.ToBoolean(isActive));
+            if (tag)
+            {
+                info.State = "1";
+                info.Msg = "成功";
+            }
+            else
+            {
+                info.State = "0";
+                info.Msg = "数据库操作失败";
+            }
+            return info.ToString();
+        }
+
+        // 批量删除调度配置
+        public string BatchDeleteTaskTemplateSchedule(string ids)
+        {
+            CommonTool.ServerRtnInfo info = new CommonTool.ServerRtnInfo();
+            bool tag = taskBll.BatchDeleteTaskTemplateSchedule(ids.Split(','));
             if (tag)
             {
                 info.State = "1";

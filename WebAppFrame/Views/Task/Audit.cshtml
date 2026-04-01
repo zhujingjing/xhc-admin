@@ -33,16 +33,19 @@
     <script type="text/javascript">
         var grid;
         $(function () {
-            //设置表格的高度
-            var parentHeight = $(window.parent).height();
-            $("#grid1").height(parentHeight - 120);
-
             mini.parse();
 
             grid = mini.get("grid1");
 
             init();
 
+            // 设置截止时间默认值为当天
+            var today = new Date();
+            var formattedDate = today.toISOString().split('T')[0];
+            document.getElementById("timeFilter").value = formattedDate;
+
+            // 加载任务分类
+            loadCategories();
             // 加载任务数据
             loadData();
         })
@@ -50,7 +53,7 @@
         function init() {
             //设置表格的高度
             var parentHeight = $(window.parent.document).find("#rightFrame").height();
-            $("#grid1").height(parentHeight - 110);
+            $("#grid1").height(parentHeight - 120);
         }
 
 
@@ -58,9 +61,9 @@
         // 渲染状态
         function renderStatus(e) {
             var value = e.value;
-            if (value == 2) return "待审核";
-            if (value == 3) return "已审核";
-            return value;
+            if (value == 2) return '<span style="color: gray;">待审核</span>';
+            if (value == 3) return '<span style="color: green;">已审核</span>';
+            return '<span style="color: red;">' + value + '</span>';
         }
 
         // 渲染完成时间（分两行显示）
@@ -104,9 +107,16 @@
         // 渲染任务结果
         function renderTaskResult(e) {
             var value = e.value;
-            if (value === "1" || value === 1 || value === true) return "通过";
-            if (value === "0" || value === 0 || value === false) return "拒绝";
-            return "";
+            if (!value) return "";
+            
+            // 转换为字符串进行比较
+            var valueStr = String(value).toLowerCase();
+            
+            if (valueStr === "1" || valueStr === "true" || valueStr === "通过") return "通过";
+            if (valueStr === "0" || valueStr === "false" || valueStr === "拒绝") return "拒绝";
+            
+            // 直接返回原始值
+            return value;
         }
 
         // 渲染任务名称（可点击跳转到详情）
@@ -115,6 +125,16 @@
             var taskId = record.TaskID;
             var taskName = record.TaskName;
             return '<a href="javascript:viewTask(\'' + taskId + '\')" style="color: blue; text-decoration: underline; cursor: pointer;">' + taskName + '</a>';
+        }
+
+        // 渲染开始时间（分两行显示）
+        function renderStartTime(e) {
+            var value = e.value;
+            if (!value) return '';
+            var date = new Date(value);
+            var dateStr = date.toLocaleDateString('zh-CN');
+            var timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
         }
 
         // 渲染创建时间（分两行显示）
@@ -134,17 +154,40 @@
             return '<a href="javascript:auditTask(\'' + taskId + '\')" style="color:green;">审核</a> | <a href="javascript:viewTask(\'' + taskId + '\')" style="color:black;">详情</a>';
         }
 
+        // 加载任务分类
+        function loadCategories() {
+            $.ajax({
+                url: "/Task/GetTaskCategoryList",
+                type: "post",
+                success: function (text) {
+                    var result = mini.decode(text);
+                    if (result.data) {
+                        var categories = mini.decode(result.data);
+                        
+                        // 加载到分类下拉框
+                        var categorySelect = document.getElementById("categoryFilter");
+                        categorySelect.innerHTML = '<option value="">全部分类</option>';
+                        for (var i = 0; i < categories.length; i++) {
+                            var option = document.createElement("option");
+                            option.value = categories[i].CategoryID;
+                            option.text = categories[i].CategoryName;
+                            categorySelect.appendChild(option);
+                        }
+                    }
+                }
+            });
+        }
+
         // 加载数据
         function loadData() {
-            var status = mini.get("statusFilter").getValue();
-            var taskNameValue = mini.get("taskName").getValue();
+            var status = document.getElementById("statusFilter").value || "";
+            var categoryId = document.getElementById("categoryFilter").value || "";
+            var timeFilter = document.getElementById("timeFilter").value || "";
             
             grid.load({
-                url: "/Task/GetTaskList",
-                params: {
-                    status: status,
-                    taskName: taskNameValue
-                }
+                status: status,
+                categoryId: categoryId,
+                timeFilter: timeFilter
             });
         }
 
@@ -181,42 +224,96 @@
                 return;
             }
 
-            mini.prompt("请选择审核结果: <br/><select id='auditResult'><option value='true'>通过</option><option value='false'>拒绝</option></select><br/>审核得分: <input type='number' id='auditScore' style='width:100%;margin-top:10px;' placeholder='输入审核得分，不输入则使用系统计算得分' /><br/><textarea id='auditOpinion' style='width:100%;height:100px;margin-top:10px;' placeholder='请输入审核意见'></textarea>", "批量审核", function (action, value) {
-                if (action == "ok") {
-                    var auditResult = document.getElementById("auditResult").value === "true";
-                    var auditScore = document.getElementById("auditScore").value || 0;
-                    var auditOpinion = document.getElementById("auditOpinion").value;
-                    var auditor = getCurrentOperator();
-                    var taskIds = [];
-                    for (var i = 0; i < rows.length; i++) {
-                        taskIds.push(rows[i].TaskID);
-                    }
+            // 创建自定义弹窗
+            var html = '<div style="padding: 0px 20px;">' +
+                '<div style="margin-bottom: 15px;">' +
+                '<label style="display: block; margin-bottom: 5px;">请选择审核结果:</label>' +
+                '<select id="auditResult" style="width: 100%; padding: 8px; border: 1px solid #1976D2; border-radius: 4px; height: 35px;">' +
+                '<option value="true">通过</option>' +
+                '<option value="false">拒绝</option>' +
+                '</select>' +
+                '</div>' +
+                '<div style="margin-bottom: 15px;">' +
+                '<label style="display: block; margin-bottom: 5px;">审核得分:</label>' +
+                '<input type="number" id="auditScore" style="width: 100%; padding: 8px; border: 1px solid #1976D2; border-radius: 4px; height: 35px;" placeholder="输入审核得分，不输入则使用系统计算得分" />' +
+                '</div>' +
+                '<div style="margin-bottom: 20px;">' +
+                '<label style="display: block; margin-bottom: 5px;">审核意见:</label>' +
+                '<textarea id="auditOpinion" style="width: 100%; height: 100px; padding: 8px; border: 1px solid #1976D2; border-radius: 4px; resize: vertical;" placeholder="请输入审核意见"></textarea>' +
+                '</div>' +
+                '<div id="loading" style="text-align: center; margin: 20px 0; display: none;">' +
+                '<img src="/Images/loading.gif" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 10px;" />' +
+                '<span style="color: #1976D2;">正在处理，请稍候...</span>' +
+                '</div>' +
+                '<div style="text-align: right; margin-top: 30px;">' +
+                '<button id="btnOk" style="margin-right: 10px; padding: 8px 20px; background-color: #E3F2FD; color: #1976D2; border: 1px solid #BBDEFB; cursor: pointer; border-radius: 4px;">确定</button>' +
+                '<button id="btnCancel" style="padding: 8px 20px; background-color: #FFF; color: #333; border: 1px solid #DDD; cursor: pointer; border-radius: 4px;">取消</button>' +
+                '</div>' +
+                '</div>';
 
-                    $.ajax({
-                        url: "/Task/BatchAuditTasks",
-                        type: "post",
-                        data: {
-                            taskIds: taskIds.join(","),
-                            auditor: auditor,
-                            auditResult: auditResult,
-                            auditOpinion: auditOpinion,
-                            auditScore: auditScore
-                        },
-                        success: function (text) {
-                            var result = mini.decode(text);
-                            if (result.state == "1" || result.state == 1) {
-                                mini.alert("批量审核成功");
-                                loadData();
-                            } else {
-                                mini.alert(result.msg || "审核失败");
-                            }
-                        },
-                        error: function () {
-                            mini.alert("网络错误");
+            var win = mini.open({
+                title: "批量审核",
+                width: 300,
+                height: 450,
+                showCloseButton: true,
+                showMaxButton: false,
+                showMinButton: false,
+                url: "about:blank",
+                onload: function () {
+                    var iframe = this.getIFrameEl();
+                    iframe.contentDocument.body.innerHTML = html;
+                    
+                    // 绑定事件
+                    iframe.contentDocument.getElementById("btnOk").onclick = function() {
+                        var auditResult = iframe.contentDocument.getElementById("auditResult").value === "true";
+                        var auditScore = iframe.contentDocument.getElementById("auditScore").value || 0;
+                        var auditOpinion = iframe.contentDocument.getElementById("auditOpinion").value;
+                        var auditor = getCurrentOperator();
+                        var taskIds = [];
+                        for (var i = 0; i < rows.length; i++) {
+                            taskIds.push(rows[i].TaskID);
                         }
-                    });
+
+                        // 显示加载状态
+                        var loadingDiv = iframe.contentDocument.getElementById("loading");
+                        var btnOk = iframe.contentDocument.getElementById("btnOk");
+                        var btnCancel = iframe.contentDocument.getElementById("btnCancel");
+                        loadingDiv.style.display = "block";
+                        btnOk.disabled = true;
+                        btnCancel.disabled = true;
+
+                        $.ajax({
+                            url: "/Task/BatchAuditTasks",
+                            type: "post",
+                            data: {
+                                taskIds: taskIds.join(","),
+                                auditor: auditor,
+                                auditResult: auditResult,
+                                auditOpinion: auditOpinion,
+                                auditScore: auditScore
+                            },
+                            success: function (text) {
+                                var result = mini.decode(text);
+                                if (result.state == "1" || result.state == 1) {
+                                    mini.alert("批量审核成功");
+                                    loadData();
+                                } else {
+                                    mini.alert(result.msg || "审核失败");
+                                }
+                                win.destroy();
+                            },
+                            error: function () {
+                                mini.alert("网络错误");
+                                win.destroy();
+                            }
+                        });
+                    };
+                    
+                    iframe.contentDocument.getElementById("btnCancel").onclick = function() {
+                        win.destroy();
+                    };
                 }
-            }, "ok,cancel", { width: 500, height: 250 });
+            });
         }
 
         // 查看任务
@@ -245,21 +342,27 @@
     </div>
     <form id="form1">
         <div class="sys-content-border" style="padding:8px 3px;">
+            分类: 
+            <select id="categoryFilter" style="width:150px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;" onchange="loadData()">
+                <option value="">全部分类</option>
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
             状态: 
-            <select id="statusFilter" class="mini-combobox" style="width:150px;" onchange="loadData()">
+            <select id="statusFilter" style="width:150px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 28px;" onchange="loadData()">
+                <option value="">全部状态</option>
                 <option value="2">待审核</option>
                 <option value="3">已审核</option>
             </select>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            任务名称: 
-            <input id="taskName" class="mini-textbox" style="width:200px;" placeholder="任务名称" />
+            截止时间: 
+            <input id="timeFilter" type="date" style="width:120px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; height: 20px;" onchange="loadData()" />
             &nbsp;&nbsp;&nbsp;&nbsp;
             <input id="btn_search" type="button" class="sys-btn" value="搜索" onclick="search()" style="background-color: #E3F2FD; color: #1976D2;" />
             &nbsp;&nbsp;&nbsp;&nbsp;
             <input id="btn_batch_audit" type="button" class="sys-btn" value="批量审核" onclick="batchAudit()" style="background-color: #FFF3E0; color: #EF6C00;" />
         </div>
-        <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskList" idfield="TaskID" allowresize="true" multiselect="true"
-             sizelist="[50,100,200]" pagesize="50">
+        <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskList" idfield="TaskID" allowresize="true" multiSelect="true"
+             sizelist="[50,200,500]" pagesize="50">
             <div property="columns">
                 <div type="checkcolumn" width="30"></div>
                 <div field="TaskID" width="0" visible="false"></div>
@@ -268,10 +371,12 @@
                 <div field="AssignedTo" width="40" header="分配人" allowSort="true"></div>
                 <div field="Status" width="40" header="状态" allowSort="true" renderer="renderStatus"></div>
                 <div field="Result" width="80" header="任务结果" allowSort="true" renderer="renderTaskResult"></div>
-                <div field="FullExternalUrl" width="100" header="外部链接" allowSort="true" renderer="renderExternalLink"></div>
+                <div field="FullExternalUrl" width="60" header="外部链接" allowSort="true" renderer="renderExternalLink"></div>
                 <div field="StandardScore" width="50" header="标准分" allowSort="true"></div>
                 <div field="ActualScore" width="50" header="实际分" allowSort="true"></div>
                 <div field="AuditScore" width="50" header="审核得分" allowSort="true"></div>
+                <div field="AuditOpinion" width="150" header="审核意见" allowSort="true"></div>
+                <div field="StartTime" width="80" header="开始时间" allowSort="true" renderer="renderStartTime"></div>
                 <div field="EndTime" width="80" header="完成时间" allowSort="true" renderer="renderEndTime"></div>
                 <div field="Deadline" width="80" header="截止时间" allowSort="true" renderer="renderDeadline"></div>
                 <div field="CreateTime" width="80" header="创建时间" allowSort="true" renderer="renderCreateTime"></div>

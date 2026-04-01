@@ -20,17 +20,19 @@ namespace BLL
             string strWhere = "";
             if (!string.IsNullOrEmpty(categoryName))
             {
-                strWhere = string.Format(" WHERE CategoryName LIKE '%{0}%'", categoryName);
+                strWhere = string.Format(" WHERE c.CategoryName LIKE '%{0}%'", categoryName);
             }
             
-            string strSql = @"SELECT CategoryID
-                             , CategoryName
-                             , ParentID
-                             , Description
-                             , CreateTime
-                             , UpdateTime 
-                             FROM dbo.TaskCategory " + strWhere + @"
-                             ORDER BY CreateTime DESC";
+            string strSql = @"SELECT c.CategoryID
+                             , c.CategoryName
+                             , c.ParentID
+                             , p.CategoryName AS ParentName
+                             , c.Description
+                             , c.CreateTime
+                             , c.UpdateTime 
+                             FROM dbo.TaskCategory c
+                             LEFT JOIN dbo.TaskCategory p ON c.ParentID = p.CategoryID " + strWhere + @"
+                             ORDER BY c.CreateTime DESC";
             return DBHelper.SqlHelper.GetDataTable(strSql);
         }
 
@@ -524,7 +526,8 @@ namespace BLL
                              , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
                              , t.BusinessType
                              , t.BusinessId
-                             , t.FullExternalUrl 
+                             , t.FullExternalUrl
+                             , (SELECT TOP 1 AuditOpinion FROM dbo.TaskAudit WHERE TaskID = t.TaskID ORDER BY AuditTime DESC) AS AuditOpinion
                              FROM dbo.Task t 
                              LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
                              LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
@@ -599,7 +602,8 @@ namespace BLL
                              , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
                              , t.BusinessType
                              , t.BusinessId
-                             , t.FullExternalUrl 
+                             , t.FullExternalUrl
+                             , (SELECT TOP 1 AuditOpinion FROM dbo.TaskAudit WHERE TaskID = t.TaskID ORDER BY AuditTime DESC) AS AuditOpinion 
                              FROM dbo.Task t 
                              LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
                              LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
@@ -652,7 +656,8 @@ namespace BLL
                                           , t.Parms
                                           , t.BusinessType
                                           , t.BusinessId
-                                          , t.FullExternalUrl 
+                                          , t.FullExternalUrl
+                                          , (SELECT TOP 1 AuditOpinion FROM dbo.TaskAudit WHERE TaskID = t.TaskID ORDER BY AuditTime DESC) AS AuditOpinion 
                                           FROM dbo.Task t
                                           LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID
                                           LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID
@@ -1660,6 +1665,23 @@ namespace BLL
         public bool DeleteTaskTemplateSchedule(string id)
         {
             string strSql = string.Format("DELETE FROM dbo.TaskTemplateSchedule WHERE ScheduleID = '{0}'", id);
+            return DBHelper.SqlHelper.ExecuteSql(strSql) > 0;
+        }
+
+        /// <summary>
+        /// 批量删除调度配置
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        public bool BatchDeleteTaskTemplateSchedule(string[] ids)
+        {
+            if (ids == null || ids.Length == 0)
+            {
+                return false;
+            }
+            
+            string idsStr = string.Join("', '", ids);
+            string strSql = string.Format("DELETE FROM dbo.TaskTemplateSchedule WHERE ScheduleID IN ('{0}')", idsStr);
             return DBHelper.SqlHelper.ExecuteSql(strSql) > 0;
         }
 

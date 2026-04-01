@@ -1,6 +1,0 @@
-时间:2026/3/26 17:56:19-内容:输入字符串的格式不正确。 - sql: select sum(amount) as c
-from dbo.score 
-where uid_from = 'wx_FWOY8QSLZNT11EFR' and (type_dtl = '收到礼物' or type_dtl = '同意添加好友' or type_dtl = '消息收入')
-时间:2026/3/26 17:56:20-内容:输入字符串的格式不正确。 - sql: select sum(amount) as c
-from dbo.score 
-where uid_from = 'wx_FWOY8QSLZNT11EFR' and (type_dtl = '收到礼物' or type_dtl = '同意添加好友' or type_dtl = '消息收入')

@@ -1,0 +1,420 @@
+时间:2026/4/1 19:12:12-内容:时间:2026/4/1 19:12:12   计算毫秒数:128 , 计算周期数:1283269; 计算内容:SELECT c.CategoryID
+                             , c.CategoryName
+                             , c.ParentID
+                             , p.CategoryName AS ParentName
+                             , c.Description
+                             , c.CreateTime
+                             , c.UpdateTime 
+                             FROM dbo.TaskCategory c
+                             LEFT JOIN dbo.TaskCategory p ON c.ParentID = p.CategoryID 
+                             ORDER BY c.CreateTime DESC
+时间:2026/4/1 19:12:12-内容:时间:2026/4/1 19:12:12   计算毫秒数:90 , 计算周期数:906305; 计算内容: with 
+                               a as
+                                    (SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , t.AuditScore
+                             , t.Result
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                             , t.BusinessType
+                             , t.BusinessId
+                             , t.FullExternalUrl
+                             , (SELECT TOP 1 AuditOpinion FROM dbo.TaskAudit WHERE TaskID = t.TaskID ORDER BY AuditTime DESC) AS AuditOpinion
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1  AND t.Deadline >= '2026-04-01'),
+                               b as
+                               (select *, 
+                                     ROW_NUMBER() over(order by CreateTime DESC) as xh
+                               from a )
+                               select * from b where b.xh > 0 and b.xh <= 50
+时间:2026/4/1 19:12:12-内容:时间:2026/4/1 19:12:12   计算毫秒数:26 , 计算周期数:263177; 计算内容: with a as (SELECT t.TaskID
+                             , t.TaskName
+                             , t.TemplateID
+                             , tmpl.TemplateName
+                             , t.CategoryID
+                             , c.CategoryName
+                             , t.Description
+                             , t.AssignedTo
+                             , t.Priority
+                             , t.Status
+                             , t.StandardScore
+                             , t.ActualScore
+                             , t.AuditScore
+                             , t.Result
+                             , CONVERT(VARCHAR(20), t.StartTime, 120) AS StartTime
+                             , CONVERT(VARCHAR(20), t.EndTime, 120) AS EndTime
+                             , CONVERT(VARCHAR(20), t.Deadline, 120) AS Deadline
+                             , t.Creator
+                             , CONVERT(VARCHAR(20), t.CreateTime, 120) AS CreateTime
+                             , CONVERT(VARCHAR(20), t.UpdateTime, 120) AS UpdateTime
+                             , t.BusinessType
+                             , t.BusinessId
+                             , t.FullExternalUrl
+                             , (SELECT TOP 1 AuditOpinion FROM dbo.TaskAudit WHERE TaskID = t.TaskID ORDER BY AuditTime DESC) AS AuditOpinion
+                             FROM dbo.Task t 
+                             LEFT JOIN dbo.TaskTemplate tmpl ON t.TemplateID = tmpl.TemplateID 
+                             LEFT JOIN dbo.TaskCategory c ON t.CategoryID = c.CategoryID 
+                             WHERE 1=1  AND t.Deadline >= '2026-04-01') select COUNT(*) from a
+时间:2026/4/1 19:17:18-内容:时间:2026/4/1 19:17:18   计算毫秒数:492 , 计算周期数:4928277; 计算内容:select ur.id, ur.uid, u.photo, u.nick, u.sex, u.remark, 
+                                   convert(char(10), ur.record_date, 120) as record_date, 
+                                   ur.summary, ur.details, ur.evaluation, ur.processing_result, ur.violation, ur.remark as record_remark, 
+                                   ur.operator_name, ur.source,
+                                   convert(char(20), ur.create_time, 120) as create_time, 
+                                   convert(char(20), ur.update_time, 120) as update_time
+                            from dbo.user_record ur
+                            left join dbo.[user] u on ur.uid = u.uid
+                            where 1=1 and ur.record_date >= '2026-03-29' and ur.record_date <= '2026-04-01' 
+                            order by ur.record_date desc, ur.create_time desc
+                            offset 0 rows fetch next 200 rows only
+时间:2026/4/1 19:17:18-内容:时间:2026/4/1 19:17:18   计算毫秒数:27 , 计算周期数:272974; 计算内容:select count(*) from dbo.user_record ur left join dbo.[user] u on ur.uid = u.uid where 1=1 and ur.record_date >= '2026-03-29' and ur.record_date <= '2026-04-01'
+时间:2026/4/1 19:17:27-内容:时间:2026/4/1 19:17:27   计算毫秒数:33 , 计算周期数:334968; 计算内容:select [key] as [key], value as value from dbo.dropdown_config where category = 'user_record_source' and status = 1 order by sort_order asc
+时间:2026/4/1 19:17:27-内容:时间:2026/4/1 19:17:27   计算毫秒数:26 , 计算周期数:264005; 计算内容:select [key] as [key], value as value from dbo.dropdown_config where category = 'user_record_evaluation' and status = 1 order by sort_order asc
+时间:2026/4/1 19:17:27-内容:时间:2026/4/1 19:17:27   计算毫秒数:27 , 计算周期数:270429; 计算内容:select [key] as [key], value as value from dbo.dropdown_config where category = 'user_record_processing' and status = 1 order by sort_order asc
+时间:2026/4/1 19:17:27-内容:时间:2026/4/1 19:17:27   计算毫秒数:27 , 计算周期数:278932; 计算内容:select id, uid, convert(char(10), record_date, 120) as record_date, summary, details, evaluation, processing_result, violation, remark, 
+                                   convert(char(20), create_time, 120) as create_time, 
+                                   convert(char(20), update_time, 120) as update_time, 
+                                   operator_name, source
+                            from dbo.user_record 
+                            where id = '6b3fbe9b-71b6-461e-a0a3-3c0770798eba'
+时间:2026/4/1 19:17:31-内容:时间:2026/4/1 19:17:31   计算毫秒数:27 , 计算周期数:272163; 计算内容:select id, uid, convert(char(10), record_date, 120) as record_date, summary, details, evaluation, processing_result, violation, remark, 
+                                   convert(char(20), create_time, 120) as create_time, 
+                                   convert(char(20), update_time, 120) as update_time, 
+                                   operator_name, source
+                            from dbo.user_record 
+                            where id = '6b3fbe9b-71b6-461e-a0a3-3c0770798eba'
+时间:2026/4/1 19:18:05-内容:时间:2026/4/1 19:18:05   计算毫秒数:49 , 计算周期数:491868; 计算内容:select ISNULL(SUM(tx_mny), 0) from dbo.score_tx where uid = 'wx_KVIUH6R6IF6TB09O' 
+时间:2026/4/1 19:18:05-内容:时间:2026/4/1 19:18:05   计算毫秒数:31 , 计算周期数:318748; 计算内容:select ISNULL(SUM(tx_mny), 0) from dbo.score_tx where state = '待审核' and uid = 'wx_KVIUH6R6IF6TB09O' 
+时间:2026/4/1 19:18:05-内容:时间:2026/4/1 19:18:05   计算毫秒数:29 , 计算周期数:292615; 计算内容:select dbo.get_user_totalscore('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:05-内容:时间:2026/4/1 19:18:05   计算毫秒数:30 , 计算周期数:300698; 计算内容:select dbo.get_user_leftscore('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:05-内容:时间:2026/4/1 19:18:05   计算毫秒数:27 , 计算周期数:273114; 计算内容:select dbo.get_user_usedscore('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:05-内容:时间:2026/4/1 19:18:05   计算毫秒数:27 , 计算周期数:270577; 计算内容:select dbo.get_user_totalcoin('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:05-内容:时间:2026/4/1 19:18:05   计算毫秒数:26 , 计算周期数:266797; 计算内容:select dbo.get_user_leftcoin('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:05-内容:时间:2026/4/1 19:18:05   计算毫秒数:25 , 计算周期数:258104; 计算内容:select dbo.get_user_usedcoin('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:05-内容:时间:2026/4/1 19:18:05   计算毫秒数:25 , 计算周期数:259053; 计算内容:select value from  dbo.sys_dic where [key] = 'fest_name'
+时间:2026/4/1 19:18:06-内容:时间:2026/4/1 19:18:06   计算毫秒数:28 , 计算周期数:286022; 计算内容:select sum(amount) as c
+from dbo.score 
+where uid_from = 'wx_KVIUH6R6IF6TB09O' and (type_dtl = '收到礼物' or type_dtl = '同意添加好友' or type_dtl = '消息收入')
+时间:2026/4/1 19:18:06-内容:时间:2026/4/1 19:18:06   计算毫秒数:27 , 计算周期数:275885; 计算内容:select create_time from dbo.[user] where uid = 'wx_KVIUH6R6IF6TB09O'
+时间:2026/4/1 19:18:06-内容:时间:2026/4/1 19:18:06   计算毫秒数:101 , 计算周期数:1017834; 计算内容: with 
+                               a as
+                                    (select a.id,    ISNULL(us.uid, '') as uid_inner,
+                                   a.apply_no,
+                                   a.uid,
+                                   a.real_name,a.zhifubao_account, a.wx_account,a.tel,
+                                   a.tx_mny, a.pay_mny, a.fee,
+                                   a.score_tx, a.score_left,
+                                   CONVERT(char(20), a.apply_date, 120) as apply_date,
+                                   CONVERT(char(20), a.pay_date, 120) as pay_date,
+                                   DATEDIFF(hour, a.apply_date,a.pay_date) as diff_hour,
+                                   a.state,
+                                   a.brife,
+                                   a.create_time,
+                                   a.state_wxsend,
+                                   u.tel as rz_tel, u.wx as rz_wx, u.photo, u.nick, u.sex, isnull(u.remark , '') as remark
+                            from [dbo].[score_tx]  a
+                            left join dbo.[user] u on(a.uid = u.uid)
+                            left join dbo.user_s us on (a.uid = us.uid)
+                            where 1 = 1  and (a.uid = 'wx_KVIUH6R6IF6TB09O') ),
+                               b as
+                               (select *, 
+                                     ROW_NUMBER() over(order by create_time desc) as xh
+                               from a )
+                               select * from b where b.xh > 0 and b.xh <= 100
+时间:2026/4/1 19:18:06-内容:时间:2026/4/1 19:18:06   计算毫秒数:29 , 计算周期数:299130; 计算内容: with a as (select a.id,    ISNULL(us.uid, '') as uid_inner,
+                                   a.apply_no,
+                                   a.uid,
+                                   a.real_name,a.zhifubao_account, a.wx_account,a.tel,
+                                   a.tx_mny, a.pay_mny, a.fee,
+                                   a.score_tx, a.score_left,
+                                   CONVERT(char(20), a.apply_date, 120) as apply_date,
+                                   CONVERT(char(20), a.pay_date, 120) as pay_date,
+                                   DATEDIFF(hour, a.apply_date,a.pay_date) as diff_hour,
+                                   a.state,
+                                   a.brife,
+                                   a.create_time,
+                                   a.state_wxsend,
+                                   u.tel as rz_tel, u.wx as rz_wx, u.photo, u.nick, u.sex, isnull(u.remark , '') as remark
+                            from [dbo].[score_tx]  a
+                            left join dbo.[user] u on(a.uid = u.uid)
+                            left join dbo.user_s us on (a.uid = us.uid)
+                            where 1 = 1  and (a.uid = 'wx_KVIUH6R6IF6TB09O') ) select COUNT(*) from a
+时间:2026/4/1 19:18:06-内容:时间:2026/4/1 19:18:06   计算毫秒数:28 , 计算周期数:288391; 计算内容: with 
+                               a as
+                                    (select
+                                           o.uid,
+                                           o.order_no,
+                                           o.order_name,
+                                           
+                                           o.pay_mny,
+                                           CONVERT(char(20), o.dtm_pay, 120) as dtm_pay,
+                                           o.order_type,
+                                           o.order_state,
+                                           o.order_mny,
+                                           CONVERT(char(20), o.dtm_create, 120) as dtm_create,
+                                           o.order_from,
+                                           o.out_id,
+                                           isnull(o.comment2, '') as comment2,o.comment,
+                                           u.photo,
+                                           u.nick,
+                                           isnull(u.remark, '') as remark,
+                                           isnull(u.fz_tag, '0') as fz_tag,
+                                           u.sex,
+                                           u.loc_province,
+                                           u.loc_city,
+                                           CONVERT(char(20), u.create_time, 120) as first_time,
+                                           CONVERT(char(20), o.create_time, 120) as create_time,
+                                           (select ISNULL(sum(ISNULL(pay_mny,0)), 0) from dbo.sys_order where uid=o.uid and order_state='付款成功') as t_mny,
+                                           (select ISNULL(sum(ISNULL(pay_mny,0)), 0) from dbo.sys_order where uid=o.uid and order_state='付款成功' and create_time <= o.create_time) as t_mny_now
+                                    from dbo.sys_order o
+                                    left join dbo.[user] u on (o.uid = u.uid)
+                                    where o.create_time >= '2019-05-01' and o.create_time <= '2026-04-02' and  1=1  and (o.uid='wx_KVIUH6R6IF6TB09O') ),
+                               b as
+                               (select *, 
+                                     ROW_NUMBER() over(order by create_time desc) as xh
+                               from a )
+                               select * from b where b.xh > 0 and b.xh <= 500
+时间:2026/4/1 19:18:06-内容:时间:2026/4/1 19:18:06   计算毫秒数:27 , 计算周期数:271087; 计算内容: with a as (select
+                                           o.uid,
+                                           o.order_no,
+                                           o.order_name,
+                                           
+                                           o.pay_mny,
+                                           CONVERT(char(20), o.dtm_pay, 120) as dtm_pay,
+                                           o.order_type,
+                                           o.order_state,
+                                           o.order_mny,
+                                           CONVERT(char(20), o.dtm_create, 120) as dtm_create,
+                                           o.order_from,
+                                           o.out_id,
+                                           isnull(o.comment2, '') as comment2,o.comment,
+                                           u.photo,
+                                           u.nick,
+                                           isnull(u.remark, '') as remark,
+                                           isnull(u.fz_tag, '0') as fz_tag,
+                                           u.sex,
+                                           u.loc_province,
+                                           u.loc_city,
+                                           CONVERT(char(20), u.create_time, 120) as first_time,
+                                           CONVERT(char(20), o.create_time, 120) as create_time,
+                                           (select ISNULL(sum(ISNULL(pay_mny,0)), 0) from dbo.sys_order where uid=o.uid and order_state='付款成功') as t_mny,
+                                           (select ISNULL(sum(ISNULL(pay_mny,0)), 0) from dbo.sys_order where uid=o.uid and order_state='付款成功' and create_time <= o.create_time) as t_mny_now
+                                    from dbo.sys_order o
+                                    left join dbo.[user] u on (o.uid = u.uid)
+                                    where o.create_time >= '2019-05-01' and o.create_time <= '2026-04-02' and  1=1  and (o.uid='wx_KVIUH6R6IF6TB09O') ) select COUNT(*) from a
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:30 , 计算周期数:308197; 计算内容:select ISNULL(SUM(tx_mny), 0) from dbo.score_tx where uid = 'wx_KVIUH6R6IF6TB09O' 
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:30 , 计算周期数:301943; 计算内容:select ISNULL(SUM(tx_mny), 0) from dbo.score_tx where state = '待审核' and uid = 'wx_KVIUH6R6IF6TB09O' 
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:27 , 计算周期数:275929; 计算内容:select dbo.get_user_totalscore('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:26 , 计算周期数:263513; 计算内容:select dbo.get_user_leftscore('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:27 , 计算周期数:276223; 计算内容:select dbo.get_user_usedscore('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:25 , 计算周期数:252814; 计算内容:select dbo.get_user_totalcoin('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:27 , 计算周期数:271553; 计算内容:select dbo.get_user_leftcoin('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:25 , 计算周期数:252194; 计算内容:select dbo.get_user_usedcoin('wx_KVIUH6R6IF6TB09O')
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:25 , 计算周期数:257514; 计算内容:select value from  dbo.sys_dic where [key] = 'fest_name'
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:27 , 计算周期数:276207; 计算内容:select sum(amount) as c
+from dbo.score 
+where uid_from = 'wx_KVIUH6R6IF6TB09O' and (type_dtl = '收到礼物' or type_dtl = '同意添加好友' or type_dtl = '消息收入')
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:27 , 计算周期数:270554; 计算内容:select create_time from dbo.[user] where uid = 'wx_KVIUH6R6IF6TB09O'
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:30 , 计算周期数:307886; 计算内容: with 
+                               a as
+                                    (select a.id,    ISNULL(us.uid, '') as uid_inner,
+                                   a.apply_no,
+                                   a.uid,
+                                   a.real_name,a.zhifubao_account, a.wx_account,a.tel,
+                                   a.tx_mny, a.pay_mny, a.fee,
+                                   a.score_tx, a.score_left,
+                                   CONVERT(char(20), a.apply_date, 120) as apply_date,
+                                   CONVERT(char(20), a.pay_date, 120) as pay_date,
+                                   DATEDIFF(hour, a.apply_date,a.pay_date) as diff_hour,
+                                   a.state,
+                                   a.brife,
+                                   a.create_time,
+                                   a.state_wxsend,
+                                   u.tel as rz_tel, u.wx as rz_wx, u.photo, u.nick, u.sex, isnull(u.remark , '') as remark
+                            from [dbo].[score_tx]  a
+                            left join dbo.[user] u on(a.uid = u.uid)
+                            left join dbo.user_s us on (a.uid = us.uid)
+                            where 1 = 1  and (a.uid = 'wx_KVIUH6R6IF6TB09O') ),
+                               b as
+                               (select *, 
+                                     ROW_NUMBER() over(order by create_time desc) as xh
+                               from a )
+                               select * from b where b.xh > 0 and b.xh <= 100
+时间:2026/4/1 19:18:07-内容:时间:2026/4/1 19:18:07   计算毫秒数:29 , 计算周期数:297921; 计算内容: with a as (select a.id,    ISNULL(us.uid, '') as uid_inner,
+                                   a.apply_no,
+                                   a.uid,
+                                   a.real_name,a.zhifubao_account, a.wx_account,a.tel,
+                                   a.tx_mny, a.pay_mny, a.fee,
+                                   a.score_tx, a.score_left,
+                                   CONVERT(char(20), a.apply_date, 120) as apply_date,
+                                   CONVERT(char(20), a.pay_date, 120) as pay_date,
+                                   DATEDIFF(hour, a.apply_date,a.pay_date) as diff_hour,
+                                   a.state,
+                                   a.brife,
+                                   a.create_time,
+                                   a.state_wxsend,
+                                   u.tel as rz_tel, u.wx as rz_wx, u.photo, u.nick, u.sex, isnull(u.remark , '') as remark
+                            from [dbo].[score_tx]  a
+                            left join dbo.[user] u on(a.uid = u.uid)
+                            left join dbo.user_s us on (a.uid = us.uid)
+                            where 1 = 1  and (a.uid = 'wx_KVIUH6R6IF6TB09O') ) select COUNT(*) from a
+时间:2026/4/1 19:18:08-内容:时间:2026/4/1 19:18:08   计算毫秒数:26 , 计算周期数:262834; 计算内容: with 
+                               a as
+                                    (select
+                                           o.uid,
+                                           o.order_no,
+                                           o.order_name,
+                                           
+                                           o.pay_mny,
+                                           CONVERT(char(20), o.dtm_pay, 120) as dtm_pay,
+                                           o.order_type,
+                                           o.order_state,
+                                           o.order_mny,
+                                           CONVERT(char(20), o.dtm_create, 120) as dtm_create,
+                                           o.order_from,
+                                           o.out_id,
+                                           isnull(o.comment2, '') as comment2,o.comment,
+                                           u.photo,
+                                           u.nick,
+                                           isnull(u.remark, '') as remark,
+                                           isnull(u.fz_tag, '0') as fz_tag,
+                                           u.sex,
+                                           u.loc_province,
+                                           u.loc_city,
+                                           CONVERT(char(20), u.create_time, 120) as first_time,
+                                           CONVERT(char(20), o.create_time, 120) as create_time,
+                                           (select ISNULL(sum(ISNULL(pay_mny,0)), 0) from dbo.sys_order where uid=o.uid and order_state='付款成功') as t_mny,
+                                           (select ISNULL(sum(ISNULL(pay_mny,0)), 0) from dbo.sys_order where uid=o.uid and order_state='付款成功' and create_time <= o.create_time) as t_mny_now
+                                    from dbo.sys_order o
+                                    left join dbo.[user] u on (o.uid = u.uid)
+                                    where o.create_time >= '2019-05-01' and o.create_time <= '2026-04-02' and  1=1  and (o.uid='wx_KVIUH6R6IF6TB09O') ),
+                               b as
+                               (select *, 
+                                     ROW_NUMBER() over(order by create_time desc) as xh
+                               from a )
+                               select * from b where b.xh > 0 and b.xh <= 500
+时间:2026/4/1 19:18:08-内容:时间:2026/4/1 19:18:08   计算毫秒数:26 , 计算周期数:266042; 计算内容: with a as (select
+                                           o.uid,
+                                           o.order_no,
+                                           o.order_name,
+                                           
+                                           o.pay_mny,
+                                           CONVERT(char(20), o.dtm_pay, 120) as dtm_pay,
+                                           o.order_type,
+                                           o.order_state,
+                                           o.order_mny,
+                                           CONVERT(char(20), o.dtm_create, 120) as dtm_create,
+                                           o.order_from,
+                                           o.out_id,
+                                           isnull(o.comment2, '') as comment2,o.comment,
+                                           u.photo,
+                                           u.nick,
+                                           isnull(u.remark, '') as remark,
+                                           isnull(u.fz_tag, '0') as fz_tag,
+                                           u.sex,
+                                           u.loc_province,
+                                           u.loc_city,
+                                           CONVERT(char(20), u.create_time, 120) as first_time,
+                                           CONVERT(char(20), o.create_time, 120) as create_time,
+                                           (select ISNULL(sum(ISNULL(pay_mny,0)), 0) from dbo.sys_order where uid=o.uid and order_state='付款成功') as t_mny,
+                                           (select ISNULL(sum(ISNULL(pay_mny,0)), 0) from dbo.sys_order where uid=o.uid and order_state='付款成功' and create_time <= o.create_time) as t_mny_now
+                                    from dbo.sys_order o
+                                    left join dbo.[user] u on (o.uid = u.uid)
+                                    where o.create_time >= '2019-05-01' and o.create_time <= '2026-04-02' and  1=1  and (o.uid='wx_KVIUH6R6IF6TB09O') ) select COUNT(*) from a
+时间:2026/4/1 19:18:09-内容:时间:2026/4/1 19:18:09   计算毫秒数:27 , 计算周期数:271427; 计算内容:select value from  dbo.sys_dic where [key] = 'xhc_admin_uid'
+时间:2026/4/1 19:18:09-内容:时间:2026/4/1 19:18:09   计算毫秒数:28 , 计算周期数:283106; 计算内容:select [key] as [key], value as value from dbo.dropdown_config where category = 'chat_check_list_source' and status = 1 order by sort_order asc
+时间:2026/4/1 19:18:09-内容:时间:2026/4/1 19:18:09   计算毫秒数:26 , 计算周期数:264171; 计算内容:select value from  dbo.sys_dic where [key] = 'xhc_admin_uid'
+时间:2026/4/1 19:18:09-内容:时间:2026/4/1 19:18:09   计算毫秒数:396 , 计算周期数:3960881; 计算内容: with 
+                               a as
+                                    (select '2026-04-01' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_04_01 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-31' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_31 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-30' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_30 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-29' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_29 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-28' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_28 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-27' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_27 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-26' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_26 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+),
+                               b as
+                               (select *, 
+                                     ROW_NUMBER() over(order by dtm desc) as xh
+                               from a )
+                               select * from b where b.xh > 0 and b.xh <= 200
+时间:2026/4/1 19:18:09-内容:时间:2026/4/1 19:18:09   计算毫秒数:26 , 计算周期数:269075; 计算内容: with a as (select '2026-04-01' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_04_01 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-31' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_31 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-30' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_30 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-29' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_29 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-28' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_28 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-27' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_27 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+ union all select '2026-03-26' as dtm, count(*) as c, 
+       isnull(sum(case when uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O' then 1 else 0 end),0) as tiaoshu,
+	   isnull(sum(case when uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND' then 1 else 0 end),0) as tiaoshu_receive 
+from xhc_daily.dbo.msg_2026_03_26 where  [type] <> 'sys_probe' and ((uid_from = 'wx_1BH9UIZDAULXHIND' and uid_to = 'wx_KVIUH6R6IF6TB09O') or (uid_from = 'wx_KVIUH6R6IF6TB09O' and uid_to = 'wx_1BH9UIZDAULXHIND'))
+) select COUNT(*) from a
+时间:2026/4/1 19:18:09-内容:时间:2026/4/1 19:18:09   计算毫秒数:28 , 计算周期数:282748; 计算内容:select id, uid, convert(char(10), record_date, 120) as record_date, summary, details, evaluation, processing_result, violation, remark, 
+                                   convert(char(20), create_time, 120) as create_time, 
+                                   convert(char(20), update_time, 120) as update_time, 
+                                   operator_name, source
+                            from dbo.user_record 
+                            where 1=1 and uid = 'wx_KVIUH6R6IF6TB09O' and record_date >= '2026-03-02' and record_date <= '2026-04-01' 
+                            order by record_date desc, create_time desc
+                            offset 0 rows fetch next 200 rows only
+时间:2026/4/1 19:18:09-内容:时间:2026/4/1 19:18:09   计算毫秒数:25 , 计算周期数:250730; 计算内容:select count(*) from dbo.user_record where 1=1 and uid = 'wx_KVIUH6R6IF6TB09O' and record_date >= '2026-03-02' and record_date <= '2026-04-01'
+时间:2026/4/1 19:18:42-内容:时间:2026/4/1 19:18:42   计算毫秒数:56 , 计算周期数:560660; 计算内容:select *, RIGHT(CONVERT(char(20), dtm, 120), 10) as sj from xhc_daily.dbo.msg_2026_04_01
+                                    where dtm >= '2026-04-01 00:00:00' 
+                                        and dtm <= '2026-04-01 23:59:59'
+                                        and (([uid_from] = 'wx_1BH9UIZDAULXHIND' and [uid_to] = 'wx_KVIUH6R6IF6TB09O') or ([uid_from] = 'wx_KVIUH6R6IF6TB09O' and [uid_to] = 'wx_1BH9UIZDAULXHIND'))
+                                        order by dtm asc 

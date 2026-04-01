@@ -63,6 +63,18 @@
             return value ? "启用" : "禁用";
         }
 
+        // 渲染创建时间，分两行显示
+        function renderCreateTime(e) {
+            var createTime = e.value;
+            if (!createTime) return '';
+            
+            var date = new Date(createTime);
+            var dateStr = date.toLocaleDateString('zh-CN');
+            var timeStr = date.toLocaleTimeString('zh-CN');
+            
+            return '<div style="text-align: center;"><div>' + dateStr + '</div><div>' + timeStr + '</div></div>';
+        }
+
 
 
         // 渲染操作按钮
@@ -162,6 +174,42 @@
                 }
             });
         }
+
+        // 批量删除时间段设置
+        function batchDeleteTimeSetting() {
+            var selecteds = grid.getSelecteds();
+            if (selecteds.length == 0) {
+                mini.alert("请选择要删除的设置");
+                return;
+            }
+            
+            var ids = [];
+            for (var i = 0; i < selecteds.length; i++) {
+                ids.push(selecteds[i].SettingID);
+            }
+            
+            mini.confirm("确定要删除选中的" + selecteds.length + "个设置吗？", "提示", function (action) {
+                if (action == "ok") {
+                    $.ajax({
+                        url: "/Task/DeleteTaskTime",
+                        type: "post",
+                        data: { id: ids.join(",") },
+                        success: function (text) {
+                            var result = mini.decode(text);
+                            if (result.state == "1" || result.state == 1) {
+                                mini.alert("删除成功");
+                                loadData();
+                            } else {
+                                mini.alert(result.msg || "删除失败");
+                            }
+                        },
+                        error: function () {
+                            mini.alert("网络错误");
+                        }
+                    });
+                }
+            });
+        }
     </script>
 </head>
 <body>
@@ -180,8 +228,10 @@
             <input id="btn_search" type="button" class="sys-btn" value="搜索" onclick="search()" style="background-color: #E3F2FD; color: #1976D2;" />
             &nbsp;&nbsp;&nbsp;&nbsp;
             <input id="btn_add" type="button" class="sys-btn" value="新增时间段" onclick="addTimeSetting()" style="background-color: #E8F5E9; color: #388E3C;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_batch_delete" type="button" class="sys-btn" value="批量删除" onclick="batchDeleteTimeSetting()" style="background-color: #FFEBEE; color: #C62828;" />
         </div>
-        <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskTimeList" idfield="SettingID" allowresize="true"
+        <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskTimeList" idfield="SettingID" allowresize="true" multiSelect="true"
              sizelist="[50,100,200]" pagesize="50">
             <div property="columns">
                 <div type="checkcolumn" width="30"></div>
@@ -190,7 +240,7 @@
                 <div field="StartTime" width="150" header="开始时间" allowSort="true"></div>
                 <div field="EndTime" width="150" header="结束时间" allowSort="true"></div>
                 <div field="IsActive" width="80" header="状态" allowSort="true" renderer="renderIsActive"></div>
-                <div field="CreateTime" width="180" header="创建时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="CreateTime" width="180" header="创建时间" allowSort="true" renderer="renderCreateTime"></div>
                 <div field="action" width="150" header="操作" align="center" renderer="renderAction"></div>
             </div>
         </div>

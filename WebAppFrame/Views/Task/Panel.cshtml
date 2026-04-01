@@ -1,4 +1,4 @@
-﻿
+
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -227,16 +227,23 @@
         // 渲染状态
         function renderStatus(e) {
             var value = e.value;
+            var record = e.record;
             var statusText = '';
             if (value == 0) statusText = '<span style="color: red;">待处理</span>';
             else if (value == 1) statusText = '<span style="color: orange;">处理中</span>';
             else if (value == 2) statusText = '<span style="color: blue;">已完成</span>';
-            else if (value == 3) statusText = '<span style="color: green;">已审核</span>';
+            else if (value == 3) {
+                var auditOpinion = record.AuditOpinion || '';
+                if (auditOpinion) {
+                    statusText = '<span style="color: green;">已审核</span><span style="color: red;">-</span><span style="color: red;">' + auditOpinion + '</span>';
+                } else {
+                    statusText = '<span style="color: green;">已审核</span>';
+                }
+            }
             else statusText = value;
             
             // 只有待处理和处理中的任务显示剩余时间和进度条
             if (value == 0 || value == 1) {
-                var record = e.record;
                 var deadline = record.Deadline;
                 if (deadline) {
                     var now = new Date();
@@ -642,6 +649,21 @@
             // 检查任务状态是否为待处理或进行中
             if (firstStatus != 0 && firstStatus != 1) {
                 mini.alert("只能选择待处理和进行中的任务做批量操作");
+                return;
+            }
+
+            // 检查选中任务的分类是否一致
+            var firstCategoryId = rows[0].CategoryID;
+            var allCategorySame = true;
+            for (var i = 1; i < rows.length; i++) {
+                if (rows[i].CategoryID != firstCategoryId) {
+                    allCategorySame = false;
+                    break;
+                }
+            }
+
+            if (!allCategorySame) {
+                mini.alert("选中的任务分类必须保持一致");
                 return;
             }
 

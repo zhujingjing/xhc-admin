@@ -97,6 +97,75 @@
             return value ? value + "日" : "";
         }
 
+        // 渲染调度配置
+        function renderScheduleConfig(e) {
+            var record = e.record;
+            var scheduleType = record.ScheduleType;
+            var dayOfWeek = record.DayOfWeek;
+            var dayOfMonth = record.DayOfMonth;
+            var executeTime = record.ExecuteTime;
+            
+            var result = "";
+            
+            switch (scheduleType) {
+                case 1:
+                    result = "每天 " + executeTime;
+                    break;
+                case 2:
+                    var weekDay = "";
+                    switch (dayOfWeek) {
+                        case 1: weekDay = "周一"; break;
+                        case 2: weekDay = "周二"; break;
+                        case 3: weekDay = "周三"; break;
+                        case 4: weekDay = "周四"; break;
+                        case 5: weekDay = "周五"; break;
+                        case 6: weekDay = "周六"; break;
+                        case 7: weekDay = "周日"; break;
+                    }
+                    result = "每周 " + weekDay + " " + executeTime;
+                    break;
+                case 3:
+                    result = "每月 " + dayOfMonth + "日 " + executeTime;
+                    break;
+                default:
+                    result = "未知";
+            }
+            
+            return result;
+        }
+
+        // 渲染创建时间（分两行显示）
+        function renderCreateTime(e) {
+            var value = e.value;
+            if (!value) return "";
+            
+            var date = new Date(value);
+            var dateStr = date.toISOString().split('T')[0];
+            var timeStr = date.toTimeString().split(' ')[0];
+            
+            return dateStr + "<br/>" + timeStr;
+        }
+
+        // 渲染更新时间（分两行显示）
+        function renderUpdateTime(e) {
+            var value = e.value;
+            if (!value) return "";
+            
+            var date = new Date(value);
+            var dateStr = date.toISOString().split('T')[0];
+            var timeStr = date.toTimeString().split(' ')[0];
+            
+            return dateStr + "<br/>" + timeStr;
+        }
+
+        // 渲染任务模板名称（可点击）
+        function renderTemplateName(e) {
+            var record = e.record;
+            var scheduleId = record.ScheduleID;
+            var templateName = record.TemplateName;
+            return '<a href="javascript:editSchedule(\'' + scheduleId + '\')" style="color:blue; text-decoration:underline; cursor:pointer;">' + templateName + '</a>';
+        }
+
         // 渲染操作按钮
         function renderAction(e) {
             var record = e.record;
@@ -108,6 +177,8 @@
             
             return '<a href="javascript:editSchedule(\'' + scheduleId + '\')" style="color:green;">编辑</a> | <a href="javascript:deleteSchedule(\'' + scheduleId + '\')" style="color:red;">删除</a> | <a href="javascript:' + activeFunction + '" style="color:' + activeColor + ';">' + activeText + '</a>';
         }
+
+
 
         // 加载任务模板
         function loadTaskTemplates() {
@@ -233,6 +304,42 @@
                 }
             });
         }
+
+        // 批量删除调度配置
+        function batchDeleteSchedule() {
+            var selecteds = grid.getSelecteds();
+            if (selecteds.length == 0) {
+                mini.alert("请选择要删除的调度配置");
+                return;
+            }
+            
+            mini.confirm("确定要删除选中的调度配置吗？", "提示", function (action) {
+                if (action == "ok") {
+                    var ids = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        ids.push(selecteds[i].ScheduleID);
+                    }
+                    
+                    $.ajax({
+                        url: "/Task/BatchDeleteTaskTemplateSchedule",
+                        type: "post",
+                        data: { ids: ids.join(",") },
+                        success: function (text) {
+                            var result = mini.decode(text);
+                            if (result.state == "1" || result.state == 1) {
+                                mini.alert("删除成功");
+                                loadData();
+                            } else {
+                                mini.alert(result.msg || "删除失败");
+                            }
+                        },
+                        error: function () {
+                            mini.alert("网络错误");
+                        }
+                    });
+                }
+            });
+        }
     </script>
 </head>
 <body>
@@ -251,20 +358,19 @@
             <input id="btn_search" type="button" class="sys-btn" value="搜索" onclick="search()" style="background-color: #E3F2FD; color: #1976D2;" />
             &nbsp;&nbsp;&nbsp;&nbsp;
             <input id="btn_add" type="button" class="sys-btn" value="新增调度" onclick="addSchedule()" style="background-color: #E8F5E9; color: #388E3C;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="btn_batch_delete" type="button" class="sys-btn" value="批量删除" onclick="batchDeleteSchedule()" style="background-color: #FFEBEE; color: #D32F2F;" />
         </div>
-        <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskTemplateScheduleList" idfield="ScheduleID" allowresize="true"
+        <div id="grid1" class="mini-datagrid" style="width:100%; margin-top:5px;" url="/Task/GetTaskTemplateScheduleList" idfield="ScheduleID" allowresize="true" multiselect="true"
              sizelist="[50,100,200]" pagesize="50">
             <div property="columns">
                 <div type="checkcolumn" width="30"></div>
                 <div field="ScheduleID" width="0" visible="false"></div>
-                <div field="TemplateName" width="200" header="任务模板" allowSort="true"></div>
-                <div field="ScheduleType" width="100" header="调度类型" allowSort="true" renderer="renderScheduleType"></div>
-                <div field="DayOfWeek" width="100" header="星期" allowSort="true" renderer="renderDayOfWeek"></div>
-                <div field="DayOfMonth" width="100" header="日期" allowSort="true" renderer="renderDayOfMonth"></div>
-                <div field="ExecuteTime" width="100" header="执行时间" allowSort="true"></div>
+                <div field="TemplateName" width="200" header="任务模板" allowSort="true" renderer="renderTemplateName"></div>
+                <div field="ScheduleType" width="250" header="调度配置" allowSort="true" renderer="renderScheduleConfig"></div>
                 <div field="IsActive" width="80" header="状态" allowSort="true" renderer="renderIsActive"></div>
-                <div field="CreateTime" width="180" header="创建时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
-                <div field="UpdateTime" width="180" header="更新时间" allowSort="true" dateFormat="yyyy-MM-dd HH:mm:ss"></div>
+                <div field="CreateTime" width="120" header="创建时间" allowSort="true" renderer="renderCreateTime"></div>
+                <div field="UpdateTime" width="120" header="更新时间" allowSort="true" renderer="renderUpdateTime"></div>
                 <div field="action" width="150" header="操作" align="center" renderer="renderAction"></div>
             </div>
         </div>
